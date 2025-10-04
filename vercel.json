@@ -1,8 +1,8 @@
 {
-  "rewrites": [
+  "crons": [
     {
-      "source": "/webhook",
-      "destination": "/api/webhook"
+      "path": "/api/poll",
+      "schedule": "*/5 * * * *"
     }
   ]
 }
