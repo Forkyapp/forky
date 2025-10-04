@@ -29,6 +29,24 @@ const processedTasks = new Set();
 // HELPER FUNCTIONS
 // ============================================
 
+async function updateTaskStatus(taskId, statusId) {
+  try {
+    await axios.put(
+      `https://api.clickup.com/api/v2/task/${taskId}`,
+      { status: statusId },
+      {
+        headers: {
+          'Authorization': CLICKUP_API_KEY,
+          'Content-Type': 'application/json'
+        }
+      }
+    );
+    console.log(`Updated task ${taskId} status to ${statusId}`);
+  } catch (error) {
+    console.error(`Error updating task status:`, error.message);
+  }
+}
+
 async function getAssignedTasks() {
   try {
     const response = await axios.get(
@@ -54,12 +72,13 @@ async function getAssignedTasks() {
   }
 }
 
-async function processTask(task) {
+async function processTask(task, isUpdate = false) {
   const taskId = task.id;
   const taskTitle = task.name;
   const taskDescription = task.description || task.text_content || '';
+  const taskStatus = task.status?.status;
 
-  console.log(`Processing task ${taskId}: ${taskTitle}`);
+  console.log(`Processing task ${taskId}: ${taskTitle} (status: ${taskStatus})`);
 
   // Mock Claude API - generate hardcoded file
   const generatedCode = `// Generated from ClickUp Task: ${taskTitle}
@@ -91,16 +110,49 @@ Generated file: \`${fileName}\`
 `;
 
   try {
-    // Check if branch already exists (this prevents duplicates)
+    // Check if branch already exists
+    let branchExists = false;
+    let existingPR = null;
+
     try {
-      const branchCheck = await github.get(`/repos/${GITHUB_OWNER}/${GITHUB_REPO}/git/ref/heads/${branchName}`);
-      console.log(`Branch ${branchName} already exists (SHA: ${branchCheck.data.object.sha}), skipping...`);
-      return { skipped: true, branch: branchName };
-    } catch (err) {
-      // Branch doesn't exist, continue creating PR
-      if (err.response?.status !== 404) {
-        throw err; // Re-throw if it's not a "not found" error
+      await github.get(`/repos/${GITHUB_OWNER}/${GITHUB_REPO}/git/ref/heads/${branchName}`);
+      branchExists = true;
+
+      // Check if there's an existing PR
+      const prsResponse = await github.get(`/repos/${GITHUB_OWNER}/${GITHUB_REPO}/pulls?head=${GITHUB_OWNER}:${branchName}&state=open`);
+      if (prsResponse.data.length > 0) {
+        existingPR = prsResponse.data[0];
       }
+
+    } catch (err) {
+      if (err.response?.status !== 404) {
+        throw err;
+      }
+    }
+
+    // If task is "in process" and PR exists, update it
+    if (branchExists && existingPR && taskStatus === 'in process') {
+      console.log(`Updating existing PR #${existingPR.number} for task ${taskId}`);
+
+      // Update the file
+      const existingFile = await github.get(`/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/${fileName}?ref=${branchName}`);
+      const contentEncoded = Buffer.from(generatedCode).toString('base64');
+
+      await github.put(`/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/${fileName}`, {
+        message: `Update generated code for ClickUp task: ${taskTitle}`,
+        content: contentEncoded,
+        branch: branchName,
+        sha: existingFile.data.sha
+      });
+
+      console.log(`Updated PR #${existingPR.number}`);
+      return { updated: true, prUrl: existingPR.html_url };
+    }
+
+    // If branch exists but task not "in process", skip
+    if (branchExists) {
+      console.log(`Branch ${branchName} already exists, skipping...`);
+      return { skipped: true, branch: branchName };
     }
 
     // Get base branch reference
@@ -132,6 +184,11 @@ Generated file: \`${fileName}\`
       body: prBody
     });
     console.log(`Pull Request created: ${prResponse.data.html_url}`);
+
+    // Update ClickUp task status to "can be checked"
+    // Find "can be checked" status ID from task statuses
+    const canBeCheckedStatus = 'p90070039602_8Mqcg4pn'; // This is from your task data
+    await updateTaskStatus(taskId, canBeCheckedStatus);
 
     return prResponse.data;
 
