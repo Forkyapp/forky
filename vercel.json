@@ -4,11 +4,5 @@
       "source": "/webhook",
       "destination": "/api/webhook"
     }
-  ],
-  "functions": {
-    "api/**/*.js": {
-      "memory": 1024,
-      "maxDuration": 10
-    }
-  }
+  ]
 }
