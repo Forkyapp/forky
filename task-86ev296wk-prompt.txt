@@ -1,0 +1,16 @@
+I need you to implement a feature from ClickUp.
+
+**ClickUp Task ID:** 86ev296wk
+**Title:** asdasd
+**Description:**
+sdasd
+
+**Instructions:**
+1. Change directory to: /Users/user/Documents/Personal Projects/collabifi-back
+2. Create a new branch: task-86ev296wk
+3. Implement the feature described above
+4. Commit your changes with message: "feat: asdasd (#86ev296wk)"
+5. Push the branch to GitHub
+6. Create a Pull Request with title: "[ClickUp #86ev296wk] asdasd"
+
+After you're done, respond with "TASK_COMPLETE" so I know to update ClickUp.

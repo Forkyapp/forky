@@ -1,0 +1,36 @@
+AUTONOMOUS MODE - Execute without asking questions.
+
+You are working on a ClickUp task. All necessary information is provided below.
+
+**ClickUp Task ID:** 86ev296wk
+**Title:** asdasd
+**Description:**
+sdasd
+
+**Repository Information:**
+- Path: /Users/user/Documents/Personal Projects/collabifi-back
+- Owner: collabifi
+- Repo: collabifi-back
+
+**Required Steps:**
+1. Change to repository directory: /Users/user/Documents/Personal Projects/collabifi-back
+2. Check git status and pull latest changes
+3. Create a new branch: task-86ev296wk
+4. Analyze the task description and implement the requested feature
+5. Make all necessary code changes to complete the task
+6. Test your changes if applicable
+7. Stage all changes: git add .
+8. Commit with message: "feat: asdasd (#86ev296wk)"
+9. Push branch to GitHub: git push origin task-86ev296wk
+10. Create a Pull Request with:
+    - Title: "[ClickUp #86ev296wk] asdasd"
+    - Body: Include task description and implementation notes
+
+**Important Instructions:**
+- Work AUTONOMOUSLY - do not ask for clarification or approval
+- Make reasonable assumptions if information is unclear
+- Follow the repository's existing code style and patterns
+- If you encounter errors, attempt to fix them autonomously
+- After completing all steps, respond with "TASK_COMPLETE"
+
+Begin implementation now.

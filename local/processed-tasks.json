@@ -1,0 +1,14 @@
+[
+  {
+    "id": "86ev29f3k",
+    "title": "Add health check endpoint",
+    "description": "Create a simple GET endpoint at /api/health that returns server status information\n\n  Requirements:\n  - Create new file: api/health.js\n  - Export a function that handles GET requests\n  - Return JSON response with:\n    - status: \"ok\"\n    - timestamp: current ISO timestamp\n    - uptime: process uptime in seconds\n  - No authentication needed",
+    "detectedAt": "2025-10-04T12:41:30.742Z"
+  },
+  {
+    "id": "86ev28vkp",
+    "title": "in progress",
+    "description": "",
+    "detectedAt": "2025-10-17T09:58:28.552Z"
+  }
+]
