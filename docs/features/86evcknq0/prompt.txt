@@ -1,0 +1,62 @@
+You are a senior software architect analyzing a development task.
+
+**Task ID:** 86evcknq0
+**Title:** Add Activity Log Page
+**Description:**
+Description:
+Create a page that displays a user’s recent actions within the app, such as login times, profile updates, or settings changes. The goal is to improve transparency and give users visibility into their account activity.
+Objectives:
+Build an “Activity Log” page accessible from the user’s profile menu.
+Display actions in a table or list format with action type, description, and timestamp.
+Show the 20 most recent activities by default, with pagination or “Load More.”
+Include filtering by date range and activity type (e.g., login, update, delete).
+Ensure the layout is responsive and easy to read.
+For now, use mock data or a simple API that returns sample activity entries.
+Acceptance Criteria:
+Activities load correctly and display all required details.
+Filters work and update the list without full page reload.
+Pagination or “Load More” works smoothly.
+Empty state is shown when no activities are found.
+Code is clean, modular, and ready to connect to a real backend later.
+
+**Repository:** /Users/user/Documents/Personal-Projects/collabifi-back
+
+Your job is to analyze this task and create a detailed feature specification. DO NOT include any code implementation.
+
+Please provide:
+
+1. **Feature Overview** (2-3 sentences)
+   - What needs to be built
+   - Why it's needed
+   - Expected outcome
+
+2. **Files to Modify** (CRITICAL - Be Specific)
+   List exact file paths that need to be created or modified:
+   - `path/to/file.js` - What changes are needed
+   - `path/to/another.js` - What changes are needed
+   - Include both new files and existing files to modify
+   - Use relative paths from repository root
+
+3. **Technical Approach** (4-6 bullet points)
+   - High-level architecture decisions
+   - Which parts of the codebase will be affected
+   - Any dependencies or prerequisites
+   - Potential challenges
+
+4. **Implementation Steps** (numbered list)
+   - Break down into logical steps
+   - Reference specific files from "Files to Modify" section
+   - Order of implementation
+
+5. **Testing Strategy** (3-4 bullet points)
+   - What should be tested
+   - Types of tests needed
+   - Edge cases to consider
+   - Which test files to create/modify
+
+6. **Acceptance Criteria** (checklist)
+   - Specific requirements that must be met
+   - Definition of done
+   - How to verify the feature works
+
+Format your response in clear Markdown. Be specific about file paths and changes. Focus on WHAT and WHY, not HOW (no code).

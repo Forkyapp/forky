@@ -1,0 +1,30 @@
+[
+  {
+    "taskId": "86evcknq0",
+    "taskName": "Add Activity Log Page",
+    "branch": "task-86evcknq0",
+    "prNumber": 136,
+    "prUrl": "https://github.com/collabifiapp/collabifi-back/pull/136",
+    "stage": "waiting_for_codex_review",
+    "iteration": 0,
+    "maxIterations": 3,
+    "startedAt": "2025-11-03T20:11:12.784Z",
+    "lastCommitSha": "ec52c53329e4cf72c79eac66f2ed4d967a8619de",
+    "owner": "collabifiapp",
+    "repo": "collabifi-back"
+  },
+  {
+    "taskId": "86evcknq0",
+    "taskName": "Add Activity Log Page",
+    "branch": "task-86evcknq0",
+    "prNumber": 136,
+    "prUrl": "https://github.com/collabifiapp/collabifi-back/pull/136",
+    "stage": "waiting_for_codex_review",
+    "iteration": 0,
+    "maxIterations": 3,
+    "startedAt": "2025-11-03T20:11:16.611Z",
+    "lastCommitSha": "ec52c53329e4cf72c79eac66f2ed4d967a8619de",
+    "owner": "collabifiapp",
+    "repo": "collabifi-back"
+  }
+]

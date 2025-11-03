@@ -1,0 +1,62 @@
+You are a senior software architect analyzing a development task.
+
+**Task ID:** 86evckkz2
+**Title:** Implement Notifications Center
+**Description:**
+Description:
+Create a basic in-app notifications system that displays alerts, updates, or reminders for the user. The goal is to centralize all notifications in one place and make it easy for users to track what’s new or pending.
+Objectives:
+Add a notifications icon in the header with an unread counter.
+Build a dropdown or panel that lists recent notifications (max 20).
+Each notification should include a title, short message, timestamp, and read/unread status.
+Allow users to mark notifications as read individually or mark all as read.
+Store notifications locally or through a simple mock API for now.
+Include visual feedback (e.g., icon highlight) when new notifications arrive.
+Acceptance Criteria:
+Notifications appear instantly when added or fetched.
+Unread counter updates correctly after interactions.
+Marking all as read clears the counter and updates styles.
+UI looks clean and works on both mobile and desktop layouts.
+Code is easy to extend later for real-time updates.
+
+**Repository:** /Users/user/Documents/Personal-Projects/collabifi-back
+
+Your job is to analyze this task and create a detailed feature specification. DO NOT include any code implementation.
+
+Please provide:
+
+1. **Feature Overview** (2-3 sentences)
+   - What needs to be built
+   - Why it's needed
+   - Expected outcome
+
+2. **Files to Modify** (CRITICAL - Be Specific)
+   List exact file paths that need to be created or modified:
+   - `path/to/file.js` - What changes are needed
+   - `path/to/another.js` - What changes are needed
+   - Include both new files and existing files to modify
+   - Use relative paths from repository root
+
+3. **Technical Approach** (4-6 bullet points)
+   - High-level architecture decisions
+   - Which parts of the codebase will be affected
+   - Any dependencies or prerequisites
+   - Potential challenges
+
+4. **Implementation Steps** (numbered list)
+   - Break down into logical steps
+   - Reference specific files from "Files to Modify" section
+   - Order of implementation
+
+5. **Testing Strategy** (3-4 bullet points)
+   - What should be tested
+   - Types of tests needed
+   - Edge cases to consider
+   - Which test files to create/modify
+
+6. **Acceptance Criteria** (checklist)
+   - Specific requirements that must be met
+   - Definition of done
+   - How to verify the feature works
+
+Format your response in clear Markdown. Be specific about file paths and changes. Focus on WHAT and WHY, not HOW (no code).

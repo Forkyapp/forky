@@ -1,0 +1,61 @@
+You are a senior software architect analyzing a development task.
+
+**Task ID:** 86ev29f3k
+**Title:**  Add User Profile Update Feature
+**Description:**
+Description:
+ Implement functionality that allows users to update their basic profile information, such as name, email, and profile picture. The goal is to give users more control over their personal data and ensure changes are reflected immediately across the app.
+Objectives:
+Add a simple “Edit Profile” form with validation for each field.
+Allow users to upload or change a profile picture.
+Save changes to the backend and display the updated info without page reload.
+Show success and error messages clearly after submission.
+Ensure existing profile data is pre-filled when the user opens the edit form.
+Acceptance Criteria:
+Form inputs validate correctly (no empty name, valid email format).
+Updated data persists after page refresh.
+Profile picture updates immediately on success.
+Error handling works for invalid input or failed requests.
+UX feels smooth and beginner-friendly.
+
+**Repository:** /Users/user/Documents/Personal-Projects/collabifi-back
+
+Your job is to analyze this task and create a detailed feature specification. DO NOT include any code implementation.
+
+Please provide:
+
+1. **Feature Overview** (2-3 sentences)
+   - What needs to be built
+   - Why it's needed
+   - Expected outcome
+
+2. **Files to Modify** (CRITICAL - Be Specific)
+   List exact file paths that need to be created or modified:
+   - `path/to/file.js` - What changes are needed
+   - `path/to/another.js` - What changes are needed
+   - Include both new files and existing files to modify
+   - Use relative paths from repository root
+
+3. **Technical Approach** (4-6 bullet points)
+   - High-level architecture decisions
+   - Which parts of the codebase will be affected
+   - Any dependencies or prerequisites
+   - Potential challenges
+
+4. **Implementation Steps** (numbered list)
+   - Break down into logical steps
+   - Reference specific files from "Files to Modify" section
+   - Order of implementation
+
+5. **Testing Strategy** (3-4 bullet points)
+   - What should be tested
+   - Types of tests needed
+   - Edge cases to consider
+   - Which test files to create/modify
+
+6. **Acceptance Criteria** (checklist)
+   - Specific requirements that must be met
+   - Definition of done
+   - How to verify the feature works
+
+Format your response in clear Markdown. Be specific about file paths and changes. Focus on WHAT and WHY, not HOW (no code).

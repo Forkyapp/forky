@@ -1,0 +1,64 @@
+{
+  "86evcknq0": {
+    "taskId": "86evcknq0",
+    "taskName": "Add Activity Log Page",
+    "currentStage": "pr_creating",
+    "status": "in_progress",
+    "createdAt": "2025-11-03T20:07:11.101Z",
+    "updatedAt": "2025-11-03T20:07:48.358Z",
+    "stages": [
+      {
+        "name": "detection",
+        "stage": "detected",
+        "status": "completed",
+        "startedAt": "2025-11-03T20:07:11.101Z",
+        "completedAt": "2025-11-03T20:07:11.101Z"
+      },
+      {
+        "name": "Gemini Analysis",
+        "stage": "analyzing",
+        "status": "completed",
+        "startedAt": "2025-11-03T20:07:11.101Z",
+        "completedAt": "2025-11-03T20:07:45.971Z",
+        "duration": 34870,
+        "featureSpecFile": "/Users/user/Documents/Personal-Projects/clickup-claude-github/docs/features/86evcknq0/feature-spec.md",
+        "fallback": false
+      },
+      {
+        "name": "Claude Implementation",
+        "stage": "implementing",
+        "status": "completed",
+        "startedAt": "2025-11-03T20:07:45.971Z",
+        "completedAt": "2025-11-03T20:07:48.357Z",
+        "duration": 2386,
+        "branch": "task-86evcknq0"
+      },
+      {
+        "name": "PR Creation",
+        "stage": "pr_creating",
+        "status": "in_progress",
+        "startedAt": "2025-11-03T20:07:48.358Z"
+      }
+    ],
+    "metadata": {
+      "geminiAnalysis": {
+        "file": "/Users/user/Documents/Personal-Projects/clickup-claude-github/docs/features/86evcknq0/feature-spec.md",
+        "fallback": false
+      },
+      "aiInstances": [
+        {
+          "provider": "claude",
+          "type": "main",
+          "branch": "task-86evcknq0",
+          "startedAt": "2025-11-03T20:07:48.357Z"
+        }
+      ],
+      "branches": [],
+      "prNumber": null,
+      "reviewIterations": 0,
+      "maxReviewIterations": 3,
+      "aiProvider": "claude"
+    },
+    "errors": []
+  }
+}

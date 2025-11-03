@@ -2,11 +2,10 @@ require('dotenv').config();
 
 const config = require('./lib/config');
 const { jarvis, colors } = require('./lib/ui');
-const cache = require('./lib/cache');
-const queue = require('./lib/queue');
-const tracking = require('./lib/tracking');
+const storage = require('./lib/storage');
 const clickup = require('./lib/clickup');
 const claude = require('./lib/claude');
+const codex = require('./lib/codex');
 const orchestrator = require('./lib/orchestrator');
 
 async function pollAndProcess() {
@@ -14,22 +13,17 @@ async function pollAndProcess() {
     const tasks = await clickup.getAssignedTasks();
 
     for (const task of tasks) {
-      if (cache.processedTaskIds.has(task.id)) continue;
+      if (storage.cache.has(task.id)) continue;
 
       console.log(`\n${colors.bright}${colors.green}🎯 ${task.id}${colors.reset} • ${task.name}`);
-      cache.addToProcessed(task);
+      storage.cache.add(task);
 
       try {
-        if (config.system.useMultiAI) {
-          // Multi-AI workflow: Gemini → Claude → PR
-          const result = await orchestrator.processTask(task);
+        // Multi-AI workflow: Gemini → Claude → PR
+        const result = await orchestrator.processTask(task);
 
-          if (!result.success) {
-            console.log(jarvis.warning(`Task ${task.id} queued for manual processing`));
-          }
-        } else {
-          // Legacy workflow: Claude only
-          await claude.launchCodex(task);
+        if (!result.success) {
+          console.log(jarvis.warning(`Task ${task.id} queued for manual processing`));
         }
       } catch (error) {
         console.log(jarvis.error(`Failed: ${error.message}`));
@@ -44,8 +38,9 @@ async function pollAndProcess() {
 // Only run if this file is executed directly (not imported for testing)
 if (require.main === module) {
   // Initialize data on startup
-  cache.initializeCache();
-  tracking.initializeTracking();
+  storage.cache.init();
+  storage.tracking.init();
+  storage.reviewTracking.init();
 
   console.clear();
   console.log('\n' + jarvis.header('J.A.R.V.I.S'));
@@ -60,18 +55,33 @@ if (require.main === module) {
   claude.ensureClaudeSettings();
   console.log(jarvis.success('Systems online'));
   console.log(jarvis.info(`Monitoring workspace • ${config.system.pollIntervalMs / 1000}s intervals`));
-
-  if (config.system.useMultiAI) {
-    console.log(jarvis.ai('Multi-AI mode enabled (Gemini → Claude → PR)'));
-  } else {
-    console.log(jarvis.info('Legacy mode (Claude only)'));
-  }
-
+  console.log(jarvis.ai('Multi-AI workflow: Gemini → Claude → PR → Codex Review → Claude Fixes'));
+  console.log(jarvis.info(`Review iterations: Up to 3 cycles`));
   console.log(jarvis.divider() + '\n');
 
   pollAndProcess();
   setInterval(pollAndProcess, config.system.pollIntervalMs);
-  setInterval(tracking.pollForPRs, config.prTracking.checkIntervalMs);
+
+  // PR tracking with review workflow callback
+  setInterval(() => {
+    storage.tracking.poll(clickup, {
+      onPRFound: async (prInfo) => {
+        console.log(jarvis.ai(`Starting code review workflow for task ${prInfo.taskId}`));
+
+        // Start review cycle tracking
+        const task = { id: prInfo.taskId, name: prInfo.taskName };
+        storage.reviewTracking.startReviewCycle(task, prInfo);
+
+        // Trigger Codex review
+        await codex.reviewClaudeChanges(task);
+      }
+    });
+  }, config.prTracking.checkIntervalMs);
+
+  // Review cycle tracking (polls for Codex review commits and Claude fix commits)
+  setInterval(() => {
+    storage.reviewTracking.poll(clickup, codex, claude);
+  }, config.prTracking.checkIntervalMs);
 
   // Set up shutdown handlers
   process.on('SIGINT', gracefulShutdown);
@@ -80,8 +90,9 @@ if (require.main === module) {
 
 function gracefulShutdown() {
   console.log('\n' + jarvis.ai('Shutting down...'));
-  cache.saveProcessedTasks();
-  tracking.savePRTracking(tracking.prTracking);
+  storage.cache.save();
+  storage.tracking.save(storage.tracking.getData());
+  storage.reviewTracking.save(storage.reviewTracking.getData());
   console.log(jarvis.success('State saved. Goodbye!') + '\n');
   process.exit(0);
 }
@@ -91,9 +102,8 @@ module.exports = {
   pollAndProcess,
   gracefulShutdown,
   // Re-export from modules for backward compatibility with tests
-  ...cache,
-  ...queue,
-  ...tracking,
+  ...storage.queue,
+  ...storage.tracking,
   ...clickup,
   ...claude,
   config,
