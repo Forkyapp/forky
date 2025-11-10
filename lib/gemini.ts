@@ -101,7 +101,7 @@ async function analyzeTask(task: ClickUpTask, options: AnalyzeTaskOptions = {}):
     };
     try {
       fs.writeFileSync(progressFile, JSON.stringify(progress, null, 2));
-    } catch (err) {
+    } catch (_err) {
       // Silent fail - don't break execution
     }
   };

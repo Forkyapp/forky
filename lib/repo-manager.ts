@@ -48,7 +48,7 @@ async function getGitHubUsername(): Promise<string> {
       timeout: 10000
     });
     return stdout.trim();
-  } catch (error) {
+  } catch (_error) {
     console.log(forky.warning('Failed to get GitHub username from gh CLI'));
 
     // Fallback to default username

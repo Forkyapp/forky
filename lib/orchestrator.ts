@@ -6,29 +6,12 @@ import * as claude from './claude';
 import * as codex from './codex';
 import config, { RepositoryConfig, resolveRepoConfig } from './config';
 import * as clickup from './clickup';
+import type { ClickUpTask } from './clickup';
 import * as repoManager from './repo-manager';
 
 // ============================================
 // INTERFACES
 // ============================================
-
-interface ClickUpTask {
-  id: string;
-  name: string;
-  description?: string;
-  text_content?: string;
-  url?: string;
-  status?: {
-    status: string;
-  };
-  custom_fields?: Array<{
-    name?: string;
-    value?: string;
-  }>;
-  tags?: Array<{
-    name: string;
-  }>;
-}
 
 interface AnalysisResult {
   success?: boolean;

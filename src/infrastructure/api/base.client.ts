@@ -3,7 +3,7 @@
  * Foundation for all API clients with retry logic and error handling
  */
 
-import axios, { AxiosInstance, AxiosRequestConfig, AxiosError, AxiosResponse } from 'axios';
+import axios, { AxiosInstance, AxiosRequestConfig, AxiosError } from 'axios';
 import { withRetry, RetryOptions } from '../../shared/utils';
 import {
   APIError,
