@@ -7,6 +7,7 @@ interface ClickUpTask {
   name: string;
   description?: string;
   text_content?: string;
+  url?: string;
   status?: {
     status: string;
   };
