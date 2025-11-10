@@ -300,10 +300,10 @@ pkill -f "node forky.js"
 ```bash
 npm install -g pm2
 
-pm2 start forky.js --name devin
-pm2 logs devin
-pm2 stop devin
-pm2 restart devin
+pm2 start forky.js --name forky
+pm2 logs forky
+pm2 stop forky
+pm2 restart forky
 ```
 
 ## Important Notes
