@@ -40,7 +40,7 @@ async function isProcessRunning(pid: number | null): Promise<boolean> {
     // Check if process exists
     await execAsync(`ps -p ${pid}`, { timeout: 2000 });
     return true;
-  } catch (error) {
+  } catch (_error) {
     return false;
   }
 }
@@ -61,7 +61,7 @@ function readProgress(taskId: string, agent: string): Progress | null {
   try {
     const content = fs.readFileSync(progressFile, 'utf8');
     return JSON.parse(content) as Progress;
-  } catch (error) {
+  } catch (_error) {
     return null;
   }
 }
@@ -80,7 +80,7 @@ async function tailLogFile(logFile: string, lines: number = 5): Promise<string[]
   try {
     const { stdout } = await execAsync(`tail -n ${lines} "${logFile}"`, { timeout: 2000 });
     return stdout.trim().split('\n').filter(line => line.trim());
-  } catch (error) {
+  } catch (_error) {
     return [];
   }
 }
@@ -114,7 +114,7 @@ async function getAgentStatus(
     try {
       status.pid = parseInt(fs.readFileSync(pidFile, 'utf8').trim());
       status.running = await isProcessRunning(status.pid);
-    } catch (error) {
+    } catch (_error) {
       status.error = 'Failed to read PID file';
     }
   }

@@ -64,7 +64,7 @@ async function isProcessRunning(pid: number): Promise<boolean> {
   try {
     const { stdout } = await execAsync(`ps -p ${pid}`);
     return stdout.includes(String(pid));
-  } catch (error) {
+  } catch (_error) {
     return false;
   }
 }
@@ -76,7 +76,7 @@ async function killProcess(pid: number): Promise<boolean> {
   try {
     await execAsync(`kill ${pid}`);
     return true;
-  } catch (error) {
+  } catch (_error) {
     return false;
   }
 }
