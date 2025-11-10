@@ -1,6 +1,13 @@
 # Forky - Autonomous Local Integration
 
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![CI](https://github.com/kuxala/clickup-bot/actions/workflows/ci.yml/badge.svg)](https://github.com/kuxala/clickup-bot/actions/workflows/ci.yml)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.9-blue.svg)](https://www.typescriptlang.org/)
+[![Node.js](https://img.shields.io/badge/Node.js-18%2B-green.svg)](https://nodejs.org/)
+
 Fully automated ClickUp task detection that launches Claude Code in separate Terminal windows.
+
+> **Open Source Project**: Forky is an open-source automation tool that bridges ClickUp task management with Claude Code's AI-powered development capabilities. Contributions welcome!
 
 ## How It Works
 
@@ -32,11 +39,62 @@ Fully automated ClickUp task detection that launches Claude Code in separate Ter
 └──────────────────────────────────────────┘
 ```
 
+## Table of Contents
+
+- [Features](#features)
+- [Prerequisites](#prerequisites)
+- [Installation](#installation)
+- [Setup](#setup)
+- [Usage](#usage)
+- [Contributing](#contributing)
+- [License](#license)
+- [Security](#security)
+
+## Features
+
+- Fully automated task detection from ClickUp
+- Automatic Claude Code session launching
+- Interactive AI-powered development
+- Seamless GitHub integration
+- TypeScript codebase with full type safety
+- Comprehensive test coverage
+- Process management with PM2 support
+
+## Prerequisites
+
+Before you begin, ensure you have:
+
+- Node.js 18 or higher
+- npm or yarn
+- Git
+- [Claude Code CLI](https://docs.anthropic.com/en/docs/claude-code) installed
+- ClickUp account with API access
+- GitHub account with personal access token
+- macOS (for automatic Terminal window launching)
+
+## Installation
+
+1. Clone the repository:
+   ```bash
+   git clone https://github.com/kuxala/clickup-bot.git
+   cd clickup-bot
+   ```
+
+2. Install dependencies:
+   ```bash
+   npm install
+   ```
+
+3. Build the project:
+   ```bash
+   npm run build
+   ```
+
 ## Setup
 
 ### 1. Configure Environment
 
-Add to `.env` (in project root):
+Create a `.env` file in the project root (copy from `.env.example`):
 
 ```bash
 # Required - already configured
@@ -358,3 +416,37 @@ pm2 restart forky
 - ❌ macOS only (uses osascript)
 - ❌ Multiple Terminal windows (can get cluttered)
 - ❌ Computer must stay running
+
+## Contributing
+
+We welcome contributions! Please see our [Contributing Guide](CONTRIBUTING.md) for details on:
+
+- Code of Conduct
+- Development setup
+- How to submit pull requests
+- Coding standards
+- Testing guidelines
+
+## License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## Security
+
+For security concerns, please review our [Security Policy](SECURITY.md).
+
+## Support
+
+- **Documentation**: Check the [docs](docs/) folder for detailed guides
+- **Issues**: Report bugs via [GitHub Issues](https://github.com/kuxala/clickup-bot/issues)
+- **Discussions**: Ask questions in [GitHub Discussions](https://github.com/kuxala/clickup-bot/discussions)
+
+## Acknowledgments
+
+- Built with [Claude Code](https://www.anthropic.com/claude)
+- Integrates with [ClickUp API](https://clickup.com/api)
+- Powered by [TypeScript](https://www.typescriptlang.org/)
+
+---
+
+Made with ❤️ by the Forky community
