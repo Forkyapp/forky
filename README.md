@@ -159,15 +159,78 @@ When a new task is detected:
    - Task added to `task-queue.json`
    - You can process it manually later
 
-## File Structure
+## TypeScript Migration
+
+This codebase has been fully migrated to TypeScript! 🎉
+
+### What Changed
+
+- ✅ All `.js` files converted to `.ts` with full type annotations
+- ✅ Comprehensive interfaces for all data structures
+- ✅ ES6 module imports/exports (replacing CommonJS)
+- ✅ Type-safe error handling
+- ✅ Full IDE autocomplete and type checking support
+
+### Building and Running
+
+**Build TypeScript to JavaScript:**
+```bash
+npm run build
+```
+
+**Run the compiled code:**
+```bash
+npm start
+```
+
+**Run TypeScript directly (development):**
+```bash
+npm run dev
+```
+
+**Run tests:**
+```bash
+npm test
+```
+
+**Clean build artifacts:**
+```bash
+npm run clean
+```
+
+### File Structure
 
 ```
-local/
-├── devin.js                  # Main queue manager (polls ClickUp)
-├── task-queue.json           # Task queue (pending & completed)
-├── processed-tasks.json      # Detection cache (prevents duplicates)
+├── lib/                      # TypeScript source modules
+│   ├── ui.ts                 # CLI formatting utilities
+│   ├── retry.ts              # Retry logic with exponential backoff
+│   ├── config.ts             # Configuration management
+│   ├── clickup.ts            # ClickUp API client
+│   ├── github.ts             # GitHub API operations
+│   ├── storage.ts            # Cache, queue, and tracking
+│   ├── process-manager.ts    # Process lifecycle management
+│   ├── progress-monitor.ts   # Progress tracking
+│   ├── repo-manager.ts       # Repository management
+│   ├── gemini.ts             # Gemini AI integration
+│   ├── codex.ts              # Codex code review
+│   ├── claude.ts             # Claude AI integration
+│   └── orchestrator.ts       # Multi-AI workflow orchestration
+├── devin.ts                  # Main entry point
+├── retry-codex-review.ts     # Utility script
+├── devin.test.ts             # Jest test suite
+├── dist/                     # Compiled JavaScript (git-ignored)
+├── tsconfig.json             # TypeScript configuration
+├── package.json              # Dependencies and scripts
 └── README.md                 # This file
 ```
+
+### TypeScript Benefits
+
+1. **Type Safety** - Catch bugs at compile-time instead of runtime
+2. **Better IDE Support** - Full autocomplete, inline docs, and refactoring
+3. **Self-Documenting** - Types serve as inline documentation
+4. **Easier Maintenance** - Clear contracts between functions
+5. **Refactoring Confidence** - Type system ensures correctness
 
 ## Troubleshooting
 
