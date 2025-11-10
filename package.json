@@ -35,11 +35,33 @@
     "preset": "ts-jest",
     "testEnvironment": "node",
     "coveragePathIgnorePatterns": [
-      "/node_modules/"
+      "/node_modules/",
+      "/dist/",
+      "/tmp/"
     ],
     "testMatch": [
       "**/__tests__/**/*.test.ts",
       "**/*.test.ts"
+    ],
+    "collectCoverageFrom": [
+      "src/**/*.ts",
+      "!src/**/*.d.ts",
+      "!src/**/__tests__/**",
+      "!src/test-setup.ts"
+    ],
+    "coverageThreshold": {
+      "global": {
+        "statements": 30,
+        "branches": 25,
+        "functions": 30,
+        "lines": 30
+      }
+    },
+    "coverageReporters": [
+      "text",
+      "text-summary",
+      "lcov",
+      "json-summary"
     ]
   }
 }
