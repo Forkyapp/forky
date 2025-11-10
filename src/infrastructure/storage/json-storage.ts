@@ -5,7 +5,7 @@
 
 import fs from 'fs';
 import path from 'path';
-import { FileReadError, FileWriteError, FileNotFoundError } from '../../shared/errors';
+import { FileReadError, FileWriteError } from '../../shared/errors';
 
 export interface IStorage<T> {
   read(): Promise<T>;

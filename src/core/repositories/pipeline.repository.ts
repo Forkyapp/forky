@@ -6,7 +6,6 @@
 import fs from 'fs';
 import {
   PipelineData,
-  PipelineStatus,
   PipelineStage,
   StageEntry,
   PipelineSummary,

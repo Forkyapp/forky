@@ -4,9 +4,8 @@
  */
 
 import fs from 'fs';
-import path from 'path';
 import { ProcessedTask, ClickUpTaskData } from '../../types';
-import { FileReadError, FileWriteError, StorageError } from '../../shared/errors';
+import { FileReadError, FileWriteError } from '../../shared/errors';
 
 export interface ICacheRepository {
   load(): Promise<ProcessedTask[]>;

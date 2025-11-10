@@ -3,9 +3,8 @@
  * Types for multi-AI workflow orchestration
  */
 
-import { ClickUpTask } from './clickup';
-import { GeminiAnalysisResult } from './ai';
-import { PipelineData } from './storage';
+import type { GeminiAnalysisResult } from './ai';
+import type { PipelineData } from './storage';
 
 export interface ProcessTaskResult {
   readonly success: boolean;
