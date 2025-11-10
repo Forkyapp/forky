@@ -217,17 +217,9 @@ When a new task is detected:
    - Task added to `task-queue.json`
    - You can process it manually later
 
-## TypeScript Migration
+## Architecture & Codebase
 
-This codebase has been fully migrated to TypeScript! 🎉
-
-### What Changed
-
-- ✅ All `.js` files converted to `.ts` with full type annotations
-- ✅ Comprehensive interfaces for all data structures
-- ✅ ES6 module imports/exports (replacing CommonJS)
-- ✅ Type-safe error handling
-- ✅ Full IDE autocomplete and type checking support
+This codebase has been fully migrated to TypeScript with a modern, scalable architecture! 🎉
 
 ### Building and Running
 
@@ -256,39 +248,93 @@ npm test
 npm run clean
 ```
 
-### File Structure
+### Project Structure
 
 ```
-├── lib/                      # TypeScript source modules
-│   ├── ui.ts                 # CLI formatting utilities
-│   ├── retry.ts              # Retry logic with exponential backoff
-│   ├── config.ts             # Configuration management
-│   ├── clickup.ts            # ClickUp API client
-│   ├── github.ts             # GitHub API operations
-│   ├── storage.ts            # Cache, queue, and tracking
-│   ├── process-manager.ts    # Process lifecycle management
-│   ├── progress-monitor.ts   # Progress tracking
-│   ├── repo-manager.ts       # Repository management
-│   ├── gemini.ts             # Gemini AI integration
-│   ├── codex.ts              # Codex code review
-│   ├── claude.ts             # Claude AI integration
-│   └── orchestrator.ts       # Multi-AI workflow orchestration
-├── forky.ts                  # Main entry point
-├── retry-codex-review.ts     # Utility script
-├── forky.test.ts             # Jest test suite
-├── dist/                     # Compiled JavaScript (git-ignored)
-├── tsconfig.json             # TypeScript configuration
-├── package.json              # Dependencies and scripts
-└── README.md                 # This file
+clickup-bot/
+├── src/                          # New architecture (Phase 1)
+│   ├── types/                    # Centralized type definitions
+│   │   ├── clickup.ts            # ClickUp domain types
+│   │   ├── github.ts             # GitHub domain types
+│   │   ├── config.ts             # Configuration types
+│   │   ├── ai.ts                 # AI service types
+│   │   ├── storage.ts            # Storage/state management
+│   │   ├── orchestrator.ts       # Workflow orchestration
+│   │   ├── common.ts             # Shared/reusable types
+│   │   └── index.ts              # Type exports
+│   │
+│   ├── shared/                   # Shared utilities
+│   │   ├── errors/               # Custom error classes
+│   │   │   ├── base.error.ts
+│   │   │   ├── api.error.ts
+│   │   │   ├── validation.error.ts
+│   │   │   ├── ai.error.ts
+│   │   │   ├── storage.error.ts
+│   │   │   └── repository.error.ts
+│   │   ├── utils/                # Utility functions
+│   │   │   ├── retry.util.ts    # Retry with backoff
+│   │   │   ├── logger.util.ts   # Structured logging
+│   │   │   └── validation.util.ts
+│   │   └── constants/            # Application constants
+│   │
+│   ├── core/                     # Core business logic
+│   │   └── repositories/         # Data access layer
+│   │       ├── cache.repository.ts
+│   │       ├── queue.repository.ts
+│   │       ├── pipeline.repository.ts
+│   │       ├── tracking.repository.ts
+│   │       └── config.repository.ts
+│   │
+│   └── infrastructure/           # External integrations
+│       ├── api/                  # API clients
+│       │   ├── base.client.ts
+│       │   ├── clickup.client.ts
+│       │   └── github.client.ts
+│       └── storage/              # Storage implementations
+│           └── json-storage.ts
+│
+├── lib/                          # Legacy modules (being migrated)
+│   ├── ui.ts
+│   ├── config.ts
+│   ├── clickup.ts
+│   ├── github.ts
+│   ├── storage.ts
+│   ├── gemini.ts
+│   ├── codex.ts
+│   ├── claude.ts
+│   ├── orchestrator.ts
+│   └── ... (other modules)
+│
+├── forky.ts                      # Main entry point
+├── dist/                         # Compiled JavaScript
+├── tsconfig.json                 # TypeScript configuration
+└── package.json                  # Dependencies and scripts
 ```
 
-### TypeScript Benefits
+See [src/README.md](src/README.md) for detailed architecture documentation.
 
-1. **Type Safety** - Catch bugs at compile-time instead of runtime
-2. **Better IDE Support** - Full autocomplete, inline docs, and refactoring
-3. **Self-Documenting** - Types serve as inline documentation
-4. **Easier Maintenance** - Clear contracts between functions
-5. **Refactoring Confidence** - Type system ensures correctness
+### Architecture Highlights
+
+**Layered Design:**
+- **Types Layer**: Centralized, strongly-typed domain models
+- **Shared Layer**: Reusable utilities, custom errors, constants
+- **Core Layer**: Business logic with repository pattern
+- **Infrastructure Layer**: External API clients and storage
+
+**Key Features:**
+1. **Type Safety** - Strict TypeScript with comprehensive interfaces
+2. **Error Handling** - Custom error classes with context and codes
+3. **Repository Pattern** - Clean data access abstraction
+4. **API Client Abstraction** - Retry logic and error handling built-in
+5. **Dependency Injection Ready** - Service layer foundation prepared
+6. **Scalable** - Architecture supports future database migration
+
+**Benefits:**
+- ✅ Better maintainability with clear separation of concerns
+- ✅ Improved testability with dependency injection
+- ✅ Enhanced reliability with comprehensive error handling
+- ✅ Future-proof architecture ready to scale
+- ✅ Excellent IDE support with strict typing
 
 ## Troubleshooting
 
