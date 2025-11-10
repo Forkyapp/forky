@@ -13,4 +13,4 @@ unset GITHUB_TOKEN
 unset GITHUB_DEFAULT_USERNAME
 
 # Start the bot
-node devin.js
+node forky.js

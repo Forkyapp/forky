@@ -3,6 +3,7 @@ node_modules/
 .DS_Store
 coverage/
 *.log
+dist/
 
 # Runtime data files
 processed-tasks.json
