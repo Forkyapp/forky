@@ -1,0 +1,84 @@
+You are a senior software architect analyzing a development task.
+
+**Task ID:** 869ajuxp3
+**Title:** [Admin] Extend landing top section
+**Description:**
+we need to change the calculator logic on the main page.
+Calculator Types Needed:
+
+Type 1 - Tour Registrations:
+Select project and tour
+Count total registrations for selected tour (regardless of profile activation status or registration source)
+Show two numbers:
+Students registered (count of registrations)
+Teachers registered (count of teacher profiles on platform)
+
+When selecting a project and tour, calculate the sum of all registrations done for this specific tour. A "registration" counts regardless of whether the student has an activated profile or not - if there is any subject registration done for this student (whether initiated by teacher or student), it counts as one registration. For example, if one student has 3 different subject registrations in this specific tour, the count should be 3. This matches exactly what you see in the export from "Page tours." Additionally, show the number of registered teachers, which represents the total count of existing teacher profiles on the entire platform (not tour-specific).
+
+
+Type 2 - Tour Payments:
+Select project and tour
+Input fixed number of available places
+Show two numbers:
+Places reserved (total payments made for tour)
+Places left (fixed places minus reserved places)
+
+For the selected project and tour, count how many payments have been made. Add a feature to input a fixed number representing total available places for the tour. The system calculates:  Reserved places: Total number of payments made for this tour (count all payments, not unique payers) Places left: Fixed available places minus reserved places
+
+Type 3 - Global Stats (Passive Mode):
+No project/tour selection
+Show global totals:
+Total students registered (all existing student users)
+Total teachers registered (all existing teacher profiles)
+
+This is a passive mode that doesn't require project/tour selection. It displays platform-wide statistics:  Total students: Count of all existing student user accounts across the entire platform Total teachers: Count of all existing teacher profiles across the entire platform  These are global numbers that give an overview of the platform's total user base.
+
+Design Structure:
+Change from current single sentence + number format to:
+Main title (current sentence stays)
+Small descriptive text above each number
+Number below each description
+
+**Repository:** /Users/user/Documents/kings/kings-international
+**Owner/Org:** Kings-Int
+**Repo Name:** kings-international
+
+Your job is to analyze this task and create a detailed feature specification. DO NOT include any code implementation.
+
+Please provide:
+
+1. **Feature Overview** (2-3 sentences)
+   - What needs to be built
+   - Why it's needed
+   - Expected outcome
+
+2. **Files to Modify** (CRITICAL - Be Specific)
+   List exact file paths that need to be created or modified:
+   - `path/to/file.js` - What changes are needed
+   - `path/to/another.js` - What changes are needed
+   - Include both new files and existing files to modify
+   - Use relative paths from repository root
+
+3. **Technical Approach** (4-6 bullet points)
+   - High-level architecture decisions
+   - Which parts of the codebase will be affected
+   - Any dependencies or prerequisites
+   - Potential challenges
+
+4. **Implementation Steps** (numbered list)
+   - Break down into logical steps
+   - Reference specific files from "Files to Modify" section
+   - Order of implementation
+
+5. **Testing Strategy** (3-4 bullet points)
+   - What should be tested
+   - Types of tests needed
+   - Edge cases to consider
+   - Which test files to create/modify
+
+6. **Acceptance Criteria** (checklist)
+   - Specific requirements that must be met
+   - Definition of done
+   - How to verify the feature works
+
+Format your response in clear Markdown. Be specific about file paths and changes. Focus on WHAT and WHY, not HOW (no code).

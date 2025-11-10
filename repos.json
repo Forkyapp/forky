@@ -1,6 +1,12 @@
 {
-  "default": "collabifi-back",
+  "default": "kings-international",
   "repositories": {
+    "kings-international": {
+      "owner": "Kings-Int",
+      "repo": "kings-international",
+      "path": "/Users/user/Documents/kings/kings-international",
+      "baseBranch": "main"
+    },
     "collabifi-back": {
       "owner": "collabifiapp",
       "repo": "collabifi-back",

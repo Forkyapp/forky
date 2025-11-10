@@ -1,3 +1,15 @@
+// Unset any system environment variables that might override .env file
+delete process.env.CLICKUP_WORKSPACE_ID;
+delete process.env.CLICKUP_API_KEY;
+delete process.env.CLICKUP_SECRET;
+delete process.env.CLICKUP_BOT_USER_ID;
+delete process.env.GITHUB_OWNER;
+delete process.env.GITHUB_REPO;
+delete process.env.GITHUB_BASE_BRANCH;
+delete process.env.GITHUB_REPO_PATH;
+delete process.env.GITHUB_TOKEN;
+delete process.env.GITHUB_DEFAULT_USERNAME;
+
 require('dotenv').config();
 
 const config = require('./lib/config');
@@ -67,14 +79,26 @@ async function checkTaskCommands() {
 
 async function pollAndProcess() {
   try {
+    console.log(jarvis.divider());
+    console.log(jarvis.info(`🔄 Polling for tasks... (${new Date().toLocaleTimeString()})`));
+
     // First, check for command comments
     await checkTaskCommands();
 
     // Then process new tasks
     const tasks = await clickup.getAssignedTasks();
 
+    if (tasks.length === 0) {
+      console.log(jarvis.info('No tasks with "bot in progress" status found'));
+    } else {
+      console.log(jarvis.success(`Found ${colors.bright}${tasks.length}${colors.reset} task(s) to process`));
+    }
+
     for (const task of tasks) {
-      if (storage.cache.has(task.id)) continue;
+      if (storage.cache.has(task.id)) {
+        console.log(jarvis.info(`Skipping task ${colors.bright}${task.id}${colors.reset} - already in cache`));
+        continue;
+      }
 
       console.log(`\n${colors.bright}${colors.green}🎯 ${task.id}${colors.reset} • ${task.name}`);
       storage.cache.add(task);
@@ -93,6 +117,9 @@ async function pollAndProcess() {
 
   } catch (error) {
     console.log(jarvis.error(`Polling error: ${error.message}`));
+    if (error.stack) {
+      console.log(jarvis.error(`Stack trace: ${error.stack}`));
+    }
   }
 }
 
@@ -105,6 +132,14 @@ if (require.main === module) {
   console.clear();
   console.log('\n' + jarvis.header('J.A.R.V.I.S'));
   console.log(jarvis.ai('Autonomous Task System'));
+  console.log(jarvis.divider());
+
+  // Show configuration
+  console.log(jarvis.info('Configuration:'));
+  console.log(jarvis.info(`  ClickUp Workspace ID: ${colors.bright}${config.clickup.workspaceId}${colors.reset}`));
+  console.log(jarvis.info(`  GitHub Repo: ${colors.bright}${config.github.owner}/${config.github.repo}${colors.reset}`));
+  console.log(jarvis.info(`  GitHub Repo Path: ${colors.bright}${config.github.repoPath}${colors.reset}`));
+  console.log(jarvis.info(`  Poll Interval: ${colors.bright}${config.system.pollIntervalMs / 1000}s${colors.reset}`));
   console.log(jarvis.divider());
 
   if (!config.github.repoPath || !require('fs').existsSync(config.github.repoPath)) {
