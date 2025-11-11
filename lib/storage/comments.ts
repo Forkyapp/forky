@@ -1,7 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 
-const processedCommentsFile = path.join(__dirname, '..', '..', 'processed-comments.json');
+const processedCommentsFile = path.join(__dirname, '..', '..', 'data', 'cache', 'processed-comments.json');
 let processedCommentsSet = new Set<string>();
 
 export const processedComments = {

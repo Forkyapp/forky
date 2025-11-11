@@ -42,16 +42,27 @@ export const DEFAULT_CONFIG = {
 
 // File paths (relative to project root)
 export const FILE_PATHS = {
-  CACHE: 'processed-tasks.json',
-  QUEUE: 'task-queue.json',
-  PR_TRACKING: 'pr-tracking.json',
-  PIPELINE: 'pipeline-state.json',
-  REVIEW_TRACKING: 'review-tracking.json',
-  PROCESSED_COMMENTS: 'processed-comments.json',
+  // Cache files
+  CACHE: 'data/cache/processed-tasks.json',
+  PROCESSED_COMMENTS: 'data/cache/processed-comments.json',
+
+  // State files
+  QUEUE: 'data/state/task-queue.json',
+  PIPELINE: 'data/state/pipeline-state.json',
+
+  // Tracking files
+  PR_TRACKING: 'data/tracking/pr-tracking.json',
+  REVIEW_TRACKING: 'data/tracking/review-tracking.json',
+
+  // Directories
   FEATURES_DIR: 'docs/features',
   LOGS_DIR: 'logs',
   PROGRESS_DIR: 'progress',
-  REPOS_CONFIG: 'repos.json',
+  DATA_DIR: 'data',
+
+  // Configuration (workspace-based)
+  PROJECTS_CONFIG: 'projects.json',
+  WORKSPACE_CONFIG: 'workspace.json',
 } as const;
 
 // CLI command names

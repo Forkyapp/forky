@@ -11,7 +11,7 @@ const execAsync = promisify(exec);
 
 let reviewTrackingData: ReviewEntry[] = [];
 
-const reviewTrackingFile = path.join(__dirname, '..', '..', 'review-tracking.json');
+const reviewTrackingFile = path.join(__dirname, '..', '..', 'data', 'tracking', 'review-tracking.json');
 
 export const reviewTracking = {
   load(): ReviewEntry[] {

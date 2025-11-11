@@ -92,26 +92,80 @@ Before you begin, ensure you have:
 
 ## Setup
 
-### 1. Configure Environment
+### 1. Configure Global Credentials
 
-Create a `.env` file in the project root (copy from `.env.example`):
+Create a `.env` file with your API credentials (copy from `.env.example`):
 
 ```bash
-# Required - already configured
+# Global credentials (used for all projects)
 CLICKUP_API_KEY=your_key
 CLICKUP_BOT_USER_ID=your_id
-CLICKUP_WORKSPACE_ID=your_workspace
 GITHUB_TOKEN=your_token
-GITHUB_OWNER=your_username
-GITHUB_REPO=your_repo
-GITHUB_REPO_PATH=/full/path/to/your/repo
 
-# Optional - auto-detected if not set
+# Optional system settings
 CLAUDE_CLI_PATH=/Users/user/.local/bin/claude
-POLL_INTERVAL_MS=60000
+POLL_INTERVAL_MS=15000
 ```
 
-### 2. Verify Claude Code CLI
+### 2. Configure Your Projects
+
+Create `projects.json` with your project configurations:
+
+```bash
+cp projects.json.example projects.json
+# Edit with your projects
+```
+
+Example:
+
+```json
+{
+  "projects": {
+    "my-project": {
+      "name": "My Project",
+      "description": "Main production project",
+      "clickup": {
+        "workspaceId": "your_workspace_id"
+      },
+      "github": {
+        "owner": "your_username",
+        "repo": "your_repo",
+        "path": "/full/path/to/your/repo",
+        "baseBranch": "main"
+      }
+    }
+  }
+}
+```
+
+### 3. Set Active Project
+
+```bash
+npm run switch my-project
+```
+
+This creates `workspace.json` which tracks your currently active project.
+
+**That's it!** No more editing `.env` to switch projects. Just use `npm run switch <project-name>`.
+
+## Project Management
+
+Switch between projects instantly without editing configuration files:
+
+```bash
+# List all projects
+npm run projects
+
+# Switch to a project
+npm run switch my-project
+
+# Show current active project
+npm run current
+```
+
+See the [Project Management Guide](docs/PROJECT_MANAGEMENT.md) for detailed information.
+
+## Verify Claude Code CLI
 
 ```bash
 which claude
@@ -177,6 +231,122 @@ You should see:
    - Implement the feature interactively
    - You can see progress and respond if needed
    - PR will be created automatically when done
+
+## Local Storage & Data Management
+
+Forky uses JSON files as a lightweight local database to persist state across runs. All runtime data is organized in the `data/` directory with a clear structure.
+
+### Directory Structure
+
+```
+data/
+├── cache/              # Deduplication and processed item caches
+│   ├── processed-tasks.json
+│   └── processed-comments.json
+│
+├── state/              # Application state and queues
+│   ├── task-queue.json
+│   └── pipeline-state.json
+│
+└── tracking/           # Progress and status tracking
+    ├── pr-tracking.json
+    └── review-tracking.json
+```
+
+### Storage Files Overview
+
+All files in `data/` are automatically excluded from version control:
+
+| File | Purpose | Structure |
+|------|---------|-----------|
+| **cache/processed-tasks.json** | Cache of detected tasks to prevent duplicates | Array of task objects |
+| **cache/processed-comments.json** | Deduplication cache for PR comments | Array of comment IDs |
+| **state/task-queue.json** | Queue of pending and completed tasks | Object with `pending` and `completed` arrays |
+| **state/pipeline-state.json** | Pipeline execution state and stage tracking | Object mapping task IDs to pipeline data |
+| **tracking/pr-tracking.json** | Tracks PR creation status for tasks | Array of tracking entries |
+| **tracking/review-tracking.json** | Manages PR review cycles and iterations | Array of review entries |
+
+### Configuration Files
+
+Kept in project root:
+
+| File | Purpose | Version Control |
+|------|---------|-----------------|
+| **repos.json** | Repository configurations (paths, owners, branches) | Ignored (contains sensitive paths) |
+| **repos.json.example** | Template for repos.json | Tracked |
+
+### Runtime Directories
+
+Also excluded from version control:
+
+- **progress/** - Real-time progress tracking for AI agent execution
+- **logs/** - Application logs and debug information
+- **docs/** - Auto-generated feature documentation
+
+### First-Time Setup
+
+1. **Initialize data files** (copy from .example templates):
+   ```bash
+   # From project root
+   cp data/cache/processed-tasks.json.example data/cache/processed-tasks.json
+   cp data/cache/processed-comments.json.example data/cache/processed-comments.json
+   cp data/state/task-queue.json.example data/state/task-queue.json
+   cp data/state/pipeline-state.json.example data/state/pipeline-state.json
+   cp data/tracking/pr-tracking.json.example data/tracking/pr-tracking.json
+   cp data/tracking/review-tracking.json.example data/tracking/review-tracking.json
+   ```
+
+2. **Configure repositories** (required):
+   ```bash
+   cp repos.json.example repos.json
+   # Edit repos.json with your repository details
+   ```
+
+Alternatively, use this one-liner:
+```bash
+for f in data/cache/*.example data/state/*.example data/tracking/*.example; do cp "$f" "${f%.example}"; done
+```
+
+### Storage Architecture
+
+**Repository Pattern:**
+- **Location:** `src/core/repositories/` and `lib/storage/`
+- **Pattern:** Load → Modify → Save (atomic file replacement)
+- **I/O:** Synchronous file operations for simplicity
+- **Format:** Pretty-printed JSON (2-space indentation)
+- **Error Handling:** Custom error classes with context
+- **Type Safety:** Full TypeScript types in `lib/types/storage.types.ts`
+
+### Backup & Restore
+
+**Backup all state:**
+```bash
+tar -czf forky-backup-$(date +%Y%m%d).tar.gz data/
+```
+
+**Restore from backup:**
+```bash
+tar -xzf forky-backup-YYYYMMDD.tar.gz
+```
+
+**Reset to clean state:**
+```bash
+# Remove all data files
+rm -f data/cache/*.json data/state/*.json data/tracking/*.json
+
+# Reinitialize from templates
+for f in data/cache/*.example data/state/*.example data/tracking/*.example; do
+  cp "$f" "${f%.example}"
+done
+```
+
+### Important Notes
+
+- **Organized structure** - Clear separation: cache, state, and tracking
+- **Not committed** - All `data/` contents ignored, only `.gitkeep` and `.example` files tracked
+- **Auto-initialization** - Missing files are created automatically on first run
+- **Configuration separate** - `repos.json` stays in root as it's config, not runtime state
+- **Safe to delete** - You can always restore from `.example` templates
 
 ## How Tasks are Processed
 

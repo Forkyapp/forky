@@ -1,6 +1,7 @@
 /**
  * Config Repository
- * Manages repository configuration file (repos.json)
+ * @deprecated This module managed repos.json which is now deprecated.
+ * Use workspace.ts (projects.json + workspace.json) instead.
  */
 
 import fs from 'fs';

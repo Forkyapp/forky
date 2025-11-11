@@ -34,13 +34,14 @@ coverage/
 *.log
 logs/
 
-# Runtime data files
-processed-tasks.json
-task-queue.json
-pr-tracking.json
-processed-comments.json
-review-tracking.json
-pipeline-state.json
+# Runtime data directory (local storage/database)
+data/cache/*.json
+data/state/*.json
+data/tracking/*.json
+
+# Runtime directories
+progress/
+docs/
 
 # Temporary files
 temp-prompt-*.txt
@@ -48,8 +49,10 @@ task-*-prompt.txt
 task-*-launch.sh
 *.tmp
 
-# Configuration files with credentials
+# Configuration files with credentials and paths
 repos.json
+projects.json
+workspace.json
 
 # Old folders
 local/

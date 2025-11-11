@@ -7,6 +7,7 @@ import { forky, colors } from './lib/ui';
 import * as storage from './lib/storage';
 import * as codex from './lib/codex';
 import { RepositoryConfig, resolveRepoConfig } from './lib/config';
+import { workspace } from './lib/workspace';
 
 // ============================================
 // INTERFACES
@@ -58,17 +59,17 @@ async function retryCodexReview(taskId: string): Promise<void> {
   const branch = implementingStage.branch || `task-${taskId}`;
   console.log(forky.info(`Branch: ${branch}`));
 
-  // Detect repository from task metadata or use default
-  const repoName = pipelineState.metadata?.repository;
-  let repoConfig: RepositoryConfig;
-
-  if (repoName && repoName !== 'default') {
-    console.log(forky.info(`Repository: ${colors.bright}${repoName}${colors.reset}`));
-    repoConfig = resolveRepoConfig(repoName);
-  } else {
-    console.log(forky.info(`Repository: ${colors.bright}default${colors.reset}`));
-    repoConfig = resolveRepoConfig(null);
+  // Get repository configuration from active workspace
+  const activeProject = workspace.getActiveProject();
+  if (!activeProject) {
+    console.log(forky.error('No active project configured. Run: npm run switch <project>'));
+    process.exit(1);
   }
+
+  console.log(forky.info(`Project: ${colors.bright}${activeProject.name}${colors.reset}`));
+  console.log(forky.info(`Repository: ${activeProject.github.owner}/${activeProject.github.repo}`));
+
+  const repoConfig: RepositoryConfig = resolveRepoConfig();
 
   // Create minimal task object for codex.reviewClaudeChanges
   const task: ClickUpTask = {

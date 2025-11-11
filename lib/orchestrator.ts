@@ -78,20 +78,13 @@ export async function processTask(task: ClickUpTask): Promise<ProcessTaskResult>
 
   let repoConfig: RepositoryConfig;
   try {
-    // Ensure repository exists (auto-create if needed)
-    if (repoName) {
-      console.log(forky.info(`Repository: ${colors.bright}${repoName}${colors.reset}`));
-      repoConfig = await repoManager.ensureRepository(repoName, {
-        autoCreate: config.autoRepo.enabled,
-        isPrivate: config.autoRepo.isPrivate,
-        baseDir: config.autoRepo.baseDir,
-        baseBranch: config.autoRepo.defaultBranch
-      });
-      console.log(forky.success(`Using repository: ${repoConfig.owner}/${repoConfig.repo}`));
-    } else {
-      console.log(forky.info(`Repository: ${colors.bright}default${colors.reset}`));
-      repoConfig = resolveRepoConfig(null);
-      console.log(forky.info(`Using default: ${repoConfig.owner}/${repoConfig.repo}`));
+    // Use active workspace project configuration
+    repoConfig = resolveRepoConfig();
+    console.log(forky.info(`Using repository: ${repoConfig.owner}/${repoConfig.repo}`));
+
+    if (repoName && repoName !== repoConfig.repo) {
+      console.log(forky.warning(`Task specifies repo "${repoName}" but active project is "${repoConfig.repo}"`));
+      console.log(forky.info('Using active project from workspace.json'));
     }
   } catch (error) {
     const err = error as Error;

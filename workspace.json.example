@@ -1,0 +1,4 @@
+{
+  "active": "main-project",
+  "comment": "This file tracks your currently active project. Change 'active' to switch projects. Use 'npm run switch <project-name>' for convenience."
+}

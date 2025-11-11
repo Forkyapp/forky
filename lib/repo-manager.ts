@@ -1,8 +1,14 @@
+/**
+ * @deprecated This module is deprecated in favor of workspace-based project management.
+ * Use projects.json + workspace.json instead.
+ * Auto-repository creation is no longer supported.
+ */
+
 import fs from 'fs';
 import path from 'path';
 import { promisify } from 'util';
 import { exec } from 'child_process';
-import config, { RepositoryConfig, resolveRepoConfig } from './config';
+import { RepositoryConfig, resolveRepoConfig } from './config';
 import { forky, colors } from './ui';
 
 const execAsync = promisify(exec);
@@ -23,12 +29,10 @@ interface EnsureRepoOptions {
 }
 
 /**
- * Check if repository exists in repos.json
- * @param repoName - Repository name
- * @returns True if exists
+ * @deprecated No longer used with workspace system
  */
 function repositoryExists(repoName: string): boolean {
-  return config.repos.repositories[repoName] !== undefined;
+  return false; // Always return false, repos.json no longer used
 }
 
 /**
@@ -166,8 +170,7 @@ async function addToReposConfig(repoName: string, repoConfig: RepositoryConfig):
 
     console.log(forky.success(`Added ${colors.bright}${repoName}${colors.reset} to repos.json`));
 
-    // Reload config in memory
-    config.repos.repositories[repoName] = repoConfig;
+    // Note: repos.json is deprecated, this no longer updates config
   } catch (error) {
     console.log(forky.error(`Failed to update repos.json: ${(error as Error).message}`));
     throw error;
