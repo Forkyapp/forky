@@ -2,7 +2,7 @@ import fs from 'fs';
 import path from 'path';
 import { exec } from 'child_process';
 import { promisify } from 'util';
-import config, { resolveRepoConfig } from '../config';
+import { resolveRepoConfig } from '../config';
 import { forky, colors } from '../ui';
 import type { TaskData, ReviewEntry, PRFoundInfo, CommitCheckResult } from '../types';
 import { pipeline } from './pipeline';

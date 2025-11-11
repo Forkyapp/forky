@@ -31,7 +31,7 @@ interface EnsureRepoOptions {
 /**
  * @deprecated No longer used with workspace system
  */
-function repositoryExists(repoName: string): boolean {
+function repositoryExists(_repoName: string): boolean {
   return false; // Always return false, repos.json no longer used
 }
 

@@ -2,7 +2,7 @@ import fs from 'fs';
 import path from 'path';
 import { promisify } from 'util';
 import { exec } from 'child_process';
-import config, { RepositoryConfig } from './config';
+import config from './config';
 import { forky, colors } from './ui';
 import * as clickup from './clickup';
 import * as storage from './storage';

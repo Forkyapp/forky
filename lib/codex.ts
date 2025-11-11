@@ -2,7 +2,7 @@ import fs from 'fs';
 import path from 'path';
 import { promisify } from 'util';
 import { exec, spawn, ChildProcess } from 'child_process';
-import config, { RepositoryConfig } from './config';
+import config from './config';
 import { forky, colors } from './ui';
 import { loadSmartContext } from './smart-context-loader';
 import * as clickup from './clickup';

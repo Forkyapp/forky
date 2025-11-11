@@ -4,7 +4,7 @@ import * as storage from './storage';
 import * as gemini from './gemini';
 import * as claude from './claude';
 import * as codex from './codex';
-import config, { RepositoryConfig, resolveRepoConfig } from './config';
+import { RepositoryConfig, resolveRepoConfig } from './config';
 import * as clickup from './clickup';
 import type { ClickUpTask } from './clickup';
 
@@ -330,14 +330,13 @@ export async function rerunCodexReview(taskId: string): Promise<RerunResult> {
 
   // Detect repository from task metadata or use default
   const repoName = pipelineState.metadata?.repository;
-  let repoConfig: RepositoryConfig;
 
   if (repoName && repoName !== 'default') {
     console.log(forky.info(`Repository: ${colors.bright}${repoName}${colors.reset}`));
   } else {
     console.log(forky.info(`Repository: ${colors.bright}default${colors.reset}`));
   }
-  repoConfig = resolveRepoConfig();
+  const repoConfig: RepositoryConfig = resolveRepoConfig();
 
   // Create minimal task object
   const task: ClickUpTask = {
@@ -407,14 +406,13 @@ export async function rerunClaudeFixes(taskId: string): Promise<RerunResult> {
 
   // Detect repository from task metadata or use default
   const repoName = pipelineState.metadata?.repository;
-  let repoConfig: RepositoryConfig;
 
   if (repoName && repoName !== 'default') {
     console.log(forky.info(`Repository: ${colors.bright}${repoName}${colors.reset}`));
   } else {
     console.log(forky.info(`Repository: ${colors.bright}default${colors.reset}`));
   }
-  repoConfig = resolveRepoConfig();
+  const repoConfig: RepositoryConfig = resolveRepoConfig();
 
   // Create minimal task object
   const task: ClickUpTask = {
