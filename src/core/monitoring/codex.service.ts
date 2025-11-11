@@ -2,22 +2,22 @@ import fs from 'fs';
 import path from 'path';
 import { promisify } from 'util';
 import { exec, spawn, ChildProcess } from 'child_process';
-import config from './config';
-import { forky, colors } from './ui';
-import { loadSmartContext } from './smart-context-loader';
-import * as clickup from './clickup';
-import * as storage from './storage';
+import config from '../../shared/config';
+import { forky, colors } from '../../shared/ui';
+import { loadSmartContext } from '../context/smart-context-loader.service';
+import * as clickup from '../../../lib/clickup';
+import * as storage from '../../../lib/storage';
+import type { ClickUpTask } from '../../../src/types/clickup';
 import type {
-  ClickUpTask,
   ExecWithPTYOptions,
-  ExecResult,
   LaunchOptions,
   ReviewOptions,
   LaunchResult,
   ReviewResult,
   Settings,
   ErrorWithCode
-} from './types';
+} from '../../../src/types/ai';
+import type { ExecResult } from '../../../src/types/common';
 
 const execAsync = promisify(exec);
 

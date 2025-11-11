@@ -2,9 +2,9 @@ import fs from 'fs';
 import path from 'path';
 import { exec } from 'child_process';
 import { promisify } from 'util';
-import { resolveRepoConfig } from '../config';
-import { forky, colors } from '../ui';
-import type { TaskData, ReviewEntry, PRFoundInfo, CommitCheckResult } from '../types';
+import { resolveRepoConfig } from '../../src/shared/config';
+import { forky, colors } from '../../src/shared/ui';
+import type { TaskData, ReviewEntry, PRFoundInfo, CommitCheckResult } from '../../src/types/storage';
 import { pipeline } from './pipeline';
 
 const execAsync = promisify(exec);
@@ -48,7 +48,7 @@ export const reviewTracking = {
 
     const reviewEntry: ReviewEntry = {
       taskId: task.id,
-      taskName: task.name || task.title || '',
+      taskName: task.name || task.name || '',
       branch: prInfo.branch || `task-${task.id}`,
       prNumber: prInfo.prNumber || 0,
       prUrl: prInfo.prUrl || '',

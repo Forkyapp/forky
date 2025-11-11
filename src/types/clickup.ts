@@ -50,3 +50,8 @@ export interface ClickUpTaskData {
   readonly text_content?: string;
   readonly url?: string;
 }
+
+// Backwards compatibility aliases
+export type CommentResponse = ClickUpCommentResponse;
+export type Command = ClickUpCommand;
+export type Comment = ClickUpComment;

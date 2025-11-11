@@ -8,7 +8,7 @@
 import fs from 'fs';
 import path from 'path';
 import crypto from 'crypto';
-import { workspace } from './workspace';
+import { workspace } from '../workspace/workspace.service';
 
 interface SmartContextOptions {
   model: 'claude' | 'gemini' | 'codex';

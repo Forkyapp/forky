@@ -27,10 +27,10 @@ jest.mock('child_process', () => ({
 
 import * as fs from 'fs';
 import axios from 'axios';
-import config from './lib/config';
+import config from './src/shared/config';
 import { cache, queue, tracking } from './lib/storage';
 import { getAssignedTasks, updateStatus, addComment, parseCommand, detectRepository } from './lib/clickup';
-import { ensureClaudeSettings } from './lib/claude';
+import { ensureClaudeSettings } from './src/core/ai-services/claude.service';
 import { pollAndProcess } from './forky';
 
 // Restore environment variables after config module deletes them

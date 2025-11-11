@@ -1,9 +1,9 @@
 import fs from 'fs';
 import { exec } from 'child_process';
 import { promisify } from 'util';
-import config from '../config';
-import { forky, colors } from '../ui';
-import type { TaskData, TrackingEntry, PRCheckResult, PRFoundInfo } from '../types';
+import config from '../../src/shared/config';
+import { forky, colors } from '../../src/shared/ui';
+import type { TaskData, TrackingEntry, PRCheckResult, PRFoundInfo } from '../../src/types/storage';
 
 const execAsync = promisify(exec);
 
@@ -36,7 +36,7 @@ export const tracking = {
   start(task: TaskData): void {
     const trackingEntry: TrackingEntry = {
       taskId: task.id,
-      taskName: task.name || task.title || '',
+      taskName: task.name || task.name || '',
       branch: `task-${task.id}`,
       startedAt: new Date().toISOString(),
       owner: config.github.owner,

@@ -1,10 +1,10 @@
 import path from 'path';
 import dotenv from 'dotenv';
-import { workspace as workspaceManager } from './workspace';
-import type { ProjectConfig } from './workspace';
+import { workspace as workspaceManager } from '../../core/workspace/workspace.service';
+import type { ProjectConfig } from '../../core/workspace/workspace.service';
 
 // Load .env file for global credentials
-dotenv.config({ path: path.join(__dirname, '..', '.env') });
+dotenv.config({ path: path.join(__dirname, '..', '..', '..', '.env') });
 
 interface RepositoryConfig {
   owner: string;
@@ -81,11 +81,11 @@ const config: Config = {
     defaultBranch: process.env.AUTO_REPO_DEFAULT_BRANCH || 'main'
   },
   files: {
-    cacheFile: path.join(__dirname, '..', 'data', 'cache', 'processed-tasks.json'),
-    queueFile: path.join(__dirname, '..', 'data', 'state', 'task-queue.json'),
-    prTrackingFile: path.join(__dirname, '..', 'data', 'tracking', 'pr-tracking.json'),
-    pipelineFile: path.join(__dirname, '..', 'data', 'state', 'pipeline-state.json'),
-    featuresDir: path.join(__dirname, '..', 'docs', 'features'),
+    cacheFile: path.join(__dirname, '..', '..', '..', 'data', 'cache', 'processed-tasks.json'),
+    queueFile: path.join(__dirname, '..', '..', '..', 'data', 'state', 'task-queue.json'),
+    prTrackingFile: path.join(__dirname, '..', '..', '..', 'data', 'tracking', 'pr-tracking.json'),
+    pipelineFile: path.join(__dirname, '..', '..', '..', 'data', 'state', 'pipeline-state.json'),
+    featuresDir: path.join(__dirname, '..', '..', '..', 'docs', 'features'),
   },
   prTracking: {
     checkIntervalMs: 30000,

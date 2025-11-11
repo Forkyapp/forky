@@ -1,6 +1,6 @@
 import fs from 'fs';
 import path from 'path';
-import { workspace } from './workspace';
+import { workspace } from '../workspace/workspace.service';
 
 interface ContextOptions {
   model: 'claude' | 'gemini' | 'codex';

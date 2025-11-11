@@ -3,11 +3,11 @@
 import dotenv from 'dotenv';
 dotenv.config();
 
-import { forky, colors } from './lib/ui';
+import { forky, colors } from './src/shared/ui';
 import * as storage from './lib/storage';
-import * as codex from './lib/codex';
-import { RepositoryConfig, resolveRepoConfig } from './lib/config';
-import { workspace } from './lib/workspace';
+import * as codex from './src/core/monitoring/codex.service';
+import { RepositoryConfig, resolveRepoConfig } from './src/shared/config';
+import { workspace } from './src/core/workspace/workspace.service';
 
 // ============================================
 // INTERFACES

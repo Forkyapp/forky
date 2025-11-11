@@ -1,12 +1,12 @@
 import path from 'path';
-import { forky, colors } from './ui';
-import * as storage from './storage';
-import * as gemini from './gemini';
-import * as claude from './claude';
-import * as codex from './codex';
-import { RepositoryConfig, resolveRepoConfig } from './config';
-import * as clickup from './clickup';
-import type { ClickUpTask } from './clickup';
+import { forky, colors } from '../../shared/ui';
+import * as storage from '../../../lib/storage';
+import * as gemini from '../ai-services/gemini.service';
+import * as claude from '../ai-services/claude.service';
+import * as codex from '../monitoring/codex.service';
+import { RepositoryConfig, resolveRepoConfig } from '../../shared/config';
+import * as clickup from '../../../lib/clickup';
+import type { ClickUpTask } from '../../../lib/clickup';
 
 // ============================================
 // INTERFACES

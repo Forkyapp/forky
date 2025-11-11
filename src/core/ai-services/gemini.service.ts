@@ -2,11 +2,13 @@ import fs from 'fs';
 import path from 'path';
 import { promisify } from 'util';
 import { exec } from 'child_process';
-import config, { RepositoryConfig } from './config';
-import { forky, colors } from './ui';
-import { withRetry, RetryOptions } from './retry';
-import { loadSmartContext } from './smart-context-loader';
-import type { ClickUpTask, AnalysisResult, FeatureSpec, Progress, ExecResult } from './types';
+import config, { RepositoryConfig } from '../../shared/config';
+import { forky, colors } from '../../shared/ui';
+import { withRetry, RetryOptions } from '../../shared/utils/retry.util';
+import { loadSmartContext } from '../context/smart-context-loader.service';
+import type { ClickUpTask } from '../../../src/types/clickup';
+import type { AnalysisResult, FeatureSpec, Progress } from '../../../src/types/ai';
+import type { ExecResult } from '../../../src/types/common';
 
 const execAsync = promisify(exec);
 

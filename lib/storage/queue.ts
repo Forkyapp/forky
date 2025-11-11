@@ -1,7 +1,7 @@
 import fs from 'fs';
-import config from '../config';
-import { forky, colors } from '../ui';
-import type { TaskData, QueueData, QueuedTask } from '../types';
+import config from '../../src/shared/config';
+import { forky, colors } from '../../src/shared/ui';
+import type { TaskData, QueueData, QueuedTask } from '../../src/types/storage';
 
 const FILES = {
   queue: config.files.queueFile
@@ -29,7 +29,7 @@ export const queue = {
 
   async add(task: TaskData): Promise<{ alreadyQueued?: boolean; success?: boolean }> {
     const taskId = task.id;
-    const taskTitle = task.name || task.title || '';
+    const taskTitle = task.name || task.name || '';
     const taskDescription = task.description || task.text_content || 'No description provided';
 
     const queueData = this.load();

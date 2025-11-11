@@ -1,17 +1,25 @@
 import axios, { AxiosError } from 'axios';
-import config from './config';
-import { forky, colors } from './ui';
-import type { ClickUpTask, CommentResponse, Command, Comment } from './types';
+import config from '../src/shared/config';
+import { forky, colors } from '../src/shared/ui';
+import type { ClickUpTask, CommentResponse, Command, Comment } from '../src/types';
 
 async function getAssignedTasks(): Promise<ClickUpTask[]> {
   try {
-    // MANUAL MODE: Fetch specific task by ID
-    const TASK_ID = '869ajuxp3';
-    console.log(forky.info(`[MANUAL MODE] Fetching specific task: ${colors.bright}${TASK_ID}${colors.reset}`));
+    if (!config.clickup.workspaceId) {
+      console.log(forky.error('No workspace ID configured'));
+      return [];
+    }
 
-    const response = await axios.get<ClickUpTask>(
-      `https://api.clickup.com/api/v2/task/${TASK_ID}`,
+    // Fetch tasks from the workspace with status "bot in progress"
+    const response = await axios.get<{ tasks: ClickUpTask[] }>(
+      `https://api.clickup.com/api/v2/team/${config.clickup.workspaceId}/task`,
       {
+        params: {
+          assignees: [config.clickup.botUserId],
+          statuses: ['bot in progress'],
+          subtasks: true,
+          include_closed: false
+        },
         headers: {
           'Authorization': config.clickup.apiKey,
           'Content-Type': 'application/json'
@@ -19,15 +27,19 @@ async function getAssignedTasks(): Promise<ClickUpTask[]> {
       }
     );
 
-    const task = response.data;
-    console.log(forky.success(`Task found: "${task.name}"`));
-    console.log(forky.info(`Status: ${colors.bright}${task.status?.status || 'unknown'}${colors.reset}`));
+    const tasks = response.data.tasks || [];
 
-    // Return as array with single task
-    return [task];
+    if (tasks.length > 0) {
+      console.log(forky.success(`Found ${colors.bright}${tasks.length}${colors.reset} task(s) with "bot in progress" status`));
+      tasks.forEach(task => {
+        console.log(forky.info(`  ${colors.bright}${task.id}${colors.reset} - ${task.name}`));
+      });
+    }
+
+    return tasks;
   } catch (error) {
     const axiosError = error as AxiosError;
-    console.log(forky.error(`Failed to fetch task: ${axiosError.message}`));
+    console.log(forky.error(`Failed to fetch tasks: ${axiosError.message}`));
     if (axiosError.response) {
       console.log(forky.error(`Status code: ${axiosError.response.status}`));
       console.log(forky.error(`Response data: ${JSON.stringify(axiosError.response.data, null, 2)}`));

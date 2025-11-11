@@ -16,12 +16,12 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 import fs from 'fs';
-import config from './lib/config';
-import { forky, colors } from './lib/ui';
+import config from './src/shared/config';
+import { forky, colors } from './src/shared/ui';
 import * as storage from './lib/storage';
 import * as clickup from './lib/clickup';
-import * as claude from './lib/claude';
-import * as orchestrator from './lib/orchestrator';
+import * as claude from './src/core/ai-services/claude.service';
+import * as orchestrator from './src/core/orchestrator/orchestrator.service';
 
 // ============================================
 // INTERFACES
@@ -212,5 +212,5 @@ export {
 // Re-export from modules for backward compatibility with tests
 export { cache, queue, tracking, reviewTracking, pipeline, processedComments } from './lib/storage';
 export { getAssignedTasks, updateStatus, addComment, getTaskComments, detectRepository, parseCommand } from './lib/clickup';
-export { ensureClaudeSettings, launchClaude, fixTodoComments } from './lib/claude';
-export { default as config } from './lib/config';
+export { ensureClaudeSettings, launchClaude, fixTodoComments } from './src/core/ai-services/claude.service';
+export { default as config } from './src/shared/config';

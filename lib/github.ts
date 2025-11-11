@@ -1,6 +1,6 @@
 import axios, { AxiosInstance, AxiosError } from 'axios';
-import config from './config';
-import { withRetry } from './retry';
+import config from '../src/shared/config';
+import { withRetry } from '../src/shared/utils/retry.util';
 
 interface BranchResult {
   branch: string;

@@ -104,3 +104,29 @@ export interface CodexLaunchResult {
   readonly branch?: string;
   readonly error?: string;
 }
+
+// Execution types
+export interface ExecWithPTYOptions {
+  cwd?: string;
+  env?: Record<string, string>;
+  timeout?: number;
+  stdinFile?: string;
+}
+
+export interface ErrorWithCode extends Error {
+  code?: string | number;
+  stdout?: string;
+  stderr?: string;
+}
+
+// Backwards compatibility aliases
+export type Settings = ClaudeSettings;
+export type LaunchOptions = ClaudeLaunchOptions;
+export type LaunchResult = ClaudeLaunchResult;
+export type FixTodoOptions = ClaudeFixTodoOptions;
+export type FixTodoResult = ClaudeFixTodoResult;
+export type AnalysisResult = GeminiAnalysisResult;
+export type FeatureSpec = GeminiFeatureSpec;
+export type Progress = AIProgress;
+export type ReviewOptions = CodexReviewOptions;
+export type ReviewResult = CodexReviewResult;

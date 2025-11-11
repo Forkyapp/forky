@@ -3,6 +3,17 @@
  * Types for data persistence and pipeline state tracking
  */
 
+import type { ClickUpTask } from './clickup';
+import type { GitHubPRCheckResult, GitHubPRFoundInfo, GitHubCommitCheckResult } from './github';
+import type { RepositoryConfig } from './config';
+
+// Type aliases for backwards compatibility
+export type TaskData = ClickUpTask;
+export type PRCheckResult = GitHubPRCheckResult;
+export type PRFoundInfo = GitHubPRFoundInfo;
+export type CommitCheckResult = GitHubCommitCheckResult;
+export type RepoConfig = RepositoryConfig;
+
 // Cache types
 export interface ProcessedTask {
   readonly id: string;
@@ -48,11 +59,11 @@ export interface ReviewEntry {
   readonly branch: string;
   readonly prNumber: number;
   readonly prUrl: string;
-  readonly stage: string;
-  readonly iteration: number;
+  stage: string;
+  iteration: number;
   readonly maxIterations: number;
   readonly startedAt: string;
-  readonly lastCommitSha: string | null;
+  lastCommitSha: string | null;
   readonly repository?: string;
   readonly owner?: string;
   readonly repo?: string;
@@ -82,27 +93,27 @@ export interface StageEntry {
   readonly name: string;
   readonly stage: string;
   status: PipelineStatus;
-  readonly startedAt: string;
+  startedAt: string;
   completedAt?: string;
   duration?: number;
   error?: string;
-  readonly [key: string]: any;
+  [key: string]: any;
 }
 
 export interface PipelineMetadata {
-  readonly geminiAnalysis?: any;
-  readonly aiInstances?: readonly any[];
-  readonly branches?: readonly any[];
-  readonly prNumber?: number | null;
-  readonly reviewIterations?: number;
-  readonly maxReviewIterations?: number;
-  readonly agentExecution?: {
-    readonly gemini?: any;
-    readonly claude?: any;
-    readonly codex?: any;
+  geminiAnalysis?: any;
+  aiInstances?: any[];
+  branches?: any[];
+  prNumber?: number | null;
+  reviewIterations?: number;
+  maxReviewIterations?: number;
+  agentExecution?: {
+    gemini?: any;
+    claude?: any;
+    codex?: any;
   };
-  readonly repository?: string;
-  readonly [key: string]: any;
+  repository?: string;
+  [key: string]: any;
 }
 
 export interface PipelineError {

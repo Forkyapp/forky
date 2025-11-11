@@ -1,6 +1,6 @@
 import fs from 'fs';
-import config from '../config';
-import type { TaskData, PipelineData, StageEntry, PipelineSummary } from '../types';
+import config from '../../src/shared/config';
+import type { TaskData, PipelineData, StageEntry, PipelineSummary } from '../../src/types/storage';
 
 const FILES = {
   pipeline: config.files.pipelineFile
@@ -21,14 +21,14 @@ const STAGES = {
   PR_CREATING: 'pr_creating',
   COMPLETED: 'completed',
   FAILED: 'failed'
-};
+} as const;
 
 const STATUS = {
-  PENDING: 'pending',
-  IN_PROGRESS: 'in_progress',
-  COMPLETED: 'completed',
-  FAILED: 'failed',
-  SKIPPED: 'skipped'
+  PENDING: 'pending' as const,
+  IN_PROGRESS: 'in_progress' as const,
+  COMPLETED: 'completed' as const,
+  FAILED: 'failed' as const,
+  SKIPPED: 'skipped' as const
 };
 
 export const pipeline = {
@@ -59,7 +59,7 @@ export const pipeline = {
 
     const pipelineDataEntry: PipelineData = {
       taskId,
-      taskName: taskData.name || taskData.title || '',
+      taskName: taskData.name || '',
       currentStage: STAGES.DETECTED,
       status: STATUS.IN_PROGRESS,
       createdAt: new Date().toISOString(),

@@ -2,7 +2,7 @@ import fs from 'fs';
 import path from 'path';
 import { exec } from 'child_process';
 import { promisify } from 'util';
-import { colors } from './ui';
+import { colors } from '../../shared/ui';
 
 const execAsync = promisify(exec);
 

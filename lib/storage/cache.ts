@@ -1,6 +1,6 @@
 import fs from 'fs';
-import config from '../config';
-import type { TaskData, ProcessedTask } from '../types';
+import config from '../../src/shared/config';
+import type { TaskData, ProcessedTask } from '../../src/types/storage';
 
 let processedTasksData: ProcessedTask[] = [];
 let processedTaskIds = new Set<string>();
@@ -42,7 +42,7 @@ export const cache = {
     if (!processedTaskIds.has(task.id)) {
       processedTasksData.push({
         id: task.id,
-        title: task.name || task.title || '',
+        title: task.name || '',
         description: task.description || task.text_content || '',
         detectedAt: new Date().toISOString()
       });

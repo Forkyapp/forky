@@ -2,12 +2,13 @@ import fs from 'fs';
 import path from 'path';
 import { promisify } from 'util';
 import { exec } from 'child_process';
-import config from './config';
-import { forky, colors } from './ui';
-import * as clickup from './clickup';
-import * as storage from './storage';
-import { loadSmartContext } from './smart-context-loader';
-import type { ClickUpTask, LaunchOptions, FixTodoOptions, LaunchResult, FixTodoResult, Settings } from './types';
+import config from '../../shared/config';
+import { forky, colors } from '../../shared/ui';
+import * as clickup from '../../../lib/clickup';
+import * as storage from '../../../lib/storage';
+import { loadSmartContext } from '../context/smart-context-loader.service';
+import type { ClickUpTask } from '../../../src/types/clickup';
+import type { LaunchOptions, FixTodoOptions, LaunchResult, FixTodoResult, Settings } from '../../../src/types/ai';
 
 const execAsync = promisify(exec);
 

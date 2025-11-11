@@ -6,6 +6,9 @@
 import { RetryOptions } from '../../types';
 import { NetworkError, RateLimitError, TimeoutError } from '../errors';
 
+// Re-export RetryOptions for external use
+export type { RetryOptions };
+
 interface ErrorWithCode extends Error {
   code?: string;
   response?: {

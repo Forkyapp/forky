@@ -8,8 +8,8 @@ import fs from 'fs';
 import path from 'path';
 import { promisify } from 'util';
 import { exec } from 'child_process';
-import { RepositoryConfig, resolveRepoConfig } from './config';
-import { forky, colors } from './ui';
+import { RepositoryConfig, resolveRepoConfig } from '../../shared/config';
+import { forky, colors } from '../../shared/ui';
 
 const execAsync = promisify(exec);
 

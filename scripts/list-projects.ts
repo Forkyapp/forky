@@ -4,6 +4,6 @@
  * Usage: npm run projects
  */
 
-import { workspace } from '../lib/workspace';
+import { workspace } from '../src/core/workspace/workspace.service';
 
 workspace.listProjects();

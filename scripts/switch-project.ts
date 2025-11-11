@@ -4,7 +4,7 @@
  * Usage: npm run switch <project-name>
  */
 
-import { workspace } from '../lib/workspace';
+import { workspace } from '../src/core/workspace/workspace.service';
 
 const projectName = process.argv[2];
 

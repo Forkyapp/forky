@@ -25,4 +25,4 @@ export type {
   PipelineData,
   PipelineSummary,
   RepoConfig
-} from '../types';
+} from '../../src/types/storage';
