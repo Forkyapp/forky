@@ -5,59 +5,13 @@ import { exec } from 'child_process';
 import config, { RepositoryConfig } from './config';
 import { forky, colors } from './ui';
 import { withRetry, RetryOptions } from './retry';
+import type { ClickUpTask, AnalysisResult, FeatureSpec, Progress, ExecResult } from './types';
 
 const execAsync = promisify(exec);
-
-// ============================================
-// INTERFACES
-// ============================================
-
-interface ClickUpTask {
-  id: string;
-  name: string;
-  description?: string;
-  text_content?: string;
-  url?: string;
-}
 
 interface AnalyzeTaskOptions {
   repoConfig?: RepositoryConfig;
 }
-
-interface AnalysisResult {
-  success: boolean;
-  featureSpecFile: string;
-  featureDir: string;
-  content: string;
-  logFile?: string;
-  progressFile?: string;
-  fallback?: boolean;
-  error?: string;
-}
-
-interface FeatureSpec {
-  file: string;
-  content: string;
-}
-
-interface Progress {
-  agent: string;
-  taskId: string;
-  stage: string;
-  currentStep: string;
-  completedSteps: number;
-  totalSteps: number;
-  lastUpdate: string;
-}
-
-interface ExecResult {
-  stdout: string;
-  stderr: string;
-}
-
-// ============================================
-// FUNCTIONS
-// ============================================
 
 /**
  * Analyze task using Gemini CLI

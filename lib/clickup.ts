@@ -1,45 +1,7 @@
 import axios, { AxiosError } from 'axios';
 import config from './config';
 import { forky, colors } from './ui';
-
-interface ClickUpTask {
-  id: string;
-  name: string;
-  description?: string;
-  text_content?: string;
-  url?: string;
-  status?: {
-    status: string;
-  };
-  custom_fields?: Array<{
-    name?: string;
-    value?: string;
-  }>;
-  tags?: Array<{
-    name: string;
-  }>;
-}
-
-interface CommentResponse {
-  success: boolean;
-  disabled?: boolean;
-  data?: any;
-  error?: string;
-}
-
-interface Command {
-  type: string;
-}
-
-interface Comment {
-  id: string;
-  comment_text: string;
-  user: {
-    id: number;
-    username: string;
-  };
-  date: string;
-}
+import type { ClickUpTask, CommentResponse, Command, Comment } from './types';
 
 async function getAssignedTasks(): Promise<ClickUpTask[]> {
   try {

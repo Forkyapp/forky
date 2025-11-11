@@ -6,79 +6,19 @@ import config, { RepositoryConfig } from './config';
 import { forky, colors } from './ui';
 import * as clickup from './clickup';
 import * as storage from './storage';
+import type {
+  ClickUpTask,
+  ExecWithPTYOptions,
+  ExecResult,
+  LaunchOptions,
+  ReviewOptions,
+  LaunchResult,
+  ReviewResult,
+  Settings,
+  ErrorWithCode
+} from './types';
 
 const execAsync = promisify(exec);
-
-// ============================================
-// INTERFACES
-// ============================================
-
-interface ClickUpTask {
-  id: string;
-  name: string;
-  description?: string;
-  text_content?: string;
-  url?: string;
-}
-
-interface ExecWithPTYOptions {
-  stdinFile?: string;
-  shell?: string;
-  cwd?: string;
-  env?: NodeJS.ProcessEnv;
-}
-
-interface ExecResult {
-  stdout: string;
-  stderr: string;
-}
-
-interface LaunchOptions {
-  analysis?: {
-    content: string;
-    featureDir?: string;
-    featureSpecFile?: string;
-  };
-  subtask?: any;
-  branch?: string;
-  repoConfig?: RepositoryConfig;
-}
-
-interface ReviewOptions {
-  repoConfig?: RepositoryConfig;
-}
-
-interface LaunchResult {
-  success: boolean;
-  branch?: string;
-  error?: string;
-}
-
-interface ReviewResult {
-  success: boolean;
-  branch?: string;
-  error?: string;
-}
-
-interface Settings {
-  permissions: {
-    allow: string[];
-    deny: string[];
-  };
-  hooks: {
-    [key: string]: string;
-  };
-}
-
-interface ErrorWithCode extends Error {
-  code?: number;
-  stdout?: string;
-  stderr?: string;
-}
-
-// ============================================
-// FUNCTIONS
-// ============================================
 
 /**
  * Execute a command with a pseudo-TTY using spawn

@@ -6,63 +6,9 @@ import config, { RepositoryConfig } from './config';
 import { forky, colors } from './ui';
 import * as clickup from './clickup';
 import * as storage from './storage';
+import type { ClickUpTask, LaunchOptions, FixTodoOptions, LaunchResult, FixTodoResult, Settings } from './types';
 
 const execAsync = promisify(exec);
-
-// ============================================
-// INTERFACES
-// ============================================
-
-interface ClickUpTask {
-  id: string;
-  name: string;
-  description?: string;
-  text_content?: string;
-  url?: string;
-}
-
-interface LaunchOptions {
-  analysis?: {
-    content: string;
-    featureDir?: string;
-    featureSpecFile?: string;
-  };
-  subtask?: any;
-  branch?: string;
-  repoConfig?: RepositoryConfig;
-}
-
-interface FixTodoOptions {
-  repoConfig?: RepositoryConfig;
-}
-
-interface LaunchResult {
-  success: boolean;
-  branch?: string;
-  logFile?: string;
-  progressFile?: string;
-  error?: string;
-}
-
-interface FixTodoResult {
-  success: boolean;
-  branch?: string;
-  error?: string;
-}
-
-interface Settings {
-  permissions: {
-    allow: string[];
-    deny: string[];
-  };
-  hooks: {
-    [key: string]: string;
-  };
-}
-
-// ============================================
-// FUNCTIONS
-// ============================================
 
 function ensureClaudeSettings(repoPath: string | null = null): void {
   const targetRepoPath = repoPath || config.github.repoPath;
