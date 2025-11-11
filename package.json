@@ -4,6 +4,7 @@
   "description": "Forky autonomous task automation system",
   "main": "dist/forky.js",
   "scripts": {
+    "setup": "bash scripts/setup.sh",
     "build": "tsc",
     "start": "npm run build && node dist/forky.js",
     "dev": "ts-node forky.ts",

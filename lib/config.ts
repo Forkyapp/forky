@@ -1,5 +1,4 @@
 import path from 'path';
-import fs from 'fs';
 import dotenv from 'dotenv';
 import { workspace as workspaceManager } from './workspace';
 import type { ProjectConfig } from './workspace';

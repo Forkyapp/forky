@@ -4,6 +4,7 @@ import { promisify } from 'util';
 import { exec, spawn, ChildProcess } from 'child_process';
 import config, { RepositoryConfig } from './config';
 import { forky, colors } from './ui';
+import { loadSmartContext } from './smart-context-loader';
 import * as clickup from './clickup';
 import * as storage from './storage';
 import type {
@@ -134,6 +135,15 @@ async function launchCodex(task: ClickUpTask, options: LaunchOptions = {}): Prom
   console.log(forky.ai(`Deploying ${colors.bright}Codex${colors.reset} for ${colors.bright}${taskId}${colors.reset}: "${taskTitle}"`));
   ensureCodexSettings(repoPath);
 
+  // Load smart context based on task
+  console.log(forky.info('Loading relevant coding guidelines...'));
+  const smartContext = await loadSmartContext({
+    model: 'codex',
+    taskDescription: `${taskTitle}\n\n${taskDescription}`,
+    maxTokens: 4000,
+    includeProject: true
+  });
+
   // Build prompt with optional Gemini analysis
   let analysisSection = '';
   let featureDocsPath = '';
@@ -164,7 +174,7 @@ Use this analysis to guide your implementation. Follow the suggested approach an
 ${featureDocsPath}`;
   }
 
-  const prompt = `I need you to implement a ClickUp task and create a GitHub Pull Request.
+  const prompt = `${smartContext ? smartContext + '\n\n' + '='.repeat(80) + '\n\n' : ''}I need you to implement a ClickUp task and create a GitHub Pull Request.
 
 **ClickUp Task ID:** ${taskId}
 **Title:** ${taskTitle}
@@ -365,7 +375,16 @@ async function reviewClaudeChanges(task: ClickUpTask, options: ReviewOptions = {
   console.log(forky.ai(`${colors.bright}Codex${colors.reset} reviewing Claude's changes for ${colors.bright}${taskId}${colors.reset}`));
   ensureCodexSettings(repoPath);
 
-  const prompt = `You are a senior code reviewer. Your job is to review the changes made by Claude and add constructive TODO comments for improvements.
+  // Load smart context for review
+  console.log(forky.info('Loading relevant review guidelines...'));
+  const smartContext = await loadSmartContext({
+    model: 'codex',
+    taskDescription: `Code review for: ${taskTitle}\n\nReviewing implementation changes`,
+    maxTokens: 4000,
+    includeProject: true
+  });
+
+  const prompt = `${smartContext ? smartContext + '\n\n' + '='.repeat(80) + '\n\n' : ''}You are a senior code reviewer. Your job is to review the changes made by Claude and add constructive TODO comments for improvements.
 
 **ClickUp Task ID:** ${taskId}
 **Title:** ${taskTitle}

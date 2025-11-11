@@ -54,6 +54,11 @@ repos.json
 projects.json
 workspace.json
 
+# AI Context files (user writes these based on their codebase)
+.context/models/*.md
+.context/shared/*.md
+.context/projects/*.md
+
 # Old folders
 local/
 /api/

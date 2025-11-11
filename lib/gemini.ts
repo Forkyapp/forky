@@ -5,6 +5,7 @@ import { exec } from 'child_process';
 import config, { RepositoryConfig } from './config';
 import { forky, colors } from './ui';
 import { withRetry, RetryOptions } from './retry';
+import { loadSmartContext } from './smart-context-loader';
 import type { ClickUpTask, AnalysisResult, FeatureSpec, Progress, ExecResult } from './types';
 
 const execAsync = promisify(exec);
@@ -30,6 +31,15 @@ async function analyzeTask(task: ClickUpTask, options: AnalyzeTaskOptions = {}):
   const repoName = repoConfig?.repo || config.github.repo;
 
   console.log(forky.processing(`${colors.bright}Gemini${colors.reset} analyzing task ${colors.bright}${taskId}${colors.reset}...`));
+
+  // Load smart context based on task
+  console.log(forky.info('Loading relevant documentation guidelines...'));
+  const smartContext = await loadSmartContext({
+    model: 'gemini',
+    taskDescription: `${taskTitle}\n\n${taskDescription}`,
+    maxTokens: 4000,
+    includeProject: true
+  });
 
   // Create feature directory
   const featureDir = path.join(config.files.featuresDir, taskId);
@@ -62,7 +72,7 @@ async function analyzeTask(task: ClickUpTask, options: AnalyzeTaskOptions = {}):
 
   updateProgress(0, 3, 'Starting analysis...');
 
-  const analysisPrompt = `You are a senior software architect analyzing a development task.
+  const analysisPrompt = `${smartContext ? smartContext + '\n\n' + '='.repeat(80) + '\n\n' : ''}You are a senior software architect analyzing a development task.
 
 **Task ID:** ${taskId}
 **Title:** ${taskTitle}

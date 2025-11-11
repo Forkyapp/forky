@@ -6,6 +6,7 @@ import config, { RepositoryConfig } from './config';
 import { forky, colors } from './ui';
 import * as clickup from './clickup';
 import * as storage from './storage';
+import { loadSmartContext } from './smart-context-loader';
 import type { ClickUpTask, LaunchOptions, FixTodoOptions, LaunchResult, FixTodoResult, Settings } from './types';
 
 const execAsync = promisify(exec);
@@ -67,6 +68,15 @@ async function launchClaude(task: ClickUpTask, options: LaunchOptions = {}): Pro
   console.log(forky.ai(`Deploying ${colors.bright}Claude${colors.reset} for ${colors.bright}${taskId}${colors.reset}: "${taskTitle}"`));
   ensureClaudeSettings(repoPath);
 
+  // Load smart context based on task
+  console.log(forky.info('Loading relevant coding guidelines...'));
+  const smartContext = await loadSmartContext({
+    model: 'claude',
+    taskDescription: `${taskTitle}\n\n${taskDescription}`,
+    maxTokens: 4000,
+    includeProject: true
+  });
+
   // Build prompt with optional Gemini analysis
   let analysisSection = '';
   let featureDocsPath = '';
@@ -97,7 +107,7 @@ Use this analysis to guide your implementation. Follow the suggested approach an
 ${featureDocsPath}`;
   }
 
-  const prompt = `I need you to implement a ClickUp task and create a GitHub Pull Request.
+  const prompt = `${smartContext ? smartContext + '\n\n' + '='.repeat(80) + '\n\n' : ''}I need you to implement a ClickUp task and create a GitHub Pull Request.
 
 **ClickUp Task ID:** ${taskId}
 **Title:** ${taskTitle}
