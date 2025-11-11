@@ -3,7 +3,8 @@ import path from 'path';
 import { forky, colors } from './ui';
 
 interface WorkspaceConfig {
-  active: string;
+  active?: string;
+  activeProject?: string; // Support both formats
   comment?: string;
 }
 
@@ -31,8 +32,9 @@ interface ProjectsConfig {
   };
 }
 
-const workspaceFile = path.join(__dirname, '..', 'workspace.json');
-const projectsFile = path.join(__dirname, '..', 'projects.json');
+// Use process.cwd() to ensure we're always looking in the project root, not dist/lib
+const workspaceFile = path.join(process.cwd(), 'workspace.json');
+const projectsFile = path.join(process.cwd(), 'projects.json');
 
 export const workspace = {
   /**
@@ -41,10 +43,15 @@ export const workspace = {
   loadWorkspace(): WorkspaceConfig | null {
     try {
       if (fs.existsSync(workspaceFile)) {
-        return JSON.parse(fs.readFileSync(workspaceFile, 'utf8'));
+        const content = fs.readFileSync(workspaceFile, 'utf8');
+        const parsed = JSON.parse(content);
+        return parsed;
+      } else {
+        console.error(forky.error(`workspace.json not found at: ${workspaceFile}`));
       }
     } catch (error) {
       console.error(forky.error(`Failed to load workspace.json: ${(error as Error).message}`));
+      console.error(forky.error(`Path: ${workspaceFile}`));
     }
     return null;
   },
@@ -79,7 +86,14 @@ export const workspace = {
    */
   getActiveProject(): ProjectConfig | null {
     const workspaceConfig = this.loadWorkspace();
-    if (!workspaceConfig || !workspaceConfig.active) {
+    if (!workspaceConfig) {
+      console.error(forky.error('No active project set in workspace.json'));
+      return null;
+    }
+
+    // Support both 'active' and 'activeProject' field names
+    const activeProjectName = workspaceConfig.active || workspaceConfig.activeProject;
+    if (!activeProjectName) {
       console.error(forky.error('No active project set in workspace.json'));
       return null;
     }
@@ -90,9 +104,9 @@ export const workspace = {
       return null;
     }
 
-    const project = projectsConfig.projects[workspaceConfig.active];
+    const project = projectsConfig.projects[activeProjectName];
     if (!project) {
-      console.error(forky.error(`Project "${workspaceConfig.active}" not found in projects.json`));
+      console.error(forky.error(`Project "${activeProjectName}" not found in projects.json`));
       return null;
     }
 
@@ -104,7 +118,7 @@ export const workspace = {
    */
   getActiveProjectName(): string | null {
     const workspaceConfig = this.loadWorkspace();
-    return workspaceConfig?.active || null;
+    return workspaceConfig?.active || workspaceConfig?.activeProject || null;
   },
 
   /**

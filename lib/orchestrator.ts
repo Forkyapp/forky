@@ -7,7 +7,6 @@ import * as codex from './codex';
 import config, { RepositoryConfig, resolveRepoConfig } from './config';
 import * as clickup from './clickup';
 import type { ClickUpTask } from './clickup';
-import * as repoManager from './repo-manager';
 
 // ============================================
 // INTERFACES
@@ -335,11 +334,10 @@ export async function rerunCodexReview(taskId: string): Promise<RerunResult> {
 
   if (repoName && repoName !== 'default') {
     console.log(forky.info(`Repository: ${colors.bright}${repoName}${colors.reset}`));
-    repoConfig = resolveRepoConfig(repoName);
   } else {
     console.log(forky.info(`Repository: ${colors.bright}default${colors.reset}`));
-    repoConfig = resolveRepoConfig(null);
   }
+  repoConfig = resolveRepoConfig();
 
   // Create minimal task object
   const task: ClickUpTask = {
@@ -413,11 +411,10 @@ export async function rerunClaudeFixes(taskId: string): Promise<RerunResult> {
 
   if (repoName && repoName !== 'default') {
     console.log(forky.info(`Repository: ${colors.bright}${repoName}${colors.reset}`));
-    repoConfig = resolveRepoConfig(repoName);
   } else {
     console.log(forky.info(`Repository: ${colors.bright}default${colors.reset}`));
-    repoConfig = resolveRepoConfig(null);
   }
+  repoConfig = resolveRepoConfig();
 
   // Create minimal task object
   const task: ClickUpTask = {

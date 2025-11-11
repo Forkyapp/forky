@@ -150,7 +150,7 @@ async function cloneRepository(owner: string, repoName: string, targetPath: stri
  * @param repoConfig - Repository configuration
  */
 async function addToReposConfig(repoName: string, repoConfig: RepositoryConfig): Promise<void> {
-  const reposConfigPath = config.files.reposConfig;
+  const reposConfigPath = 'repos.json'; // Deprecated - use projects.json instead
 
   try {
     // Read current config
@@ -187,7 +187,7 @@ async function ensureRepository(repoName: string, options: EnsureRepoOptions = {
   // Check if repository already exists in config
   if (repositoryExists(repoName)) {
     console.log(forky.info(`Repository ${colors.bright}${repoName}${colors.reset} already configured`));
-    return resolveRepoConfig(repoName);
+    return resolveRepoConfig(); // No longer takes arguments
   }
 
   console.log(forky.warning(`Repository ${colors.bright}${repoName}${colors.reset} not found in repos.json`));

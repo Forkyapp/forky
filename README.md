@@ -92,61 +92,43 @@ Before you begin, ensure you have:
 
 ## Setup
 
-### 1. Configure Global Credentials
+### Option 1: Interactive Setup (Recommended)
 
-Create a `.env` file with your API credentials (copy from `.env.example`):
-
-```bash
-# Global credentials (used for all projects)
-CLICKUP_API_KEY=your_key
-CLICKUP_BOT_USER_ID=your_id
-GITHUB_TOKEN=your_token
-
-# Optional system settings
-CLAUDE_CLI_PATH=/Users/user/.local/bin/claude
-POLL_INTERVAL_MS=15000
-```
-
-### 2. Configure Your Projects
-
-Create `projects.json` with your project configurations:
+Get started in minutes with our guided setup:
 
 ```bash
-cp projects.json.example projects.json
-# Edit with your projects
+npm run init
 ```
 
-Example:
+This will:
+- ✅ Authenticate with GitHub (via browser or token)
+- ✅ Configure ClickUp credentials
+- ✅ Set up your first project
+- ✅ Create all configuration files automatically
 
-```json
-{
-  "projects": {
-    "my-project": {
-      "name": "My Project",
-      "description": "Main production project",
-      "clickup": {
-        "workspaceId": "your_workspace_id"
-      },
-      "github": {
-        "owner": "your_username",
-        "repo": "your_repo",
-        "path": "/full/path/to/your/repo",
-        "baseBranch": "main"
-      }
-    }
-  }
-}
-```
+### Option 2: Manual Setup
 
-### 3. Set Active Project
+If you prefer manual configuration:
 
-```bash
-npm run switch my-project
-```
+1. **Copy templates:**
+   ```bash
+   npm run setup
+   ```
 
-This creates `workspace.json` which tracks your currently active project.
+2. **Edit `.env`** with your credentials:
+   ```bash
+   CLICKUP_API_KEY=your_key
+   CLICKUP_BOT_USER_ID=your_id
+   GITHUB_TOKEN=your_token
+   ```
 
-**That's it!** No more editing `.env` to switch projects. Just use `npm run switch <project-name>`.
+3. **Edit `projects.json`** with your projects
+4. **Set active project:**
+   ```bash
+   npm run switch my-project
+   ```
+
+See [Interactive Setup Guide](docs/INTERACTIVE_SETUP.md) for detailed walkthrough.
 
 ## Project Management
 

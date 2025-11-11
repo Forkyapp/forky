@@ -44,7 +44,7 @@ export const reviewTracking = {
     // Get repository from pipeline state if available
     const pipelineEntry = pipeline.get(task.id);
     const repoName = pipelineEntry?.metadata?.repository || 'default';
-    const repoConfig = resolveRepoConfig(repoName === 'default' ? null : repoName);
+    const repoConfig = resolveRepoConfig(); // Uses workspace configuration
 
     const reviewEntry: ReviewEntry = {
       taskId: task.id,
