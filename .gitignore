@@ -59,6 +59,9 @@ workspace.json
 .context/shared/*.md
 .context/projects/*.md
 
+# Template context test files
+templates/context/project/test.md
+
 # Old folders
 local/
 /api/
