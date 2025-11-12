@@ -113,7 +113,7 @@ try {
 Use async/await, not callbacks...
 ```
 
-See [Context System Guide](docs/CONTEXT_SYSTEM.md) for details.
+See the [README.md](README.md) for more details on configuration.
 
 ## Troubleshooting
 
@@ -152,10 +152,9 @@ npm run settings
 ## Need Help?
 
 - [Full Documentation](README.md)
-- [Interactive Setup Guide](docs/INTERACTIVE_SETUP.md)
-- [Project Management](docs/PROJECT_MANAGEMENT.md)
-- [Context System](docs/CONTEXT_SYSTEM.md)
-- [GitHub Issues](https://github.com/Forkyapp/clickup-claude-github/issues)
+- [Contributing Guide](CONTRIBUTING.md)
+- [Security Policy](SECURITY.md)
+- [GitHub Issues](https://github.com/Forkyapp/forky/issues)
 
 ## Example Session
 

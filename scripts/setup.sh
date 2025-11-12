@@ -28,13 +28,6 @@ copy_if_not_exists() {
   fi
 }
 
-# Configuration files
-echo "📋 Setting up configuration files..."
-copy_if_not_exists "templates/.env" ".env"
-copy_if_not_exists "templates/workspace.json" "workspace.json"
-copy_if_not_exists "templates/projects.json" "projects.json"
-echo ""
-
 # Data directories
 echo "💾 Setting up data storage..."
 copy_if_not_exists "templates/data/cache/processed-tasks.json" "data/cache/processed-tasks.json"
@@ -43,14 +36,6 @@ copy_if_not_exists "templates/data/state/task-queue.json" "data/state/task-queue
 copy_if_not_exists "templates/data/state/pipeline-state.json" "data/state/pipeline-state.json"
 copy_if_not_exists "templates/data/tracking/pr-tracking.json" "data/tracking/pr-tracking.json"
 copy_if_not_exists "templates/data/tracking/review-tracking.json" "data/tracking/review-tracking.json"
-echo ""
-
-# Context files
-echo "📚 Setting up AI context templates..."
-copy_if_not_exists "templates/.context/models/claude.md" ".context/models/claude.md"
-copy_if_not_exists "templates/.context/models/gemini.md" ".context/models/gemini.md"
-copy_if_not_exists "templates/.context/models/codex.md" ".context/models/codex.md"
-copy_if_not_exists "templates/.context/shared/architecture.md" ".context/shared/architecture.md"
 echo ""
 
 # Create empty directories
@@ -62,14 +47,15 @@ mkdir -p features
 echo -e "${GREEN}✅${NC} Directories created"
 echo ""
 
-echo "✨ Setup complete!"
+echo "✨ Data storage setup complete!"
 echo ""
 echo "Next steps:"
-echo "1. Edit .env with your API keys and credentials"
-echo "2. Edit projects.json with your project configurations"
-echo "3. Edit workspace.json to set your active project"
-echo "4. Fill .context/models/*.md with your coding patterns"
-echo "5. Run: npm install"
-echo "6. Run: npm start"
+echo "1. Run: npm run init (for interactive setup)"
+echo "2. Or configure manually:"
+echo "   - Create .env with your API keys"
+echo "   - Create projects.json with your projects"
+echo "   - Create workspace.json to set active project"
+echo "3. Run: npm install"
+echo "4. Run: npm start"
 echo ""
-echo "For help, see: docs/PROJECT_MANAGEMENT.md"
+echo "For detailed setup instructions, see: QUICKSTART.md"
