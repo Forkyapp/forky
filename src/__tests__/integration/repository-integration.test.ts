@@ -5,7 +5,6 @@
 
 import { CacheRepository } from '../../core/repositories/cache.repository';
 import { QueueRepository } from '../../core/repositories/queue.repository';
-import { JSONStorage } from '../../infrastructure/storage/json-storage';
 import { createTempDir, cleanupTempDir, createMockClickUpTask } from '../../test-setup';
 
 describe('Repository Integration', () => {

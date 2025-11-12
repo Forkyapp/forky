@@ -25,53 +25,7 @@ export class RepositoryNotFoundError extends RepositoryError {
   }
 }
 
-export class GitOperationError extends RepositoryError {
-  public readonly command?: string;
-
-  constructor(
-    operation: string,
-    message: string,
-    command?: string,
-    context?: Record<string, any>
-  ) {
-    super(
-      `Git ${operation} failed: ${message}`,
-      'GIT_OPERATION_ERROR',
-      { operation, command, ...context }
-    );
-    this.command = command;
-  }
-}
-
-export class BranchExistsError extends RepositoryError {
-  constructor(branchName: string, context?: Record<string, any>) {
-    super(
-      `Branch already exists: ${branchName}`,
-      'BRANCH_EXISTS_ERROR',
-      { branchName, ...context }
-    );
-  }
-}
-
-export class BranchNotFoundError extends RepositoryError {
-  constructor(branchName: string, context?: Record<string, any>) {
-    super(
-      `Branch not found: ${branchName}`,
-      'BRANCH_NOT_FOUND_ERROR',
-      { branchName, ...context }
-    );
-  }
-}
-
-export class MergeConflictError extends RepositoryError {
-  public readonly conflicts: readonly string[];
-
-  constructor(conflicts: readonly string[], context?: Record<string, any>) {
-    super(
-      `Merge conflict detected in ${conflicts.length} file(s)`,
-      'MERGE_CONFLICT_ERROR',
-      { conflicts, ...context }
-    );
-    this.conflicts = conflicts;
-  }
-}
+// Removed unused Git-specific error classes:
+// - GitOperationError, BranchExistsError
+// - BranchNotFoundError, MergeConflictError
+// Use RepositoryError directly with appropriate error codes if needed

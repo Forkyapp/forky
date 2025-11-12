@@ -16,17 +16,8 @@ export class APIError extends BaseError {
   }
 }
 
-export class ClickUpAPIError extends APIError {
-  constructor(message: string, statusCode: number = 500, context?: Record<string, any>) {
-    super(message, 'CLICKUP_API_ERROR', statusCode, context);
-  }
-}
-
-export class GitHubAPIError extends APIError {
-  constructor(message: string, statusCode: number = 500, context?: Record<string, any>) {
-    super(message, 'GITHUB_API_ERROR', statusCode, context);
-  }
-}
+// Removed unused ClickUpAPIError and GitHubAPIError
+// Use APIError directly if needed
 
 export class NetworkError extends APIError {
   constructor(message: string, context?: Record<string, any>) {

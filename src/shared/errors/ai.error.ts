@@ -15,51 +15,7 @@ export class AIError extends BaseError {
   }
 }
 
-export class ClaudeError extends AIError {
-  constructor(message: string, context?: Record<string, any>) {
-    super(message, 'CLAUDE_ERROR', context);
-  }
-}
-
-export class GeminiError extends AIError {
-  constructor(message: string, context?: Record<string, any>) {
-    super(message, 'GEMINI_ERROR', context);
-  }
-}
-
-export class CodexError extends AIError {
-  constructor(message: string, context?: Record<string, any>) {
-    super(message, 'CODEX_ERROR', context);
-  }
-}
-
-export class AITimeoutError extends AIError {
-  public readonly timeoutMs: number;
-
-  constructor(agent: string, timeoutMs: number, context?: Record<string, any>) {
-    super(
-      `${agent} operation timed out after ${timeoutMs}ms`,
-      'AI_TIMEOUT_ERROR',
-      { agent, timeoutMs, ...context }
-    );
-    this.timeoutMs = timeoutMs;
-  }
-}
-
-export class AIExecutionError extends AIError {
-  public readonly exitCode?: number;
-
-  constructor(
-    agent: string,
-    message: string,
-    exitCode?: number,
-    context?: Record<string, any>
-  ) {
-    super(
-      `${agent} execution failed: ${message}`,
-      'AI_EXECUTION_ERROR',
-      { agent, exitCode, ...context }
-    );
-    this.exitCode = exitCode;
-  }
-}
+// Removed unused AI-specific error classes:
+// - ClaudeError, GeminiError, CodexError
+// - AITimeoutError, AIExecutionError
+// Use AIError directly with appropriate error codes if needed

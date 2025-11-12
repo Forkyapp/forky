@@ -4,8 +4,10 @@
  */
 
 export * from './retry.util';
-export * from './logger.util';
-export * from './validation.util';
+
+// Removed unused utilities:
+// - logger.util (not used in production, test-setup has MockLogger)
+// - validation.util (only used in tests)
 
 // Re-export types
 export type { RetryOptions } from '../../types';

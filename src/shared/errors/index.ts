@@ -21,35 +21,6 @@ export * from './storage.error';
 // Repository errors
 export * from './repository.error';
 
-/**
- * Type guard to check if an error is operational
- */
-export function isOperationalError(error: Error): boolean {
-  if ('isOperational' in error) {
-    return (error as any).isOperational === true;
-  }
-  return false;
-}
-
-/**
- * Extract error message safely
- */
-export function getErrorMessage(error: unknown): string {
-  if (error instanceof Error) {
-    return error.message;
-  }
-  if (typeof error === 'string') {
-    return error;
-  }
-  return 'Unknown error occurred';
-}
-
-/**
- * Extract error context safely
- */
-export function getErrorContext(error: unknown): Record<string, any> | undefined {
-  if (error instanceof Error && 'context' in error) {
-    return (error as any).context;
-  }
-  return undefined;
-}
+// Removed unused helper functions:
+// - isOperationalError, getErrorMessage, getErrorContext
+// These are only used in tests, not in production code

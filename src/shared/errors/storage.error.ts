@@ -35,25 +35,8 @@ export class FileWriteError extends StorageError {
   }
 }
 
-export class FileNotFoundError extends StorageError {
-  constructor(filePath: string, context?: Record<string, any>) {
-    super(
-      `File not found: ${filePath}`,
-      'FILE_NOT_FOUND_ERROR',
-      { filePath, ...context }
-    );
-  }
-}
-
-export class DataCorruptionError extends StorageError {
-  constructor(dataType: string, reason: string, context?: Record<string, any>) {
-    super(
-      `Data corruption detected in ${dataType}: ${reason}`,
-      'DATA_CORRUPTION_ERROR',
-      { dataType, reason, ...context }
-    );
-  }
-}
+// Removed unused FileNotFoundError and DataCorruptionError
+// Use StorageError directly if needed
 
 export class PipelineNotFoundError extends StorageError {
   constructor(taskId: string, context?: Record<string, any>) {
