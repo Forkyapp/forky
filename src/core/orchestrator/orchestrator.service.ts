@@ -1,72 +1,37 @@
-import path from 'path';
 import { forky, colors } from '../../shared/ui';
 import * as storage from '../../../lib/storage';
-import * as gemini from '../ai-services/gemini.service';
-import * as claude from '../ai-services/claude.service';
-// import * as qwen from '../ai-services/qwen.service'; // TODO: Enable when implemented
-import * as codex from '../monitoring/codex.service';
-import { RepositoryConfig, resolveRepoConfig } from '../../shared/config';
+import { resolveRepoConfig } from '../../shared/config';
 import * as clickup from '../../../lib/clickup';
 import type { ClickUpTask } from '../../../lib/clickup';
 
-// ============================================
-// INTERFACES
-// ============================================
+// Import types
+import type { ProcessTaskResult, RerunResult, StageContext } from './types';
 
-interface AnalysisResult {
-  success?: boolean;
-  featureSpecFile: string;
-  featureDir?: string;
-  content?: string;
-  logFile?: string;
-  progressFile?: string;
-  fallback?: boolean;
-  error?: string;
-}
+// Import stage executors
+import {
+  executeAnalysisStage,
+  executeImplementationStage,
+  executeReviewStage,
+  executeFixesStage,
+} from './stages';
 
-interface ProcessTaskResult {
-  success: boolean;
-  pipeline?: storage.PipelineData;
-  analysis?: AnalysisResult | null;
-  error?: string;
-}
+// Import utilities
+import {
+  initializePipeline,
+  completePipeline,
+  failPipeline,
+  getTaskFromPipeline,
+  validateImplementationComplete,
+  getRepositoryFromPipeline,
+} from './utils/pipeline-manager';
 
-interface LaunchResult {
-  success: boolean;
-  branch?: string;
-  logFile?: string;
-  progressFile?: string;
-  error?: string;
-}
-
-interface ReviewResult {
-  success: boolean;
-  branch?: string;
-  error?: string;
-}
-
-// TODO: Enable when qwen service is implemented
-// interface WriteTestsResult {
-//   success: boolean;
-//   branch?: string;
-//   error?: string;
-// }
-
-interface FixTodoResult {
-  success: boolean;
-  branch?: string;
-  error?: string;
-}
-
-interface RerunResult {
-  success: boolean;
-  branch?: string;
-  error?: string;
-}
-
-// ============================================
-// FUNCTIONS
-// ============================================
+import {
+  notifyWorkflowComplete,
+  notifyCodexRerunComplete,
+  notifyCodexRerunFailed,
+  notifyFixesRerunComplete,
+  notifyFixesRerunFailed,
+} from './utils/notifications';
 
 /**
  * Process a task with FULLY SYNCHRONOUS multi-AI workflow
@@ -83,14 +48,18 @@ export async function processTask(task: ClickUpTask): Promise<ProcessTaskResult>
 
   console.log(forky.ai(`Starting multi-AI workflow for ${colors.bright}${taskId}${colors.reset}`));
 
-  let repoConfig: RepositoryConfig;
+  // Resolve repository configuration
+  let repoConfig;
   try {
-    // Use active workspace project configuration
     repoConfig = resolveRepoConfig();
     console.log(forky.info(`Using repository: ${repoConfig.owner}/${repoConfig.repo}`));
 
     if (repoName && repoName !== repoConfig.repo) {
-      console.log(forky.warning(`Task specifies repo "${repoName}" but active project is "${repoConfig.repo}"`));
+      console.log(
+        forky.warning(
+          `Task specifies repo "${repoName}" but active project is "${repoConfig.repo}"`
+        )
+      );
       console.log(forky.info('Using active project from workspace.json'));
     }
   } catch (error) {
@@ -100,207 +69,66 @@ export async function processTask(task: ClickUpTask): Promise<ProcessTaskResult>
     await storage.queue.add(task);
     return {
       success: false,
-      error: err.message
+      error: err.message,
     };
   }
 
   // Initialize pipeline
-  const pipelineState = storage.pipeline.init(taskId, { name: taskName });
+  const pipelineState = initializePipeline(taskId, taskName, repoName ?? undefined);
 
-  // Set repository in metadata
-  storage.pipeline.updateMetadata(taskId, {
-    repository: repoName || 'default'
-  });
+  // Create stage context
+  const context: StageContext = {
+    task,
+    taskId,
+    taskName,
+    repoConfig,
+  };
 
   try {
     // Stage 1: Gemini Analysis
-    storage.pipeline.updateStage(taskId, storage.pipeline.STAGES.ANALYZING, { name: 'Gemini Analysis' });
-
-    let analysis: AnalysisResult | null = null;
-    let usedFallback = false;
-
-    try {
-      // Post Gemini start comment
-      await clickup.addComment(
-        taskId,
-        `🧠 **Gemini Analysis Started**\n\n` +
-        `Gemini AI is analyzing the task to create a detailed feature specification.\n\n` +
-        `**Status:** Analyzing requirements and architecture`
-      );
-
-      analysis = await gemini.analyzeTask(task, { repoConfig });
-
-      if (analysis.fallback) {
-        usedFallback = true;
-        console.log(forky.warning('Using fallback analysis'));
-      }
-
-      storage.pipeline.completeStage(taskId, storage.pipeline.STAGES.ANALYZING, {
-        featureSpecFile: analysis.featureSpecFile,
-        fallback: usedFallback,
-        logFile: analysis.logFile
-      });
-
-      storage.pipeline.updateMetadata(taskId, {
-        geminiAnalysis: {
-          file: analysis.featureSpecFile,
-          fallback: usedFallback,
-          logFile: analysis.logFile
-        }
-      });
-
-      // Store Gemini execution info
-      storage.pipeline.storeAgentExecution(taskId, 'gemini', {
-        logFile: analysis.logFile,
-        progressFile: analysis.progressFile,
-        featureSpecFile: analysis.featureSpecFile
-      });
-
-      // Post Gemini completion comment
-      await clickup.addComment(
-        taskId,
-        `✅ **Gemini Analysis Complete**\n\n` +
-        `Feature specification has been created.\n\n` +
-        `**Spec File:** \`${path.basename(analysis.featureSpecFile)}\`\n` +
-        `**Status:** ${usedFallback ? 'Fallback mode (Gemini unavailable)' : 'Success'}\n\n` +
-        `Next: Claude will implement the feature`
-      );
-
-    } catch (error) {
-      const err = error as Error;
-      console.log(forky.error(`Gemini analysis failed: ${err.message}`));
-      storage.pipeline.failStage(taskId, storage.pipeline.STAGES.ANALYZING, err);
-
-      // Continue without analysis
-      console.log(forky.info(`Continuing without ${colors.bright}Gemini${colors.reset} analysis`));
-    }
+    const analysis = await executeAnalysisStage(context);
 
     // Stage 2: Claude Implementation
-    storage.pipeline.updateStage(taskId, storage.pipeline.STAGES.IMPLEMENTING, { name: 'Claude Implementation' });
-
     try {
-      const result: LaunchResult = await claude.launchClaude(task, {
-        analysis: analysis && analysis.content ? {
-          content: analysis.content,
-          featureDir: analysis.featureDir,
-          featureSpecFile: analysis.featureSpecFile
-        } : undefined,
-        repoConfig
-      });
-
-      if (!result.success) {
-        throw new Error(result.error || 'Claude implementation failed');
-      }
-
-      storage.pipeline.completeStage(taskId, storage.pipeline.STAGES.IMPLEMENTING, {
-        branch: result.branch
-      });
-
-      console.log(forky.success(`${colors.bright}Claude${colors.reset} implementation complete for ${colors.bright}${taskId}${colors.reset}`));
-
+      await executeImplementationStage({ ...context, analysis });
     } catch (error) {
       const err = error as Error;
-      console.log(forky.error(`Claude implementation error: ${err.message}`));
-      storage.pipeline.failStage(taskId, storage.pipeline.STAGES.IMPLEMENTING, err);
       storage.pipeline.fail(taskId, err);
       await storage.queue.add(task);
       return {
         success: false,
         pipeline: pipelineState,
-        error: err.message
+        error: err.message,
       };
     }
 
     // Stage 3: Codex Code Review
-    storage.pipeline.updateStage(taskId, storage.pipeline.STAGES.CODEX_REVIEWING, { name: 'Codex Review' });
-
-    try {
-      const reviewResult: ReviewResult = await codex.reviewClaudeChanges(task, { repoConfig });
-
-      if (!reviewResult.success) {
-        throw new Error(reviewResult.error || 'Codex review failed');
-      }
-
-      storage.pipeline.completeStage(taskId, storage.pipeline.STAGES.CODEX_REVIEWING, {
-        branch: reviewResult.branch
-      });
-
-      console.log(forky.success(`${colors.bright}Codex${colors.reset} review complete for ${colors.bright}${taskId}${colors.reset}`));
-
-    } catch (error) {
-      const err = error as Error;
-      console.log(forky.error(`Codex review error: ${err.message}`));
-      storage.pipeline.failStage(taskId, storage.pipeline.STAGES.CODEX_REVIEWING, err);
-      // Continue even if review fails - not critical
-      console.log(forky.warning(`Continuing without Codex review`));
-    }
+    await executeReviewStage(context);
 
     // Stage 4: Qwen Unit Test Writing (DISABLED)
     // TODO: Enable when qwen.service is implemented
-    // storage.pipeline.updateStage(taskId, storage.pipeline.STAGES.QWEN_TESTING, { name: 'Qwen Test Writing' });
+    // await executeQwenTestingStage(context);
 
     // Stage 5: Claude Fixes TODO/FIXME Comments
-    storage.pipeline.updateStage(taskId, storage.pipeline.STAGES.CLAUDE_FIXING, { name: 'Claude Fixes' });
-
-    try {
-      const fixResult: FixTodoResult = await claude.fixTodoComments(task, { repoConfig });
-
-      if (!fixResult.success) {
-        throw new Error(fixResult.error || 'Claude fixes failed');
-      }
-
-      storage.pipeline.completeStage(taskId, storage.pipeline.STAGES.CLAUDE_FIXING, {
-        branch: fixResult.branch
-      });
-
-      console.log(forky.success(`${colors.bright}Claude${colors.reset} fixes complete for ${colors.bright}${taskId}${colors.reset}`));
-
-    } catch (error) {
-      const err = error as Error;
-      console.log(forky.error(`Claude fixes error: ${err.message}`));
-      storage.pipeline.failStage(taskId, storage.pipeline.STAGES.CLAUDE_FIXING, err);
-      // Continue even if fixes fail - not critical
-      console.log(forky.warning(`Continuing without Claude fixes`));
-    }
+    await executeFixesStage(context);
 
     // Stage 6: Complete
-    storage.pipeline.complete(taskId, {
-      branch: `task-${taskId}`,
-      completedAt: new Date().toISOString()
-    });
-
-    console.log(forky.success(`🎉 Multi-AI workflow complete for ${colors.bright}${taskId}${colors.reset}`));
-
-    await clickup.addComment(
-      taskId,
-      `🎉 **Workflow Complete**\n\n` +
-      `Full multi-AI workflow has finished:\n` +
-      `✅ Gemini Analysis\n` +
-      `✅ Claude Implementation\n` +
-      `✅ Codex Review\n` +
-      `✅ Claude Fixes\n\n` +
-      `**Branch:** \`task-${taskId}\`\n` +
-      `**Status:** Ready for review`
-    );
+    completePipeline(taskId);
+    await notifyWorkflowComplete(taskId);
 
     return {
       success: true,
       pipeline: pipelineState,
-      analysis: analysis || null
+      analysis: analysis || null,
     };
-
   } catch (error) {
     const err = error as Error;
-    console.log(forky.error(`Orchestration error: ${err.message}`));
-    storage.pipeline.fail(taskId, err);
-
-    // Queue for manual processing
-    await storage.queue.add(task);
+    await failPipeline(taskId, task, err);
 
     return {
       success: false,
       pipeline: pipelineState,
-      error: err.message
+      error: err.message,
     };
   }
 }
@@ -325,73 +153,48 @@ export function getActiveTasks(): storage.PipelineData[] {
 export async function rerunCodexReview(taskId: string): Promise<RerunResult> {
   console.log(forky.ai(`Re-running Codex review for ${colors.bright}${taskId}${colors.reset}`));
 
-  // Get pipeline state
-  const pipelineState = storage.pipeline.get(taskId);
-
-  if (!pipelineState) {
-    throw new Error(`Task ${taskId} not found in pipeline state`);
-  }
-
-  // Check if Claude implementation was completed
-  const implementingStage = pipelineState.stages.find(s => s.stage === 'implementing');
-  if (!implementingStage || implementingStage.status !== 'completed') {
-    throw new Error('Claude implementation stage not completed. Cannot run Codex review.');
-  }
-
-  const branch = implementingStage.branch || `task-${taskId}`;
-
-  // Detect repository from task metadata or use default
-  const repoName = pipelineState.metadata?.repository;
-
-  if (repoName && repoName !== 'default') {
-    console.log(forky.info(`Repository: ${colors.bright}${repoName}${colors.reset}`));
-  } else {
-    console.log(forky.info(`Repository: ${colors.bright}default${colors.reset}`));
-  }
-  const repoConfig: RepositoryConfig = resolveRepoConfig();
-
-  // Create minimal task object
-  const task: ClickUpTask = {
-    id: taskId,
-    name: pipelineState.taskName,
-    url: `https://app.clickup.com/t/${taskId}`
-  };
-
-  // Update pipeline stage
-  storage.pipeline.updateStage(taskId, storage.pipeline.STAGES.CODEX_REVIEWING, { name: 'Codex Review (Re-run)' });
-
   try {
-    const reviewResult: ReviewResult = await codex.reviewClaudeChanges(task, { repoConfig });
+    // Validate implementation is complete
+    const branch = validateImplementationComplete(taskId);
 
-    if (!reviewResult.success) {
-      throw new Error(reviewResult.error || 'Codex review failed');
+    // Get repository info
+    const repoName = getRepositoryFromPipeline(taskId);
+    if (repoName && repoName !== 'default') {
+      console.log(forky.info(`Repository: ${colors.bright}${repoName}${colors.reset}`));
+    } else {
+      console.log(forky.info(`Repository: ${colors.bright}default${colors.reset}`));
     }
 
-    storage.pipeline.completeStage(taskId, storage.pipeline.STAGES.CODEX_REVIEWING, {
-      branch: reviewResult.branch
+    const repoConfig = resolveRepoConfig();
+    const task = getTaskFromPipeline(taskId);
+
+    // Update pipeline stage
+    storage.pipeline.updateStage(taskId, storage.pipeline.STAGES.CODEX_REVIEWING, {
+      name: 'Codex Review (Re-run)',
     });
 
-    console.log(forky.success(`${colors.bright}Codex${colors.reset} review complete for ${colors.bright}${taskId}${colors.reset}`));
-
-    await clickup.addComment(
+    // Execute review
+    const context: StageContext = {
+      task,
       taskId,
-      `✅ **Codex Review Re-run Complete**\n\n` +
-      `Codex has finished re-reviewing the implementation.\n\n` +
-      `**Branch:** \`${branch}\`\n` +
-      `**Status:** Complete`
-    );
+      taskName: task.name,
+      repoConfig,
+    };
+
+    const reviewResult = await executeReviewStage(context);
+
+    if (!reviewResult) {
+      throw new Error('Codex review returned null');
+    }
+
+    await notifyCodexRerunComplete(taskId, branch);
 
     return { success: true, branch };
   } catch (error) {
     const err = error as Error;
     console.log(forky.error(`Codex review error: ${err.message}`));
     storage.pipeline.failStage(taskId, storage.pipeline.STAGES.CODEX_REVIEWING, err);
-
-    await clickup.addComment(
-      taskId,
-      `❌ **Codex Review Re-run Failed**\n\n` +
-      `Error: ${err.message}`
-    );
+    await notifyCodexRerunFailed(taskId, err.message);
 
     return { success: false, error: err.message };
   }
@@ -403,71 +206,48 @@ export async function rerunCodexReview(taskId: string): Promise<RerunResult> {
 export async function rerunClaudeFixes(taskId: string): Promise<RerunResult> {
   console.log(forky.ai(`Re-running Claude fixes for ${colors.bright}${taskId}${colors.reset}`));
 
-  // Get pipeline state
-  const pipelineState = storage.pipeline.get(taskId);
-
-  if (!pipelineState) {
-    throw new Error(`Task ${taskId} not found in pipeline state`);
-  }
-
-  // Check if Claude implementation was completed
-  const implementingStage = pipelineState.stages.find(s => s.stage === 'implementing');
-  if (!implementingStage || implementingStage.status !== 'completed') {
-    throw new Error('Claude implementation stage not completed. Cannot run fixes.');
-  }
-
-  // Detect repository from task metadata or use default
-  const repoName = pipelineState.metadata?.repository;
-
-  if (repoName && repoName !== 'default') {
-    console.log(forky.info(`Repository: ${colors.bright}${repoName}${colors.reset}`));
-  } else {
-    console.log(forky.info(`Repository: ${colors.bright}default${colors.reset}`));
-  }
-  const repoConfig: RepositoryConfig = resolveRepoConfig();
-
-  // Create minimal task object
-  const task: ClickUpTask = {
-    id: taskId,
-    name: pipelineState.taskName,
-    url: `https://app.clickup.com/t/${taskId}`
-  };
-
-  // Update pipeline stage
-  storage.pipeline.updateStage(taskId, storage.pipeline.STAGES.CLAUDE_FIXING, { name: 'Claude Fixes (Re-run)' });
-
   try {
-    const fixResult: FixTodoResult = await claude.fixTodoComments(task, { repoConfig });
+    // Validate implementation is complete
+    validateImplementationComplete(taskId);
 
-    if (!fixResult.success) {
-      throw new Error(fixResult.error || 'Claude fixes failed');
+    // Get repository info
+    const repoName = getRepositoryFromPipeline(taskId);
+    if (repoName && repoName !== 'default') {
+      console.log(forky.info(`Repository: ${colors.bright}${repoName}${colors.reset}`));
+    } else {
+      console.log(forky.info(`Repository: ${colors.bright}default${colors.reset}`));
     }
 
-    storage.pipeline.completeStage(taskId, storage.pipeline.STAGES.CLAUDE_FIXING, {
-      branch: fixResult.branch
+    const repoConfig = resolveRepoConfig();
+    const task = getTaskFromPipeline(taskId);
+
+    // Update pipeline stage
+    storage.pipeline.updateStage(taskId, storage.pipeline.STAGES.CLAUDE_FIXING, {
+      name: 'Claude Fixes (Re-run)',
     });
 
-    console.log(forky.success(`${colors.bright}Claude${colors.reset} fixes complete for ${colors.bright}${taskId}${colors.reset}`));
-
-    await clickup.addComment(
+    // Execute fixes
+    const context: StageContext = {
+      task,
       taskId,
-      `✅ **Claude Fixes Re-run Complete**\n\n` +
-      `Claude has finished re-addressing TODO/FIXME comments.\n\n` +
-      `**Branch:** \`task-${taskId}\`\n` +
-      `**Status:** Complete`
-    );
+      taskName: task.name,
+      repoConfig,
+    };
+
+    const fixResult = await executeFixesStage(context);
+
+    if (!fixResult) {
+      throw new Error('Claude fixes returned null');
+    }
+
+    await notifyFixesRerunComplete(taskId);
 
     return { success: true, branch: fixResult.branch };
   } catch (error) {
     const err = error as Error;
     console.log(forky.error(`Claude fixes error: ${err.message}`));
     storage.pipeline.failStage(taskId, storage.pipeline.STAGES.CLAUDE_FIXING, err);
-
-    await clickup.addComment(
-      taskId,
-      `❌ **Claude Fixes Re-run Failed**\n\n` +
-      `Error: ${err.message}`
-    );
+    await notifyFixesRerunFailed(taskId, err.message);
 
     return { success: false, error: err.message };
   }
