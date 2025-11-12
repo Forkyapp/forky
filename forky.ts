@@ -18,6 +18,7 @@ dotenv.config();
 import fs from 'fs';
 import config from './src/shared/config';
 import { forky, colors } from './src/shared/ui';
+import { setupInteractiveMode, type AppState } from './src/shared/interactive-cli';
 import * as storage from './lib/storage';
 import * as clickup from './lib/clickup';
 import * as claude from './src/core/ai-services/claude.service';
@@ -33,6 +34,17 @@ interface ProcessTaskResult {
   analysis?: any;
   error?: string;
 }
+
+// ============================================
+// STATE
+// ============================================
+
+const appState: AppState = {
+  isRunning: true,
+  pollInterval: null,
+  isProcessing: false,
+  currentTask: null
+};
 
 // ============================================
 // FUNCTIONS
@@ -99,6 +111,8 @@ async function checkTaskCommands(): Promise<void> {
 }
 
 async function pollAndProcess(): Promise<void> {
+  if (!appState.isRunning) return;
+
   try {
     // First, check for command comments
     await checkTaskCommands();
@@ -107,6 +121,11 @@ async function pollAndProcess(): Promise<void> {
     const tasks = await clickup.getAssignedTasks();
 
     for (const task of tasks) {
+      if (!appState.isRunning) {
+        console.log(forky.warning('Polling stopped by user'));
+        return;
+      }
+
       if (storage.cache.has(task.id)) {
         continue;
       }
@@ -118,6 +137,8 @@ async function pollAndProcess(): Promise<void> {
       console.log(forky.divider());
 
       storage.cache.add(task);
+      appState.isProcessing = true;
+      appState.currentTask = task.id;
 
       try {
         // Multi-AI workflow: Gemini → Claude → PR
@@ -129,6 +150,9 @@ async function pollAndProcess(): Promise<void> {
       } catch (error) {
         const err = error as Error;
         console.log(forky.error(`Task processing failed: ${err.message}`));
+      } finally {
+        appState.isProcessing = false;
+        appState.currentTask = null;
       }
     }
 
@@ -142,6 +166,12 @@ async function pollAndProcess(): Promise<void> {
 }
 
 function gracefulShutdown(): void {
+  appState.isRunning = false;
+
+  if (appState.pollInterval) {
+    clearInterval(appState.pollInterval);
+  }
+
   console.log('\n' + forky.doubleDivider());
   console.log(forky.warning('Shutting down gracefully...'));
   console.log(forky.divider());
@@ -194,11 +224,24 @@ if (require.main === module) {
   console.log(forky.section('🤖 Multi-AI Pipeline'));
   console.log(`  ${colors.cyan}1${colors.reset} ${colors.gray}→${colors.reset} ${colors.magenta}Gemini Analysis${colors.reset} ${colors.gray}→${colors.reset} ${colors.cyan}2${colors.reset} ${colors.gray}→${colors.reset} ${colors.blue}Claude Implementation${colors.reset} ${colors.gray}→${colors.reset} ${colors.cyan}3${colors.reset} ${colors.gray}→${colors.reset} ${colors.yellow}Codex Review${colors.reset} ${colors.gray}→${colors.reset} ${colors.cyan}4${colors.reset} ${colors.gray}→${colors.reset} ${colors.green}Claude Fixes${colors.reset}`);
   console.log(forky.doubleDivider() + '\n');
-  console.log(`${colors.dim}${colors.gray}Waiting for tasks...${colors.reset}\n`);
+
+  // Interactive mode hint
+  console.log(forky.info('Type "help" for available commands\n'));
+
+  // Set up interactive command interface
+  const rl = setupInteractiveMode(
+    appState,
+    pollAndProcess,
+    config.system.pollIntervalMs,
+    gracefulShutdown
+  );
 
   // Start polling for new tasks
   pollAndProcess();
-  setInterval(pollAndProcess, config.system.pollIntervalMs);
+  appState.pollInterval = setInterval(pollAndProcess, config.system.pollIntervalMs);
+
+  // Display initial prompt
+  rl.prompt();
 
   // Set up shutdown handlers
   process.on('SIGINT', gracefulShutdown);
