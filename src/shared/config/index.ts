@@ -31,6 +31,7 @@ interface Config {
     claudeCliPath: string;
     geminiCliPath: string;
     codexCliPath: string;
+    qwenCliPath: string;
   };
   autoRepo: {
     enabled: boolean;
@@ -73,6 +74,7 @@ const config: Config = {
     claudeCliPath: process.env.CLAUDE_CLI_PATH || 'claude',
     geminiCliPath: process.env.GEMINI_CLI_PATH || 'gemini',
     codexCliPath: process.env.CODEX_CLI_PATH || 'codex',
+    qwenCliPath: process.env.QWEN_CLI_PATH || 'qwen',
   },
   autoRepo: {
     enabled: process.env.AUTO_CREATE_REPO !== 'false', // Default: true

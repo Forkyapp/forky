@@ -3,6 +3,7 @@ import { forky, colors } from '../../shared/ui';
 import * as storage from '../../../lib/storage';
 import * as gemini from '../ai-services/gemini.service';
 import * as claude from '../ai-services/claude.service';
+import * as qwen from '../ai-services/qwen.service';
 import * as codex from '../monitoring/codex.service';
 import { RepositoryConfig, resolveRepoConfig } from '../../shared/config';
 import * as clickup from '../../../lib/clickup';
@@ -39,6 +40,12 @@ interface LaunchResult {
 }
 
 interface ReviewResult {
+  success: boolean;
+  branch?: string;
+  error?: string;
+}
+
+interface WriteTestsResult {
   success: boolean;
   branch?: string;
   error?: string;

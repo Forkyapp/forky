@@ -105,6 +105,17 @@ export interface CodexLaunchResult {
   readonly error?: string;
 }
 
+// Qwen types
+export interface QwenWriteTestsOptions {
+  readonly repoConfig?: RepositoryConfig;
+}
+
+export interface QwenWriteTestsResult {
+  readonly success: boolean;
+  readonly branch?: string;
+  readonly error?: string;
+}
+
 // Execution types
 export interface ExecWithPTYOptions {
   cwd?: string;
