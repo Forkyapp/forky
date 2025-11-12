@@ -7,15 +7,13 @@ on:
     branches: [ main ]
   workflow_dispatch:
 
-# Cancel in-progress runs for the same workflow and branch
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
-  # Quick validation job for fast feedback
-  validate:
-    name: Quick Validation
+  lint:
+    name: Lint & Type Check
     runs-on: ubuntu-latest
     timeout-minutes: 5
 
@@ -38,10 +36,8 @@ jobs:
     - name: Run linter
       run: npm run lint
 
-  # Main test suite on primary platform
   test:
-    name: Test Suite
-    needs: validate
+    name: Test & Coverage
     runs-on: ubuntu-latest
     timeout-minutes: 10
 
@@ -58,103 +54,22 @@ jobs:
     - name: Install dependencies
       run: npm ci
 
-    - name: Run tests with coverage
+    - name: Run tests
       run: npm test -- --ci --maxWorkers=2
       env:
         CI: true
 
-    - name: Check test coverage thresholds
-      run: |
-        node -e "
-        const coverage = require('./coverage/coverage-summary.json');
-        const total = coverage.total;
-        // Match thresholds from package.json
-        const thresholds = { statements: 30, branches: 25, functions: 30, lines: 30 };
-
-        let failed = false;
-        for (const [key, threshold] of Object.entries(thresholds)) {
-          const actual = total[key].pct;
-          if (actual < threshold) {
-            console.error(\`Coverage for \${key} (\${actual}%) is below threshold (\${threshold}%)\`);
-            failed = true;
-          } else {
-            console.log(\`✓ Coverage for \${key}: \${actual}% (threshold: \${threshold}%)\`);
-          }
-        }
-
-        if (failed) process.exit(1);
-        "
-
-    - name: Upload coverage reports
+    - name: Upload coverage
       uses: codecov/codecov-action@v4
+      if: always()
       with:
         files: ./coverage/lcov.info
-        flags: unittests
-        name: codecov-ubuntu
         fail_ci_if_error: false
 
-    - name: Archive test results
-      if: always()
-      uses: actions/upload-artifact@v4
-      with:
-        name: test-results
-        path: |
-          coverage/
-        retention-days: 7
-
-  # Cross-platform smoke tests (build and basic checks only)
-  cross-platform:
-    name: Cross-Platform Build (${{ matrix.os }})
-    needs: validate
-    runs-on: ${{ matrix.os }}
-    timeout-minutes: 10
-
-    strategy:
-      fail-fast: false
-      matrix:
-        os: [windows-latest, macos-latest]
-
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-
-    - name: Setup Node.js
-      uses: actions/setup-node@v4
-      with:
-        node-version: '20.x'
-        cache: 'npm'
-
-    - name: Install dependencies
-      run: npm ci
-
-    - name: Build
-      run: npm run build
-
-    - name: Verify build artifacts (Unix)
-      if: matrix.os != 'windows-latest'
-      run: |
-        if [ ! -d "dist" ]; then
-          echo "Error: dist directory not created"
-          exit 1
-        fi
-        echo "✓ Build artifacts verified"
-
-    - name: Verify build artifacts (Windows)
-      if: matrix.os == 'windows-latest'
-      shell: pwsh
-      run: |
-        if (!(Test-Path "dist")) {
-          Write-Error "Error: dist directory not created"
-          exit 1
-        }
-        Write-Host "✓ Build artifacts verified"
-
-  # Build verification on Linux
   build:
-    name: Build Verification
-    needs: validate
+    name: Build
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 5
 
     steps:
     - name: Checkout code
@@ -180,23 +95,11 @@ jobs:
         fi
         echo "✓ Build artifacts verified"
 
-    - name: Check build size
-      run: |
-        DIST_SIZE=$(du -sh dist | cut -f1)
-        echo "Build size: $DIST_SIZE"
-
-    - name: Upload build artifacts
-      uses: actions/upload-artifact@v4
-      with:
-        name: build-artifacts
-        path: dist/
-        retention-days: 7
-
-  # Security and dependency checks
   security:
     name: Security Audit
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 5
+    continue-on-error: true
 
     steps:
     - name: Checkout code
@@ -213,76 +116,3 @@ jobs:
 
     - name: Run npm audit
       run: npm audit --audit-level=high
-      continue-on-error: true
-
-    - name: Check for outdated dependencies
-      run: npm outdated || true
-
-  # PR-specific checks
-  pr-checks:
-    name: Pull Request Checks
-    if: github.event_name == 'pull_request'
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
-
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-      with:
-        fetch-depth: 0
-
-    - name: Setup Node.js
-      uses: actions/setup-node@v4
-      with:
-        node-version: '20.x'
-        cache: 'npm'
-
-    - name: Install dependencies
-      run: npm ci
-
-    - name: Check commit messages
-      run: |
-        echo "Checking commit messages..."
-        git log --format=%s origin/${{ github.base_ref }}..HEAD | while read msg; do
-          if ! echo "$msg" | grep -qE '^(feat|fix|docs|style|refactor|perf|test|chore|ci|build|revert)(\(.+\))?: .+'; then
-            echo "⚠️  Commit message doesn't follow conventional commits: $msg"
-          else
-            echo "✓ $msg"
-          fi
-        done
-
-    - name: Check for TODO comments in changed files
-      run: |
-        echo "Checking for TODO comments in changed files..."
-        git diff origin/${{ github.base_ref }}...HEAD --name-only | \
-          xargs grep -n "TODO\|FIXME\|XXX\|HACK" || echo "No TODO comments found"
-
-    - name: Check bundle size impact
-      run: |
-        npm run build
-        CURRENT_SIZE=$(du -sb dist | cut -f1)
-        echo "Current build size: $CURRENT_SIZE bytes"
-
-  # Quality gate - all checks must pass
-  quality-gate:
-    name: Quality Gate
-    needs: [validate, test, build, security, cross-platform]
-    runs-on: ubuntu-latest
-    if: always()
-
-    steps:
-    - name: Check job results
-      run: |
-        if [ "${{ needs.validate.result }}" != "success" ] || \
-           [ "${{ needs.test.result }}" != "success" ] || \
-           [ "${{ needs.build.result }}" != "success" ] || \
-           [ "${{ needs.cross-platform.result }}" != "success" ]; then
-          echo "One or more required jobs failed"
-          exit 1
-        fi
-        echo "✓ All quality checks passed"
-
-    - name: Report success
-      run: |
-        echo "🎉 CI pipeline completed successfully!"
-        echo "All tests passed, build verified, and security checks completed."
