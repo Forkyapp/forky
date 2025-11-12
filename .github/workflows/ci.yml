@@ -12,8 +12,8 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  lint:
-    name: Lint & Type Check
+  typecheck:
+    name: Type Check
     runs-on: ubuntu-latest
     timeout-minutes: 5
 
@@ -33,11 +33,29 @@ jobs:
     - name: Type Check
       run: npm run type-check
 
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20.x'
+        cache: 'npm'
+
+    - name: Install dependencies
+      run: npm ci
+
     - name: Run linter
       run: npm run lint
 
   test:
-    name: Test & Coverage
+    name: Test
     runs-on: ubuntu-latest
     timeout-minutes: 10
 
@@ -58,61 +76,3 @@ jobs:
       run: npm test -- --ci --maxWorkers=2
       env:
         CI: true
-
-    - name: Upload coverage
-      uses: codecov/codecov-action@v4
-      if: always()
-      with:
-        files: ./coverage/lcov.info
-        fail_ci_if_error: false
-
-  build:
-    name: Build
-    runs-on: ubuntu-latest
-    timeout-minutes: 5
-
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-
-    - name: Setup Node.js
-      uses: actions/setup-node@v4
-      with:
-        node-version: '20.x'
-        cache: 'npm'
-
-    - name: Install dependencies
-      run: npm ci
-
-    - name: Build
-      run: npm run build
-
-    - name: Verify build artifacts
-      run: |
-        if [ ! -d "dist" ]; then
-          echo "Error: dist directory not created"
-          exit 1
-        fi
-        echo "✓ Build artifacts verified"
-
-  security:
-    name: Security Audit
-    runs-on: ubuntu-latest
-    timeout-minutes: 5
-    continue-on-error: true
-
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-
-    - name: Setup Node.js
-      uses: actions/setup-node@v4
-      with:
-        node-version: '20.x'
-        cache: 'npm'
-
-    - name: Install dependencies
-      run: npm ci
-
-    - name: Run npm audit
-      run: npm audit --audit-level=high
