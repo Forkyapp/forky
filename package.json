@@ -18,7 +18,8 @@
     "clean": "rm -rf dist",
     "switch": "ts-node scripts/switch-project.ts",
     "projects": "ts-node scripts/list-projects.ts",
-    "current": "ts-node scripts/current-project.ts"
+    "current": "ts-node scripts/current-project.ts",
+    "build:context-index": "ts-node scripts/build-context-index.ts"
   },
   "dependencies": {
     "axios": "^1.6.0",

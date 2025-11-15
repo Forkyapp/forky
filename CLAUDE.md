@@ -18,6 +18,14 @@
 7. [Configuration Management](#configuration-management)
 8. [Testing Strategy](#testing-strategy)
 9. [Important Notes for AI Assistants](#important-notes-for-ai-assistants)
+   - [Intelligent Context Loading](#-intelligent-context-loading)
+   - [Critical Migration Status](#️-critical-migration-status)
+   - [Unused Code to Ignore](#️-unused-code-to-ignore)
+   - [Common Pitfalls to Avoid](#-common-pitfalls-to-avoid)
+   - [Understanding Data Flow](#-understanding-data-flow)
+   - [Code Review Checklist](#-code-review-checklist)
+   - [Performance Considerations](#-performance-considerations)
+   - [Security Considerations](#-security-considerations)
 10. [Quick Reference](#quick-reference)
 
 ---
@@ -690,239 +698,6 @@ jest.mock('fs/promises');
 
 ---
 
-## Common Tasks
-
-### Task 1: Adding a New Pipeline Stage
-
-**Example:** Add a "testing" stage after implementation
-
-1. **Create stage file:**
-```typescript
-// src/core/orchestrator/stages/testing.stage.ts
-import type { ClickUpTask } from '@/types/clickup';
-import type { StageContext } from '@/types/orchestrator';
-import * as testRunner from '@/core/ai-services/test-runner.service';
-
-export async function executeTestingStage(
-  task: ClickUpTask,
-  context: StageContext
-): Promise<void> {
-  const { taskId, repoPath, branch } = context;
-
-  // Run tests
-  const results = await testRunner.runTests(repoPath, branch);
-
-  // Update pipeline state
-  context.pipeline.updateStageMetadata('testing', {
-    testsRun: results.total,
-    testsPassed: results.passed,
-    testsFailed: results.failed
-  });
-}
-```
-
-2. **Update orchestrator:**
-```typescript
-// src/core/orchestrator/orchestrator.service.ts
-import { executeTestingStage } from './stages/testing.stage';
-
-async function processTask(task: ClickUpTask): Promise<void> {
-  // ... existing stages ...
-
-  await executeImplementationStage(task, context);
-
-  // Add new stage
-  await executeTestingStage(task, context);
-
-  await executeReviewStage(task, context);
-  // ...
-}
-```
-
-3. **Update pipeline types:**
-```typescript
-// src/types/storage.ts
-export type PipelineStage =
-  | 'detected'
-  | 'analyzing'
-  | 'analyzing_fallback'
-  | 'analyzed'
-  | 'implementing'
-  | 'implemented'
-  | 'testing'      // Add new stage
-  | 'codex_reviewing'
-  // ...
-```
-
-### Task 2: Adding a New AI Service
-
-**Example:** Add OpenAI integration
-
-1. **Create service file:**
-```typescript
-// src/core/ai-services/openai.service.ts
-import type { ClickUpTask } from '@/types/clickup';
-import type { LaunchOptions } from '@/types/ai';
-import config from '@/shared/config';
-
-export async function analyzeWithOpenAI(
-  task: ClickUpTask,
-  options: LaunchOptions
-): Promise<string> {
-  // Load context
-  const context = await loadSmartContext(options.repoPath);
-
-  // Build prompt
-  const prompt = buildAnalysisPrompt(task, context);
-
-  // Call OpenAI API
-  const response = await callOpenAI(prompt);
-
-  return response;
-}
-
-async function callOpenAI(prompt: string): Promise<string> {
-  // Implementation
-}
-```
-
-2. **Add to orchestrator:**
-```typescript
-// src/core/orchestrator/stages/analysis.stage.ts
-import * as openai from '@/core/ai-services/openai.service';
-
-export async function executeAnalysisStage(
-  task: ClickUpTask,
-  context: StageContext
-): Promise<void> {
-  // Try OpenAI first
-  const analysis = await openai.analyzeWithOpenAI(task, options);
-  // ...
-}
-```
-
-### Task 3: Adding a New Repository Type
-
-**Example:** Add metrics tracking repository
-
-1. **Create repository file:**
-```typescript
-// src/core/repositories/metrics.repository.ts
-import type { Metric } from '@/types/metrics';
-import { RepositoryError } from '@/shared/errors/repository.error';
-import fs from 'fs/promises';
-
-export class MetricsRepository {
-  constructor(private readonly filePath: string) {}
-
-  async track(metric: Metric): Promise<void> {
-    try {
-      const metrics = await this.load();
-      metrics.push(metric);
-      await this.save(metrics);
-    } catch (error) {
-      throw new RepositoryError('Failed to track metric', error as Error);
-    }
-  }
-
-  private async load(): Promise<Metric[]> {
-    try {
-      const data = await fs.readFile(this.filePath, 'utf8');
-      return JSON.parse(data);
-    } catch (error) {
-      return [];
-    }
-  }
-
-  private async save(metrics: Metric[]): Promise<void> {
-    await fs.writeFile(this.filePath, JSON.stringify(metrics, null, 2));
-  }
-}
-```
-
-2. **Add tests:**
-```typescript
-// src/core/repositories/__tests__/metrics.repository.test.ts
-describe('MetricsRepository', () => {
-  // Test implementation
-});
-```
-
-### Task 4: Fixing Bugs
-
-**Standard Bug Fix Workflow:**
-
-1. **Reproduce the bug** - Write a failing test
-2. **Identify root cause** - Use debugger or logging
-3. **Fix the issue** - Minimal code change
-4. **Verify fix** - Test passes
-5. **Check side effects** - Run full test suite
-6. **Document** - Add comments if needed
-
-**Example:**
-```typescript
-// 1. Write failing test
-it('should handle missing task description', () => {
-  const task = { id: '123', title: 'Test' }; // No description
-  expect(() => processTask(task)).not.toThrow();
-});
-
-// 2. Fix code
-function processTask(task: ClickUpTask): void {
-  const description = task.description || 'No description provided';
-  // ...
-}
-
-// 3. Verify test passes
-```
-
-### Task 5: Adding Configuration Options
-
-**Example:** Add a new environment variable
-
-1. **Update .env file:**
-```bash
-# Add new variable
-ENABLE_SLACK_NOTIFICATIONS=true
-```
-
-2. **Update config module:**
-```typescript
-// src/shared/config/index.ts
-export default {
-  // ... existing config
-  notifications: {
-    slack: {
-      enabled: process.env.ENABLE_SLACK_NOTIFICATIONS === 'true',
-      webhookUrl: process.env.SLACK_WEBHOOK_URL || ''
-    }
-  }
-};
-```
-
-3. **Update types:**
-```typescript
-// src/types/config.ts
-export interface Config {
-  // ... existing
-  notifications: {
-    slack: {
-      enabled: boolean;
-      webhookUrl: string;
-    };
-  };
-}
-```
-
-4. **Use in code:**
-```typescript
-import config from '@/shared/config';
-
-if (config.notifications.slack.enabled) {
-  await sendSlackNotification(message);
-}
-```
-
 ---
 
 ## Configuration Management
@@ -1172,6 +947,32 @@ npm test -- --testPathPattern=integration
 
 ## Important Notes for AI Assistants
 
+### 📚 Intelligent Context Loading
+
+**IMPORTANT:** This project has extensive documentation in `/templates/context/` organized for optimal AI consumption.
+
+**For detailed context loading instructions, see:** [`/templates/context/CONTEXT_LOADING.md`](/templates/context/CONTEXT_LOADING.md)
+
+**Quick Usage:**
+
+```typescript
+import { loadContext } from './templates/context/smart-context-loader';
+
+// User asks: "How do I create a repository?"
+const docs = await loadContext('repository pattern');
+// Returns: patterns/backend/repositories.md + related files with full content
+```
+
+**Common Queries:**
+- Backend: `loadContext('repository')`, `loadContext('prisma transactions')`
+- Frontend: `loadContext('react query cache')`, `loadContext('optimistic updates')`
+- Shared: `loadContext('zod validation')`, `loadContext('error handling')`
+- Setup: `loadContext('project setup')`, `loadContext('common commands')`
+
+**Categories:** `project`, `patterns/shared`, `patterns/frontend`, `patterns/backend`, `guides`, `specs`, `testing`
+
+---
+
 ### ⚠️ Critical Migration Status
 
 **IMPORTANT:** This codebase is undergoing a migration from `lib/` (legacy) to `src/` (modern).
@@ -1404,107 +1205,6 @@ throw new AIError(message, service)              // AI service errors
 
 ---
 
-## Recent Refactoring (November 2025)
-
-### Core Folder Restructuring
-
-**Date:** 2025-11-15
-**Status:** ✅ Complete
-**Details:** See `REFACTOR_SUMMARY.md` for full details
-
-The `src/core/` folder has been significantly refactored to improve organization, maintainability, and testability:
-
-#### New Modules
-
-1. **`workflow/`** - Main workflow orchestration
-   - `orchestrator.ts` - Simplified orchestrator (255 lines → 75 lines)
-   - `workflow-executor.ts` - Stage execution logic
-   - `types.ts` - Workflow-specific types
-
-2. **`stages/`** - Independent pipeline stages
-   - `base-stage.ts` - Abstract base class with common functionality
-   - `analysis.stage.ts` - Gemini analysis (refactored)
-   - `implementation.stage.ts` - Claude implementation (refactored)
-   - `review.stage.ts` - Codex review (refactored)
-   - `fixes.stage.ts` - Claude fixes (refactored)
-   - `types.ts` - Stage result types
-
-3. **`notifications/`** - Centralized notification system
-   - `notification-manager.ts` - Coordinates all notifications
-   - `clickup-notifier.ts` - ClickUp-specific formatting
-   - `types.ts` - Notification types
-
-#### Key Improvements
-
-- **Separation of Concerns**: Each module has a single, clear responsibility
-- **Dependency Injection**: All stages use DI for better testability
-- **Base Stage Pattern**: Common functionality extracted to `BaseStage` class
-- **Type Safety**: Strong typing throughout with dedicated type files
-- **Backward Compatibility**: Old `orchestrator/` now delegates to new modules
-
-#### Usage Guidelines
-
-**❌ DON'T USE (OLD):**
-```typescript
-// Old way - still works but deprecated
-import { executeAnalysisStage } from '@/core/orchestrator/stages';
-import { notifyWorkflowComplete } from '@/core/orchestrator/utils/notifications';
-```
-
-**✅ USE (NEW):**
-```typescript
-// New way - recommended
-import { taskOrchestrator } from '@/core/workflow';
-import { AnalysisStage } from '@/core/stages';
-import { notificationManager } from '@/core/notifications';
-```
-
-#### Adding New Stages
-
-To add a new pipeline stage:
-
-1. Create stage class in `src/core/stages/`:
-
-```typescript
-import { BaseStage } from './base-stage';
-import type { StageContext, BaseStageResult } from './types';
-
-export class MyStage extends BaseStage<MyResult> {
-  protected readonly stageName = 'MyStage';
-
-  async execute(context: StageContext): Promise<MyResult> {
-    this.logAI('Starting my stage...', 'AI Service');
-    // Implementation
-    this.logSuccess('Stage complete!');
-    return { success: true };
-  }
-}
-```
-
-2. Add to `workflow-executor.ts`:
-
-```typescript
-private readonly myStage: MyStage;
-
-constructor() {
-  this.myStage = new MyStage();
-}
-
-// In execute():
-await this.myStage.run(baseContext);
-```
-
-3. Export from `stages/index.ts`
-
-#### Benefits
-
-- **70% reduction** in orchestrator code (255 → 75 lines)
-- **Easy to test**: Mock dependencies via constructor injection
-- **Easy to extend**: Add stages by extending `BaseStage`
-- **Easy to maintain**: Clear separation, small focused files
-- **Fully backward compatible**: Existing code works without changes
-
----
 
 ## Conclusion
 
