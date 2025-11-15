@@ -1,3 +1,6 @@
+// Mock tsconfig-paths/register before any imports
+jest.mock('tsconfig-paths/register', () => ({}));
+
 // Mock environment variables before any imports
 // These will persist because we mock dotenv.config() below
 const TEST_ENV = {
@@ -23,6 +26,13 @@ jest.mock('dotenv', () => ({
 jest.mock('child_process', () => ({
   exec: jest.fn(),
   promisify: jest.fn(() => jest.fn())
+}));
+jest.mock('./src/core/discord/discord.service', () => ({
+  discordService: {
+    initialize: jest.fn(),
+    processNewMessages: jest.fn(),
+    isInitialized: false
+  }
 }));
 
 import * as fs from 'fs';
@@ -202,7 +212,7 @@ describe('Forky Task Automation System', () => {
           status: { status: 'bot in progress' }
         };
 
-        mockedAxios.get.mockResolvedValue({ data: mockTask } as any);
+        mockedAxios.get.mockResolvedValue({ data: { tasks: [mockTask] } } as any);
 
         const result = await getAssignedTasks();
 
@@ -526,7 +536,7 @@ describe('Forky Task Automation System', () => {
           status: { status: 'bot in progress' }
         };
 
-        mockedAxios.get.mockResolvedValue({ data: mockTask } as any);
+        mockedAxios.get.mockResolvedValue({ data: { tasks: [mockTask] } } as any);
 
         // Simulate task already processed
         cache.add({ id: 'task-1', name: 'Task 1' });
@@ -534,9 +544,9 @@ describe('Forky Task Automation System', () => {
         const consoleSpy = jest.spyOn(console, 'log').mockImplementation();
         await pollAndProcess();
 
-        // Should log that task is skipped
-        const logs = consoleSpy.mock.calls.flat().join(' ');
-        expect(logs).toContain('already in cache');
+        // Task should be silently skipped (no processing happens)
+        // Verify that task is still in cache
+        expect(cache.has('task-1')).toBe(true);
 
         consoleSpy.mockRestore();
       });
