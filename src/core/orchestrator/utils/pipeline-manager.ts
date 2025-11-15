@@ -81,7 +81,8 @@ export function validateImplementationComplete(taskId: string): string {
     throw new Error('Claude implementation stage not completed');
   }
 
-  return implementingStage.branch || `task-${taskId}`;
+  const branch = implementingStage.branch as string | undefined;
+  return branch || `task-${taskId}`;
 }
 
 /**

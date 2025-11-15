@@ -226,8 +226,9 @@ describe('Validation Utility', () => {
     });
 
     it('should apply validator when provided', () => {
-      const validator = (data: any) => {
-        if (!data.required) throw new ValidationError('Missing required field', []);
+      const validator = (data: unknown) => {
+        const obj = data as { required?: boolean };
+        if (!obj.required) throw new ValidationError('Missing required field', []);
         return data;
       };
 

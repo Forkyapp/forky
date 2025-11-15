@@ -58,7 +58,7 @@ export abstract class BaseAPIClient {
   /**
    * POST request with retry logic
    */
-  protected async post<T>(url: string, data?: any, config?: AxiosRequestConfig): Promise<T> {
+  protected async post<T>(url: string, data?: unknown, config?: AxiosRequestConfig): Promise<T> {
     return withRetry(async () => {
       const response = await this.client.post<T>(url, data, config);
       return response.data;
@@ -68,7 +68,7 @@ export abstract class BaseAPIClient {
   /**
    * PUT request with retry logic
    */
-  protected async put<T>(url: string, data?: any, config?: AxiosRequestConfig): Promise<T> {
+  protected async put<T>(url: string, data?: unknown, config?: AxiosRequestConfig): Promise<T> {
     return withRetry(async () => {
       const response = await this.client.put<T>(url, data, config);
       return response.data;
@@ -137,10 +137,10 @@ export abstract class BaseAPIClient {
    */
   private extractErrorMessage(error: AxiosError): string {
     if (error.response?.data) {
-      const data = error.response.data as any;
+      const data = error.response.data as { message?: string; error?: string } | string;
       if (typeof data === 'string') return data;
-      if (data.message) return data.message;
-      if (data.error) return data.error;
+      if (typeof data === 'object' && data.message) return data.message;
+      if (typeof data === 'object' && data.error) return data.error;
     }
 
     return error.message || 'Unknown API error';

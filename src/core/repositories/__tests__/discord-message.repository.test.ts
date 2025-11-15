@@ -24,7 +24,7 @@ describe('DiscordMessageRepository', () => {
     // Clean up test files
     try {
       await fs.rm(testDir, { recursive: true, force: true });
-    } catch (error) {
+    } catch (_error) {
       // Ignore errors
     }
   });

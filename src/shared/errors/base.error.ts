@@ -8,14 +8,14 @@ export abstract class BaseError extends Error {
   public readonly statusCode: number;
   public readonly isOperational: boolean;
   public readonly timestamp: string;
-  public readonly context?: Record<string, any>;
+  public readonly context?: Record<string, unknown>;
 
   constructor(
     message: string,
     code: string,
     statusCode: number = 500,
     isOperational: boolean = true,
-    context?: Record<string, any>
+    context?: Record<string, unknown>
   ) {
     super(message);
 
@@ -35,7 +35,7 @@ export abstract class BaseError extends Error {
     Object.setPrototypeOf(this, new.target.prototype);
   }
 
-  toJSON(): Record<string, any> {
+  toJSON(): Record<string, unknown> {
     return {
       name: this.name,
       message: this.message,

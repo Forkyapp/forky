@@ -9,14 +9,14 @@ export class RepositoryError extends BaseError {
   constructor(
     message: string,
     code: string = 'REPOSITORY_ERROR',
-    context?: Record<string, any>
+    context?: Record<string, unknown>
   ) {
     super(message, code, 500, true, context);
   }
 }
 
 export class RepositoryNotFoundError extends RepositoryError {
-  constructor(repoName: string, context?: Record<string, any>) {
+  constructor(repoName: string, context?: Record<string, unknown>) {
     super(
       `Repository not found: ${repoName}`,
       'REPOSITORY_NOT_FOUND_ERROR',
@@ -32,7 +32,7 @@ export class GitOperationError extends RepositoryError {
     operation: string,
     message: string,
     command?: string,
-    context?: Record<string, any>
+    context?: Record<string, unknown>
   ) {
     super(
       `Git ${operation} failed: ${message}`,
@@ -44,7 +44,7 @@ export class GitOperationError extends RepositoryError {
 }
 
 export class BranchExistsError extends RepositoryError {
-  constructor(branchName: string, context?: Record<string, any>) {
+  constructor(branchName: string, context?: Record<string, unknown>) {
     super(
       `Branch already exists: ${branchName}`,
       'BRANCH_EXISTS_ERROR',
@@ -54,7 +54,7 @@ export class BranchExistsError extends RepositoryError {
 }
 
 export class BranchNotFoundError extends RepositoryError {
-  constructor(branchName: string, context?: Record<string, any>) {
+  constructor(branchName: string, context?: Record<string, unknown>) {
     super(
       `Branch not found: ${branchName}`,
       'BRANCH_NOT_FOUND_ERROR',
@@ -66,7 +66,7 @@ export class BranchNotFoundError extends RepositoryError {
 export class MergeConflictError extends RepositoryError {
   public readonly conflicts: readonly string[];
 
-  constructor(conflicts: readonly string[], context?: Record<string, any>) {
+  constructor(conflicts: readonly string[], context?: Record<string, unknown>) {
     super(
       `Merge conflict detected in ${conflicts.length} file(s)`,
       'MERGE_CONFLICT_ERROR',

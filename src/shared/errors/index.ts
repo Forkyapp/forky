@@ -26,7 +26,7 @@ export * from './repository.error';
  */
 export function isOperationalError(error: Error): boolean {
   if ('isOperational' in error) {
-    return (error as any).isOperational === true;
+    return (error as { isOperational?: boolean }).isOperational === true;
   }
   return false;
 }
@@ -47,9 +47,9 @@ export function getErrorMessage(error: unknown): string {
 /**
  * Extract error context safely
  */
-export function getErrorContext(error: unknown): Record<string, any> | undefined {
+export function getErrorContext(error: unknown): Record<string, unknown> | undefined {
   if (error instanceof Error && 'context' in error) {
-    return (error as any).context;
+    return (error as { context?: Record<string, unknown> }).context;
   }
   return undefined;
 }

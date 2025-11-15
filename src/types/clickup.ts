@@ -34,7 +34,7 @@ export interface ClickUpComment {
 export interface ClickUpCommentResponse {
   readonly success: boolean;
   readonly disabled?: boolean;
-  readonly data?: any;
+  readonly data?: unknown;
   readonly error?: string;
 }
 

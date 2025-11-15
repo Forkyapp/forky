@@ -109,21 +109,21 @@ export function wait(ms: number): Promise<void> {
  * Mock logger that captures log messages
  */
 export class MockLogger {
-  public logs: Array<{ level: string; message: string; meta?: any }> = [];
+  public logs: Array<{ level: string; message: string; meta?: unknown }> = [];
 
-  info(message: string, meta?: any): void {
+  info(message: string, meta?: unknown): void {
     this.logs.push({ level: 'info', message, meta });
   }
 
-  error(message: string, meta?: any): void {
+  error(message: string, meta?: unknown): void {
     this.logs.push({ level: 'error', message, meta });
   }
 
-  warn(message: string, meta?: any): void {
+  warn(message: string, meta?: unknown): void {
     this.logs.push({ level: 'warn', message, meta });
   }
 
-  debug(message: string, meta?: any): void {
+  debug(message: string, meta?: unknown): void {
     this.logs.push({ level: 'debug', message, meta });
   }
 

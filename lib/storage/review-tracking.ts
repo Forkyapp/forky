@@ -109,9 +109,10 @@ export const reviewTracking = {
           };
         }
       }
-    } catch (error: any) {
-      if (!error.message.includes('404') && !error.message.includes('Not Found')) {
-        console.error(`Error checking commits for ${reviewEntry.taskId}:`, error.message);
+    } catch (error: unknown) {
+      const err = error as { message?: string };
+      if (!err.message?.includes('404') && !err.message?.includes('Not Found')) {
+        console.error(`Error checking commits for ${reviewEntry.taskId}:`, err.message);
       }
     }
 

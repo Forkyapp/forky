@@ -20,10 +20,10 @@ export interface IPipelineRepository {
   get(taskId: string): Promise<PipelineData | null>;
   init(taskId: string, taskData: Partial<ClickUpTaskData>): Promise<PipelineData>;
   updateStage(taskId: string, stage: PipelineStage, stageData?: Partial<StageEntry>): Promise<PipelineData>;
-  completeStage(taskId: string, stage: PipelineStage, result?: any): Promise<PipelineData>;
+  completeStage(taskId: string, stage: PipelineStage, result?: Record<string, unknown>): Promise<PipelineData>;
   failStage(taskId: string, stage: PipelineStage, error: Error | string): Promise<PipelineData>;
-  updateMetadata(taskId: string, metadata: Record<string, any>): Promise<PipelineData>;
-  complete(taskId: string, result?: any): Promise<PipelineData>;
+  updateMetadata(taskId: string, metadata: Record<string, unknown>): Promise<PipelineData>;
+  complete(taskId: string, result?: Record<string, unknown>): Promise<PipelineData>;
   fail(taskId: string, error: Error | string): Promise<PipelineData>;
   getActive(): Promise<PipelineData[]>;
   getSummary(taskId: string): Promise<PipelineSummary | null>;
@@ -157,7 +157,7 @@ export class PipelineRepository implements IPipelineRepository {
   async completeStage(
     taskId: string,
     stage: PipelineStage,
-    result: any = {}
+    result: Record<string, unknown> = {}
   ): Promise<PipelineData> {
     const pipelines = await this.load();
     const pipeline = pipelines[taskId];
@@ -222,7 +222,7 @@ export class PipelineRepository implements IPipelineRepository {
   /**
    * Update pipeline metadata
    */
-  async updateMetadata(taskId: string, metadata: Record<string, any>): Promise<PipelineData> {
+  async updateMetadata(taskId: string, metadata: Record<string, unknown>): Promise<PipelineData> {
     const pipelines = await this.load();
     const pipeline = pipelines[taskId];
 
@@ -244,7 +244,7 @@ export class PipelineRepository implements IPipelineRepository {
   /**
    * Mark pipeline as completed
    */
-  async complete(taskId: string, result: any = {}): Promise<PipelineData> {
+  async complete(taskId: string, result: Record<string, unknown> = {}): Promise<PipelineData> {
     const pipelines = await this.load();
     const pipeline = pipelines[taskId];
 

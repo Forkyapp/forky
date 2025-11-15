@@ -74,10 +74,11 @@ export const tracking = {
           state: pr.state
         };
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       // Silently handle "no PR found" cases - this is expected while waiting for PR creation
-      if (error.code !== 0 && !error.message.includes('no pull requests')) {
-        console.error(`Error checking PR for ${trackingEntry.taskId}:`, error.message);
+      const err = error as { code?: number; message?: string };
+      if (err.code !== 0 && !err.message?.includes('no pull requests')) {
+        console.error(`Error checking PR for ${trackingEntry.taskId}:`, err.message);
       }
     }
 

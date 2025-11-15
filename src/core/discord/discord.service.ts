@@ -105,26 +105,37 @@ export class DiscordService {
   /**
    * Handle real-time mentions (when bot is @mentioned)
    */
-  private async handleMention(discordMessage: any): Promise<void> {
+  private async handleMention(discordMessage: unknown): Promise<void> {
     try {
+      // Type guard for Discord.js message structure
+      const msg = discordMessage as {
+        id: string;
+        channelId: string;
+        guildId?: string;
+        content: string;
+        author: { id: string; username: string; bot: boolean };
+        createdAt: Date;
+        mentions: { users: Map<string, { id: string }> };
+      };
+
       // Skip bot messages
-      if (discordMessage.author.bot) {
+      if (msg.author.bot) {
         return;
       }
 
       // Convert Discord.js message to our format
       const message: DiscordMessage = {
-        id: discordMessage.id,
-        channelId: discordMessage.channelId,
-        guildId: discordMessage.guildId || '',
-        content: discordMessage.content,
+        id: msg.id,
+        channelId: msg.channelId,
+        guildId: msg.guildId || '',
+        content: msg.content,
         author: {
-          id: discordMessage.author.id,
-          username: discordMessage.author.username,
-          bot: discordMessage.author.bot,
+          id: msg.author.id,
+          username: msg.author.username,
+          bot: msg.author.bot,
         },
-        timestamp: discordMessage.createdAt,
-        mentions: Array.from(discordMessage.mentions.users.values()).map((u: any) => u.id),
+        timestamp: msg.createdAt,
+        mentions: Array.from(msg.mentions.users.values()).map((u) => u.id),
         attachments: [],
       };
 
@@ -228,7 +239,7 @@ export class DiscordService {
     let newMessages = 0;
     let matchedMessages = 0;
 
-    for (const [channelId, messages] of messageMap.entries()) {
+    for (const [, messages] of messageMap.entries()) {
 
       totalMessages += messages.length;
 
@@ -350,7 +361,12 @@ export class DiscordService {
       }
     }
 
-    
+    // Log polling summary
+    logger.debug('Discord polling summary', {
+      totalMessages,
+      newMessages,
+      matchedMessages,
+    });
 
     // Clean up old processed messages (older than 30 days)
     await this.messageRepository.cleanup(30);

@@ -170,7 +170,7 @@ export class ReviewTrackingRepository implements IReviewTrackingRepository {
   async updateStage(taskId: string, stage: string): Promise<void> {
     const entry = this.data.find((e) => e.taskId === taskId);
     if (entry) {
-      (entry as any).stage = stage;
+      entry.stage = stage;
       await this.save(this.data);
     }
   }
@@ -178,7 +178,7 @@ export class ReviewTrackingRepository implements IReviewTrackingRepository {
   async updateIteration(taskId: string, iteration: number): Promise<void> {
     const entry = this.data.find((e) => e.taskId === taskId);
     if (entry) {
-      (entry as any).iteration = iteration;
+      entry.iteration = iteration;
       await this.save(this.data);
     }
   }
@@ -186,7 +186,7 @@ export class ReviewTrackingRepository implements IReviewTrackingRepository {
   async updateCommitSha(taskId: string, sha: string): Promise<void> {
     const entry = this.data.find((e) => e.taskId === taskId);
     if (entry) {
-      (entry as any).lastCommitSha = sha;
+      entry.lastCommitSha = sha;
       await this.save(this.data);
     }
   }

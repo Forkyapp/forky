@@ -35,7 +35,7 @@ import { discordService } from './src/core/discord/discord.service';
 interface ProcessTaskResult {
   success: boolean;
   pipeline?: storage.PipelineData;
-  analysis?: any;
+  analysis?: { content?: string; file?: string } | unknown;
   error?: string;
 }
 

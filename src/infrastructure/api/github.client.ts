@@ -144,7 +144,8 @@ export class GitHubClient extends BaseAPIClient {
       await this.get(`/repos/${this.owner}/${this.repo}/git/refs/heads/${branchName}`);
       return true;
     } catch (error) {
-      if ((error as any).statusCode === 404) {
+      const err = error as { statusCode?: number };
+      if (err.statusCode === 404) {
         return false;
       }
       throw error;
@@ -183,9 +184,9 @@ export class GitHubClient extends BaseAPIClient {
   /**
    * Get commits for a branch
    */
-  async getCommits(branchName: string, perPage: number = 10): Promise<any[]> {
+  async getCommits(branchName: string, perPage: number = 10): Promise<unknown[]> {
     try {
-      return await this.get<any[]>(
+      return await this.get<unknown[]>(
         `/repos/${this.owner}/${this.repo}/commits`,
         {
           params: {

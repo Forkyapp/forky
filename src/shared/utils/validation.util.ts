@@ -216,7 +216,7 @@ export function validateAll(
 export function parseJSON<T>(
   value: string,
   fieldName: string,
-  validator?: (data: any) => T
+  validator?: (data: unknown) => T
 ): T {
   notEmpty(value, fieldName);
   try {

@@ -9,26 +9,26 @@ export class AIError extends BaseError {
   constructor(
     message: string,
     code: string = 'AI_ERROR',
-    context?: Record<string, any>
+    context?: Record<string, unknown>
   ) {
     super(message, code, 500, true, context);
   }
 }
 
 export class ClaudeError extends AIError {
-  constructor(message: string, context?: Record<string, any>) {
+  constructor(message: string, context?: Record<string, unknown>) {
     super(message, 'CLAUDE_ERROR', context);
   }
 }
 
 export class GeminiError extends AIError {
-  constructor(message: string, context?: Record<string, any>) {
+  constructor(message: string, context?: Record<string, unknown>) {
     super(message, 'GEMINI_ERROR', context);
   }
 }
 
 export class CodexError extends AIError {
-  constructor(message: string, context?: Record<string, any>) {
+  constructor(message: string, context?: Record<string, unknown>) {
     super(message, 'CODEX_ERROR', context);
   }
 }
@@ -36,7 +36,7 @@ export class CodexError extends AIError {
 export class AITimeoutError extends AIError {
   public readonly timeoutMs: number;
 
-  constructor(agent: string, timeoutMs: number, context?: Record<string, any>) {
+  constructor(agent: string, timeoutMs: number, context?: Record<string, unknown>) {
     super(
       `${agent} operation timed out after ${timeoutMs}ms`,
       'AI_TIMEOUT_ERROR',
@@ -53,7 +53,7 @@ export class AIExecutionError extends AIError {
     agent: string,
     message: string,
     exitCode?: number,
-    context?: Record<string, any>
+    context?: Record<string, unknown>
   ) {
     super(
       `${agent} execution failed: ${message}`,

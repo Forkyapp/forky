@@ -10,7 +10,7 @@ interface ProcessInfo {
   completedAt?: string;
   failedAt?: string;
   error?: string | Error;
-  [key: string]: any;
+  [key: string]: unknown;
 }
 
 interface ProcessResult {

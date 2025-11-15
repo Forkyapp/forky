@@ -20,7 +20,7 @@ export interface AIExecutionInfo {
   readonly startedAt: string;
   readonly logFile?: string;
   readonly progressFile?: string;
-  readonly [key: string]: any;
+  readonly [key: string]: unknown;
 }
 
 // Claude types
@@ -40,7 +40,7 @@ export interface ClaudeLaunchOptions {
     readonly featureDir?: string;
     readonly featureSpecFile?: string;
   };
-  readonly subtask?: any;
+  readonly subtask?: { id?: string; description?: string } | unknown;
   readonly branch?: string;
   readonly repoConfig?: RepositoryConfig;
 }

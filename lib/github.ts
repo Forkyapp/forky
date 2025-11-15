@@ -66,7 +66,7 @@ async function createBranch(branchName: string, baseBranch: string = 'main'): Pr
 /**
  * Merge source branch into target branch
  */
-async function mergeBranch(sourceBranch: string, targetBranch: string, commitMessage?: string): Promise<any> {
+async function mergeBranch(sourceBranch: string, targetBranch: string, commitMessage?: string): Promise<unknown> {
   return withRetry(async () => {
     const response = await githubApi.post(
       `/repos/${config.github.owner}/${config.github.repo}/merges`,

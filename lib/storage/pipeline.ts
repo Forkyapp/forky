@@ -134,7 +134,7 @@ export const pipeline = {
     return pipelineDataEntry;
   },
 
-  completeStage(taskId: string, stage: string, result: any = {}): PipelineData {
+  completeStage(taskId: string, stage: string, result: Record<string, unknown> = {}): PipelineData {
     const pipelines = this.load();
     const pipelineDataEntry = pipelines[taskId];
 
@@ -185,7 +185,7 @@ export const pipeline = {
     return pipelineDataEntry;
   },
 
-  updateMetadata(taskId: string, metadata: Record<string, any>): PipelineData {
+  updateMetadata(taskId: string, metadata: Record<string, unknown>): PipelineData {
     const pipelines = this.load();
     const pipelineDataEntry = pipelines[taskId];
 
@@ -204,7 +204,7 @@ export const pipeline = {
     return pipelineDataEntry;
   },
 
-  complete(taskId: string, result: any = {}): PipelineData {
+  complete(taskId: string, result: Record<string, unknown> = {}): PipelineData {
     const pipelines = this.load();
     const pipelineDataEntry = pipelines[taskId];
 
@@ -304,7 +304,7 @@ export const pipeline = {
     return Date.parse(endTime) - Date.parse(pipelineDataEntry.createdAt);
   },
 
-  storeAgentExecution(taskId: string, agent: string, executionInfo: any): PipelineData {
+  storeAgentExecution(taskId: string, agent: string, executionInfo: Record<string, unknown>): PipelineData {
     const pipelines = this.load();
     const pipelineDataEntry = pipelines[taskId];
 
@@ -331,7 +331,7 @@ export const pipeline = {
     return pipelineDataEntry;
   },
 
-  getAgentExecution(taskId: string, agent: string | null = null): any {
+  getAgentExecution(taskId: string, agent: string | null = null): unknown {
     const pipelineDataEntry = this.get(taskId);
 
     if (!pipelineDataEntry) {

@@ -97,23 +97,23 @@ export interface StageEntry {
   completedAt?: string;
   duration?: number;
   error?: string;
-  [key: string]: any;
+  [key: string]: unknown;
 }
 
 export interface PipelineMetadata {
-  geminiAnalysis?: any;
-  aiInstances?: any[];
-  branches?: any[];
+  geminiAnalysis?: { file?: string; fallback?: boolean } | unknown;
+  aiInstances?: unknown[];
+  branches?: string[];
   prNumber?: number | null;
   reviewIterations?: number;
   maxReviewIterations?: number;
   agentExecution?: {
-    gemini?: any;
-    claude?: any;
-    codex?: any;
+    gemini?: unknown;
+    claude?: unknown;
+    codex?: unknown;
   };
   repository?: string;
-  [key: string]: any;
+  [key: string]: unknown;
 }
 
 export interface PipelineError {
