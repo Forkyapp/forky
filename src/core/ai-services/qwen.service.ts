@@ -36,7 +36,7 @@ import { exec } from 'child_process';
 import config from '../../shared/config';
 import { timmy, colors } from '../../shared/ui';
 import * as clickup from '../../../lib/clickup';
-import { loadSmartContext } from '../context/smart-context-loader.service';
+import { loadContextForModel } from '../context/context-orchestrator';
 import type { ClickUpTask } from '../../../src/types/clickup';
 import type { QwenWriteTestsOptions, QwenWriteTestsResult, Settings } from '../../../src/types/ai';
 
@@ -99,12 +99,13 @@ async function writeTests(task: ClickUpTask, options: QwenWriteTestsOptions = {}
   console.log(timmy.ai(`${colors.bright}Qwen${colors.reset} writing unit tests for ${colors.bright}${taskId}${colors.reset}`));
   ensureQwenSettings(repoPath);
 
-  // Load smart context for test writing
+  // Load context for test writing (uses RAG if available, falls back to Smart Loader)
   console.log(timmy.info('Loading relevant testing guidelines...'));
-  const smartContext = await loadSmartContext({
+  const smartContext = await loadContextForModel({
     model: 'qwen',
     taskDescription: `Writing unit tests for: ${taskTitle}`,
-    includeProject: true
+    topK: 5,
+    minRelevance: 0.7
   });
 
   const prompt = `${smartContext ? smartContext + '\n\n' + '='.repeat(80) + '\n\n' : ''}You are a senior test engineer specializing in writing comprehensive unit tests.

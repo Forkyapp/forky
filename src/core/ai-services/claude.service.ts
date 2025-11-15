@@ -6,7 +6,7 @@ import config from '../../shared/config';
 import { timmy, colors } from '../../shared/ui';
 import * as clickup from '../../../lib/clickup';
 import * as storage from '../../../lib/storage';
-import { loadSmartContext } from '../context/smart-context-loader.service';
+import { loadContextForModel } from '../context/context-orchestrator';
 import type { ClickUpTask } from '../../../src/types/clickup';
 import type { LaunchOptions, FixTodoOptions, LaunchResult, FixTodoResult, Settings } from '../../../src/types/ai';
 
@@ -69,12 +69,13 @@ async function launchClaude(task: ClickUpTask, options: LaunchOptions = {}): Pro
   console.log(timmy.ai(`Deploying ${colors.bright}Claude${colors.reset} for ${colors.bright}${taskId}${colors.reset}: "${taskTitle}"`));
   ensureClaudeSettings(repoPath);
 
-  // Load smart context based on task
+  // Load context based on task (uses RAG if available, falls back to Smart Loader)
   console.log(timmy.info('Loading relevant coding guidelines...'));
-  const smartContext = await loadSmartContext({
+  const smartContext = await loadContextForModel({
     model: 'claude',
     taskDescription: `${taskTitle}\n\n${taskDescription}`,
-    includeProject: true
+    topK: 5,
+    minRelevance: 0.7
   });
 
   // Build prompt with optional Gemini analysis

@@ -62,6 +62,15 @@ interface Config {
     checkIntervalMs: number;
     timeoutMs: number;
   };
+  context: {
+    mode: 'free' | 'premium' | 'hybrid';
+    openaiApiKey?: string;
+    fallback: boolean;
+    cache: {
+      enabled: boolean;
+      ttl: number;
+    };
+  };
 }
 
 // Load active project from workspace
@@ -116,6 +125,15 @@ const config: Config = {
   prTracking: {
     checkIntervalMs: 30000,
     timeoutMs: 30 * 60 * 1000,
+  },
+  context: {
+    mode: (process.env.CONTEXT_MODE as 'free' | 'premium' | 'hybrid') || 'hybrid',
+    openaiApiKey: process.env.OPENAI_API_KEY,
+    fallback: process.env.CONTEXT_FALLBACK !== 'false', // Default: true
+    cache: {
+      enabled: process.env.CONTEXT_CACHE_ENABLED !== 'false', // Default: true
+      ttl: parseInt(process.env.CONTEXT_CACHE_TTL || '3600'), // Default: 1 hour
+    },
   },
 };
 

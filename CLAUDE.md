@@ -724,6 +724,13 @@ GEMINI_CLI_PATH=gemini           # Path to Gemini CLI
 CODEX_CLI_PATH=codex             # Path to Codex CLI
 QWEN_CLI_PATH=qwen               # Path to Qwen CLI
 
+# Context Loading Configuration (NEW - RAG System)
+OPENAI_API_KEY=sk-...           # OpenAI API key for RAG embeddings (optional)
+CONTEXT_MODE=hybrid              # free | premium | hybrid (default: hybrid)
+CONTEXT_FALLBACK=true           # Fallback to Smart Loader if RAG fails (default: true)
+CONTEXT_CACHE_ENABLED=true      # Enable context caching (default: true)
+CONTEXT_CACHE_TTL=3600          # Cache TTL in seconds (default: 3600)
+
 # Optional Configuration
 DISABLE_COMMENTS=false           # Disable ClickUp comment posting
 ```

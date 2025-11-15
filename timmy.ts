@@ -27,6 +27,7 @@ import * as clickup from './lib/clickup';
 import * as claude from './src/core/ai-services/claude.service';
 import * as orchestrator from './src/core/orchestrator/orchestrator.service';
 import { discordService } from './src/core/discord/discord.service';
+import { initializeContextOrchestrator } from './src/core/context/context-orchestrator';
 
 // ============================================
 // INTERFACES
@@ -206,6 +207,10 @@ if (require.main === module) {
     storage.cache.init();
     storage.processedComments.init();
 
+    // Initialize context orchestrator (RAG + Smart Loader)
+    console.log(timmy.info('Initializing context loading system...'));
+    await initializeContextOrchestrator(config.context.openaiApiKey);
+
     console.clear();
     console.log(timmy.banner());
 
@@ -215,6 +220,7 @@ if (require.main === module) {
   console.log(timmy.label('  GitHub Repository', `${config.github.owner}/${config.github.repo}`));
   console.log(timmy.label('  Repository Path', config.github.repoPath || 'Not configured'));
   console.log(timmy.label('  Poll Interval', `${config.system.pollIntervalMs / 1000}s`));
+  console.log(timmy.label('  Context Mode', config.context.mode + (config.context.openaiApiKey ? ' (RAG enabled)' : ' (Smart Loader only)')));
   console.log('');
 
   if (!config.github.repoPath || !fs.existsSync(config.github.repoPath)) {

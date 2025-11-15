@@ -139,10 +139,26 @@ DISCORD_ENABLED=false
 # DISCORD_POLL_INTERVAL_MS=600000
 
 # ============================================
-# OPTIONAL - OpenAI (for Discord AI responses)
+# OPTIONAL - OpenAI (for Discord AI responses & RAG context loading)
 # ============================================
 
 # OPENAI_API_KEY=your_openai_api_key_here
+
+# ============================================
+# OPTIONAL - Context Loading (RAG System)
+# ============================================
+
+# Context loading mode: free (Smart Loader only), premium (RAG only), hybrid (RAG with fallback)
+# CONTEXT_MODE=hybrid
+
+# Enable fallback to Smart Loader if RAG fails (default: true)
+# CONTEXT_FALLBACK=true
+
+# Enable context caching (default: true)
+# CONTEXT_CACHE_ENABLED=true
+
+# Context cache TTL in seconds (default: 3600 = 1 hour)
+# CONTEXT_CACHE_TTL=3600
 
 # ============================================
 # OPTIONAL - System Config (defaults work fine)

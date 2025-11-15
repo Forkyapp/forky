@@ -5,7 +5,7 @@ import { exec } from 'child_process';
 import config, { RepositoryConfig } from '../../shared/config';
 import { timmy, colors } from '../../shared/ui';
 import { withRetry, RetryOptions } from '../../shared/utils/retry.util';
-import { loadSmartContext } from '../context/smart-context-loader.service';
+import { loadContextForModel } from '../context/context-orchestrator';
 import type { ClickUpTask } from '../../../src/types/clickup';
 import type { AnalysisResult, FeatureSpec, Progress } from '../../../src/types/ai';
 import type { ExecResult } from '../../../src/types/common';
@@ -34,12 +34,13 @@ async function analyzeTask(task: ClickUpTask, options: AnalyzeTaskOptions = {}):
 
   console.log(timmy.processing(`${colors.bright}Gemini${colors.reset} analyzing task ${colors.bright}${taskId}${colors.reset}...`));
 
-  // Load smart context based on task
+  // Load context based on task (uses RAG if available, falls back to Smart Loader)
   console.log(timmy.info('Loading relevant documentation guidelines...'));
-  const smartContext = await loadSmartContext({
+  const smartContext = await loadContextForModel({
     model: 'gemini',
     taskDescription: `${taskTitle}\n\n${taskDescription}`,
-    includeProject: true
+    topK: 5,
+    minRelevance: 0.7
   });
 
   // Create feature directory
