@@ -1,4 +1,4 @@
-import { forky, colors } from '../../../shared/ui';
+import { timmy, colors } from '../../../shared/ui';
 import * as storage from '../../../../lib/storage';
 import * as claude from '../../ai-services/claude.service';
 import type { ImplementationResult, AnalysisContext } from '../types';
@@ -37,7 +37,7 @@ export async function executeImplementationStage(
     });
 
     console.log(
-      forky.success(
+      timmy.success(
         `${colors.bright}Claude${colors.reset} implementation complete for ${colors.bright}${taskId}${colors.reset}`
       )
     );
@@ -45,7 +45,7 @@ export async function executeImplementationStage(
     return result;
   } catch (error) {
     const err = error as Error;
-    console.log(forky.error(`Claude implementation error: ${err.message}`));
+    console.log(timmy.error(`Claude implementation error: ${err.message}`));
     storage.pipeline.failStage(taskId, storage.pipeline.STAGES.IMPLEMENTING, err);
     throw err;
   }

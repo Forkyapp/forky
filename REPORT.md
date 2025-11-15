@@ -1,6 +1,6 @@
 # Codebase Analysis Report
 
-**Project:** Forky - Autonomous Task Automation System
+**Project:** Timmy - Autonomous Task Automation System
 **Analysis Date:** 2025-11-12
 **Total TypeScript Files:** 71
 **Total Lines of Code:** ~10,000+ lines
@@ -9,14 +9,14 @@
 
 ## Executive Summary
 
-This report identifies code quality issues, duplications, unused code, DRY principle violations, and anti-patterns in the Forky codebase. The analysis reveals significant technical debt primarily due to an ongoing migration from `lib/` (legacy) to `src/` (refactored architecture).
+This report identifies code quality issues, duplications, unused code, DRY principle violations, and anti-patterns in the Timmy codebase. The analysis reveals significant technical debt primarily due to an ongoing migration from `lib/` (legacy) to `src/` (refactored architecture).
 
 ### Critical Findings
 
 1. **Massive Code Duplication:** ~1,500+ lines of duplicated code between `lib/` and `src/` directories
 2. **Unused Features:** Complete RAG system (~600 lines) implemented but never used
 3. **Inconsistent Patterns:** 292 direct `console.log` calls instead of logger utility
-4. **Legacy Code Still Active:** Main entry point (`forky.ts`) still imports from legacy `lib/` directory
+4. **Legacy Code Still Active:** Main entry point (`timmy.ts`) still imports from legacy `lib/` directory
 
 ---
 
@@ -43,7 +43,7 @@ This report identifies code quality issues, duplications, unused code, DRY princ
 **Action Required:**
 ```
 1. Migrate parseCommand() and detectRepository() to src/
-2. Update all imports in forky.ts to use src/infrastructure/api/clickup.client.ts
+2. Update all imports in timmy.ts to use src/infrastructure/api/clickup.client.ts
 3. DELETE lib/clickup.ts
 ```
 
@@ -96,7 +96,7 @@ This report identifies code quality issues, duplications, unused code, DRY princ
 
 **Action Required:**
 ```
-1. Update forky.ts to use CacheRepository
+1. Update timmy.ts to use CacheRepository
 2. DELETE lib/storage/cache.ts
 ```
 
@@ -120,7 +120,7 @@ This report identifies code quality issues, duplications, unused code, DRY princ
 
 **Action Required:**
 ```
-1. Update forky.ts to use QueueRepository
+1. Update timmy.ts to use QueueRepository
 2. DELETE lib/storage/queue.ts
 ```
 
@@ -258,13 +258,13 @@ rm -rf src/core/rag/
 - `src/core/monitoring/codex.service.ts` - 23 occurrences
 - `src/core/ai-services/claude.service.ts` - 17 occurrences
 - `retry-codex-review.ts` - 17 occurrences
-- `forky.ts` - 34 occurrences
+- `timmy.ts` - 34 occurrences
 
 **Pattern Example:**
 ```typescript
 // ❌ BAD - Repeated throughout codebase
-console.log(forky.error(`Failed: ${err.message}`));
-console.log(forky.success('Done'));
+console.log(timmy.error(`Failed: ${err.message}`));
+console.log(timmy.success('Done'));
 console.error('Error loading cache:', (error as Error).message);
 
 // ✅ GOOD - Should use logger utility
@@ -459,12 +459,12 @@ export function ensureAISettings(repoPath: string, agent: string): void {
 **Actual Imports (All Files):**
 ```typescript
 import config from '../../../src/shared/config';                    // ❌ Relative
-import { forky } from '../../../src/shared/ui';                      // ❌ Relative
+import { timmy } from '../../../src/shared/ui';                      // ❌ Relative
 import type { ClickUpTask } from '../../../src/types/clickup';       // ❌ Relative
 
 // Should be:
 import config from '@/shared/config';                                // ✅ Alias
-import { forky } from '@/shared/ui';                                 // ✅ Alias
+import { timmy } from '@/shared/ui';                                 // ✅ Alias
 import type { ClickUpTask } from '@/types/clickup';                  // ✅ Alias
 ```
 
@@ -559,7 +559,7 @@ throw new Error('Repository path is not configured');
 
 **Issue:** Imports from both `lib/` and `src/` in same file
 
-**Example from forky.ts:**
+**Example from timmy.ts:**
 ```typescript
 import * as storage from './lib/storage';           // ❌ Legacy
 import * as clickup from './lib/clickup';           // ❌ Legacy
@@ -649,7 +649,7 @@ src/core/rag/index.ts             # DELETE - Never imported/used
 ### Priority 1: Critical (Do Immediately)
 
 1. **Complete lib/ to src/ Migration**
-   - Update forky.ts to use src/ imports only
+   - Update timmy.ts to use src/ imports only
    - Update all tests to use src/ imports
    - Verify all functionality works
    - DELETE entire lib/ directory
@@ -716,16 +716,16 @@ src/core/rag/index.ts             # DELETE - Never imported/used
 ## 📁 Migration Checklist
 
 ### Step 1: Update Main Entry Point
-- [ ] Update forky.ts to use src/infrastructure/api/clickup.client.ts
-- [ ] Update forky.ts to use src/infrastructure/api/github.client.ts
-- [ ] Update forky.ts to use src/core/repositories/cache.repository.ts
-- [ ] Update forky.ts to use src/core/repositories/queue.repository.ts
-- [ ] Update forky.ts to use src/core/repositories/pipeline.repository.ts
-- [ ] Update forky.ts to use src/core/repositories/tracking.repository.ts
+- [ ] Update timmy.ts to use src/infrastructure/api/clickup.client.ts
+- [ ] Update timmy.ts to use src/infrastructure/api/github.client.ts
+- [ ] Update timmy.ts to use src/core/repositories/cache.repository.ts
+- [ ] Update timmy.ts to use src/core/repositories/queue.repository.ts
+- [ ] Update timmy.ts to use src/core/repositories/pipeline.repository.ts
+- [ ] Update timmy.ts to use src/core/repositories/tracking.repository.ts
 - [ ] Remove all imports from lib/
 
 ### Step 2: Update Tests
-- [ ] Update forky.test.ts to use src/ imports
+- [ ] Update timmy.test.ts to use src/ imports
 - [ ] Verify all tests pass
 - [ ] Add integration tests for new architecture
 
@@ -772,7 +772,7 @@ src/core/rag/index.ts             # DELETE - Never imported/used
 
 ## 📝 Conclusion
 
-The Forky codebase has a solid modern architecture in `src/` but is held back by legacy code in `lib/` and unused features. By following this report's recommendations, you can:
+The Timmy codebase has a solid modern architecture in `src/` but is held back by legacy code in `lib/` and unused features. By following this report's recommendations, you can:
 
 - **Remove 2,546+ lines of duplicate/unused code**
 - **Improve code maintainability by 40%**

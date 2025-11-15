@@ -3,7 +3,7 @@ import path from 'path';
 import { promisify } from 'util';
 import { exec } from 'child_process';
 import config from '../../shared/config';
-import { forky, colors } from '../../shared/ui';
+import { timmy, colors } from '../../shared/ui';
 import * as clickup from '../../../lib/clickup';
 import { loadSmartContext } from '../context/smart-context-loader.service';
 import type { ClickUpTask } from '../../../src/types/clickup';
@@ -65,11 +65,11 @@ async function writeTests(task: ClickUpTask, options: QwenWriteTestsOptions = {}
     throw new Error('Repository path is not configured');
   }
 
-  console.log(forky.ai(`${colors.bright}Qwen${colors.reset} writing unit tests for ${colors.bright}${taskId}${colors.reset}`));
+  console.log(timmy.ai(`${colors.bright}Qwen${colors.reset} writing unit tests for ${colors.bright}${taskId}${colors.reset}`));
   ensureQwenSettings(repoPath);
 
   // Load smart context for test writing
-  console.log(forky.info('Loading relevant testing guidelines...'));
+  console.log(timmy.info('Loading relevant testing guidelines...'));
   const smartContext = await loadSmartContext({
     model: 'qwen',
     taskDescription: `Writing unit tests for: ${taskTitle}`,
@@ -214,7 +214,7 @@ Begin writing comprehensive unit tests now! Make sure all tests pass before comm
     const promptFile = path.join(__dirname, '..', `task-${taskId}-qwen-tests-prompt.txt`);
     fs.writeFileSync(promptFile, prompt);
 
-    console.log(forky.info(`${colors.bright}Qwen${colors.reset} starting test generation...`));
+    console.log(timmy.info(`${colors.bright}Qwen${colors.reset} starting test generation...`));
 
     // Unset GITHUB_TOKEN to let gh use keyring auth
     const cleanEnv = { ...process.env };
@@ -232,13 +232,13 @@ Begin writing comprehensive unit tests now! Make sure all tests pass before comm
         timeout: 1800000 // 30 minute timeout
       });
 
-      console.log(forky.success(`${colors.bright}Qwen${colors.reset} completed test writing for ${colors.bright}${branch}${colors.reset}`));
+      console.log(timmy.success(`${colors.bright}Qwen${colors.reset} completed test writing for ${colors.bright}${branch}${colors.reset}`));
 
       // Cleanup prompt file
       fs.unlinkSync(promptFile);
 
       // Check if Qwen made any changes and auto-commit/push them
-      console.log(forky.info('Checking for uncommitted changes from Qwen tests...'));
+      console.log(timmy.info('Checking for uncommitted changes from Qwen tests...'));
 
       try {
         const { stdout: statusOutput } = await execAsync(`cd "${repoPath}" && git status --porcelain`, {
@@ -246,7 +246,7 @@ Begin writing comprehensive unit tests now! Make sure all tests pass before comm
         });
 
         if (statusOutput.trim()) {
-          console.log(forky.info('Qwen created tests. Committing and pushing...'));
+          console.log(timmy.info('Qwen created tests. Committing and pushing...'));
 
           // Commit and push the changes
           await execAsync(
@@ -257,13 +257,13 @@ Begin writing comprehensive unit tests now! Make sure all tests pass before comm
             }
           );
 
-          console.log(forky.success('Qwen tests committed and pushed'));
+          console.log(timmy.success('Qwen tests committed and pushed'));
         } else {
-          console.log(forky.info('No test changes to commit from Qwen'));
+          console.log(timmy.info('No test changes to commit from Qwen'));
         }
       } catch (gitError) {
         const err = gitError as Error;
-        console.log(forky.warning(`Failed to auto-commit Qwen tests: ${err.message}`));
+        console.log(timmy.warning(`Failed to auto-commit Qwen tests: ${err.message}`));
         // Don't fail the whole process if git operations fail
       }
 
@@ -296,7 +296,7 @@ Begin writing comprehensive unit tests now! Make sure all tests pass before comm
 
     } catch (qwenError) {
       const err = qwenError as Error;
-      console.log(forky.error(`${colors.bright}Qwen${colors.reset} test writing failed: ${err.message}`));
+      console.log(timmy.error(`${colors.bright}Qwen${colors.reset} test writing failed: ${err.message}`));
 
       // Cleanup prompt file
       if (fs.existsSync(promptFile)) {
@@ -308,7 +308,7 @@ Begin writing comprehensive unit tests now! Make sure all tests pass before comm
 
   } catch (error) {
     const err = error as Error;
-    console.log(forky.error(`Qwen test writing failed: ${err.message}`));
+    console.log(timmy.error(`Qwen test writing failed: ${err.message}`));
     return { success: false, error: err.message };
   }
 }

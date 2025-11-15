@@ -1,10 +1,10 @@
 # Discord Integration Guide
 
-This guide explains how to set up and use Forky's Discord integration to automatically monitor Discord channels for bug reports and issues.
+This guide explains how to set up and use Timmy's Discord integration to automatically monitor Discord channels for bug reports and issues.
 
 ## Overview
 
-Forky can monitor specific Discord server channels and detect messages containing keywords like "bug", "issue", "error", etc. When matched messages are found, they can be automatically processed and converted into tasks.
+Timmy can monitor specific Discord server channels and detect messages containing keywords like "bug", "issue", "error", etc. When matched messages are found, they can be automatically processed and converted into tasks.
 
 ## Features
 
@@ -21,7 +21,7 @@ Forky can monitor specific Discord server channels and detect messages containin
 
 1. Go to [Discord Developer Portal](https://discord.com/developers/applications)
 2. Click **"New Application"**
-3. Give it a name (e.g., "Forky Bot")
+3. Give it a name (e.g., "Timmy Bot")
 4. Go to **"Bot"** tab
 5. Click **"Add Bot"**
 6. **Important**: Enable these Privileged Gateway Intents:
@@ -80,7 +80,7 @@ DISCORD_POLL_INTERVAL_MS=600000
 # Build the project
 npm run build
 
-# Start Forky
+# Start Timmy
 npm start
 ```
 
@@ -93,7 +93,7 @@ You should see:
 
 ### Basic Usage
 
-Once configured, Forky will:
+Once configured, Timmy will:
 
 1. **Connect** to Discord when started
 2. **Poll** configured channels at specified intervals
@@ -176,11 +176,11 @@ Best practices for channel selection:
 - `#announcements` (one-way)
 - Personal DMs (not supported)
 
-## Integration with Forky Pipeline
+## Integration with Timmy Pipeline
 
 ### Event Handling
 
-You can listen to Discord events and integrate with the Forky pipeline:
+You can listen to Discord events and integrate with the Timmy pipeline:
 
 ```typescript
 import { discordService } from '@/core/discord/discord.service';
@@ -353,7 +353,7 @@ Discord API rate limits:
 - **Per Channel**: 5 requests per 5 seconds
 - **Message Fetch**: 50 requests per 5 seconds
 
-**Forky's approach:**
+**Timmy's approach:**
 - Polls at 10+ minute intervals (well below limits)
 - Fetches max 50 messages per channel per poll
 - Built-in retry logic with exponential backoff
@@ -384,7 +384,7 @@ For issues or questions:
 
 1. Check [Troubleshooting](#troubleshooting) section
 2. Review Discord bot setup in [Developer Portal](https://discord.com/developers/applications)
-3. Check Forky logs for error messages
+3. Check Timmy logs for error messages
 4. Open an issue on GitHub
 
 ---

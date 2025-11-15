@@ -90,7 +90,7 @@ export class DiscordService {
       intervalMs: config.discord.pollIntervalMs,
     });
 
-    console.log(forky.info('🔵 Discord bot monitoring started'));
+    console.log(timmy.info('🔵 Discord bot monitoring started'));
 
     // Initial poll
     this.pollMessages().catch((error) => {
@@ -180,7 +180,7 @@ export class DiscordService {
           });
 
           console.log(
-            forky.success(
+            timmy.success(
               `🔍 Found message with keywords: ${analyzed.matches.map((m) => m.keyword).join(', ')}`
             )
           );

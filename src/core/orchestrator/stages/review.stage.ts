@@ -1,4 +1,4 @@
-import { forky, colors } from '../../../shared/ui';
+import { timmy, colors } from '../../../shared/ui';
 import * as storage from '../../../../lib/storage';
 import * as codex from '../../monitoring/codex.service';
 import type { ReviewResult, StageContext } from '../types';
@@ -25,7 +25,7 @@ export async function executeReviewStage(context: StageContext): Promise<ReviewR
     });
 
     console.log(
-      forky.success(
+      timmy.success(
         `${colors.bright}Codex${colors.reset} review complete for ${colors.bright}${taskId}${colors.reset}`
       )
     );
@@ -33,10 +33,10 @@ export async function executeReviewStage(context: StageContext): Promise<ReviewR
     return reviewResult;
   } catch (error) {
     const err = error as Error;
-    console.log(forky.error(`Codex review error: ${err.message}`));
+    console.log(timmy.error(`Codex review error: ${err.message}`));
     storage.pipeline.failStage(taskId, storage.pipeline.STAGES.CODEX_REVIEWING, err);
     // Continue even if review fails - not critical
-    console.log(forky.warning(`Continuing without Codex review`));
+    console.log(timmy.warning(`Continuing without Codex review`));
     return null;
   }
 }

@@ -1,11 +1,11 @@
 #!/bin/bash
 
-# Forky Setup Script
+# Timmy Setup Script
 # Copies template files to their working locations
 
 set -e
 
-echo "🔧 Setting up Forky..."
+echo "🔧 Setting up Timmy..."
 echo ""
 
 # Colors

@@ -6,7 +6,7 @@ import type { ClickUpTask, CommentResponse, Command, Comment } from '../src/type
 async function getAssignedTasks(): Promise<ClickUpTask[]> {
   try {
     if (!config.clickup.workspaceId) {
-      console.log(forky.error('No workspace ID configured'));
+      console.log(timmy.error('No workspace ID configured'));
       return [];
     }
 
@@ -31,10 +31,10 @@ async function getAssignedTasks(): Promise<ClickUpTask[]> {
     return tasks;
   } catch (error) {
     const axiosError = error as AxiosError;
-    console.log(forky.error(`Failed to fetch tasks: ${axiosError.message}`));
+    console.log(timmy.error(`Failed to fetch tasks: ${axiosError.message}`));
     if (axiosError.response) {
-      console.log(forky.error(`Status code: ${axiosError.response.status}`));
-      console.log(forky.error(`Response data: ${JSON.stringify(axiosError.response.data, null, 2)}`));
+      console.log(timmy.error(`Status code: ${axiosError.response.status}`));
+      console.log(timmy.error(`Response data: ${JSON.stringify(axiosError.response.data, null, 2)}`));
     }
     return [];
   }
@@ -53,14 +53,14 @@ async function updateStatus(taskId: string, statusId: string): Promise<void> {
       }
     );
   } catch (error) {
-    console.log(forky.error(`Status update failed: ${(error as Error).message}`));
+    console.log(timmy.error(`Status update failed: ${(error as Error).message}`));
   }
 }
 
 async function addComment(taskId: string, commentText: string): Promise<CommentResponse> {
   // Check if comments are disabled
   if (process.env.DISABLE_COMMENTS === 'true') {
-    console.log(forky.info(`Comment skipped (disabled) for task ${taskId}`));
+    console.log(timmy.info(`Comment skipped (disabled) for task ${taskId}`));
     return { success: true, disabled: true };
   }
 
@@ -75,14 +75,14 @@ async function addComment(taskId: string, commentText: string): Promise<CommentR
         }
       }
     );
-    console.log(forky.success(`Comment posted to task ${taskId}`));
+    console.log(timmy.success(`Comment posted to task ${taskId}`));
     return { success: true, data: response.data };
   } catch (error) {
     const axiosError = error as AxiosError;
-    console.log(forky.error(`Comment failed for task ${taskId}: ${axiosError.message}`));
+    console.log(timmy.error(`Comment failed for task ${taskId}: ${axiosError.message}`));
     if (axiosError.response) {
-      console.log(forky.error(`Status: ${axiosError.response.status}`));
-      console.log(forky.error(`Details: ${JSON.stringify(axiosError.response.data)}`));
+      console.log(timmy.error(`Status: ${axiosError.response.status}`));
+      console.log(timmy.error(`Details: ${JSON.stringify(axiosError.response.data)}`));
     }
     return { success: false, error: axiosError.message };
   }
@@ -106,7 +106,7 @@ async function getTaskComments(taskId: string): Promise<Comment[]> {
     );
     return response.data.comments || [];
   } catch (error) {
-    console.log(forky.error(`Failed to fetch comments for task ${taskId}: ${(error as Error).message}`));
+    console.log(timmy.error(`Failed to fetch comments for task ${taskId}: ${(error as Error).message}`));
     return [];
   }
 }

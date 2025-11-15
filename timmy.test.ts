@@ -31,7 +31,7 @@ import config from './src/shared/config';
 import { cache, queue, tracking } from './lib/storage';
 import { getAssignedTasks, updateStatus, addComment, parseCommand, detectRepository } from './lib/clickup';
 import { ensureClaudeSettings } from './src/core/ai-services/claude.service';
-import { pollAndProcess } from './forky';
+import { pollAndProcess } from './timmy';
 
 // Restore environment variables after config module deletes them
 Object.assign(process.env, TEST_ENV);

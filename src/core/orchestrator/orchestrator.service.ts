@@ -1,4 +1,4 @@
-import { forky, colors } from '../../shared/ui';
+import { timmy, colors } from '../../shared/ui';
 import * as storage from '../../../lib/storage';
 import { resolveRepoConfig } from '../../shared/config';
 import * as clickup from '../../../lib/clickup';
@@ -46,25 +46,25 @@ export async function processTask(task: ClickUpTask): Promise<ProcessTaskResult>
   // Detect repository from task
   const repoName = clickup.detectRepository(task);
 
-  console.log(forky.ai(`Starting multi-AI workflow for ${colors.bright}${taskId}${colors.reset}`));
+  console.log(timmy.ai(`Starting multi-AI workflow for ${colors.bright}${taskId}${colors.reset}`));
 
   // Resolve repository configuration
   let repoConfig;
   try {
     repoConfig = resolveRepoConfig();
-    console.log(forky.info(`Using repository: ${repoConfig.owner}/${repoConfig.repo}`));
+    console.log(timmy.info(`Using repository: ${repoConfig.owner}/${repoConfig.repo}`));
 
     if (repoName && repoName !== repoConfig.repo) {
       console.log(
-        forky.warning(
+        timmy.warning(
           `Task specifies repo "${repoName}" but active project is "${repoConfig.repo}"`
         )
       );
-      console.log(forky.info('Using active project from workspace.json'));
+      console.log(timmy.info('Using active project from workspace.json'));
     }
   } catch (error) {
     const err = error as Error;
-    console.log(forky.error(`Repository setup failed: ${err.message}`));
+    console.log(timmy.error(`Repository setup failed: ${err.message}`));
     storage.pipeline.fail(taskId, err);
     await storage.queue.add(task);
     return {
@@ -151,7 +151,7 @@ export function getActiveTasks(): storage.PipelineData[] {
  * Re-run only the Codex review stage
  */
 export async function rerunCodexReview(taskId: string): Promise<RerunResult> {
-  console.log(forky.ai(`Re-running Codex review for ${colors.bright}${taskId}${colors.reset}`));
+  console.log(timmy.ai(`Re-running Codex review for ${colors.bright}${taskId}${colors.reset}`));
 
   try {
     // Validate implementation is complete
@@ -160,9 +160,9 @@ export async function rerunCodexReview(taskId: string): Promise<RerunResult> {
     // Get repository info
     const repoName = getRepositoryFromPipeline(taskId);
     if (repoName && repoName !== 'default') {
-      console.log(forky.info(`Repository: ${colors.bright}${repoName}${colors.reset}`));
+      console.log(timmy.info(`Repository: ${colors.bright}${repoName}${colors.reset}`));
     } else {
-      console.log(forky.info(`Repository: ${colors.bright}default${colors.reset}`));
+      console.log(timmy.info(`Repository: ${colors.bright}default${colors.reset}`));
     }
 
     const repoConfig = resolveRepoConfig();
@@ -192,7 +192,7 @@ export async function rerunCodexReview(taskId: string): Promise<RerunResult> {
     return { success: true, branch };
   } catch (error) {
     const err = error as Error;
-    console.log(forky.error(`Codex review error: ${err.message}`));
+    console.log(timmy.error(`Codex review error: ${err.message}`));
     storage.pipeline.failStage(taskId, storage.pipeline.STAGES.CODEX_REVIEWING, err);
     await notifyCodexRerunFailed(taskId, err.message);
 
@@ -204,7 +204,7 @@ export async function rerunCodexReview(taskId: string): Promise<RerunResult> {
  * Re-run only the Claude fixes stage
  */
 export async function rerunClaudeFixes(taskId: string): Promise<RerunResult> {
-  console.log(forky.ai(`Re-running Claude fixes for ${colors.bright}${taskId}${colors.reset}`));
+  console.log(timmy.ai(`Re-running Claude fixes for ${colors.bright}${taskId}${colors.reset}`));
 
   try {
     // Validate implementation is complete
@@ -213,9 +213,9 @@ export async function rerunClaudeFixes(taskId: string): Promise<RerunResult> {
     // Get repository info
     const repoName = getRepositoryFromPipeline(taskId);
     if (repoName && repoName !== 'default') {
-      console.log(forky.info(`Repository: ${colors.bright}${repoName}${colors.reset}`));
+      console.log(timmy.info(`Repository: ${colors.bright}${repoName}${colors.reset}`));
     } else {
-      console.log(forky.info(`Repository: ${colors.bright}default${colors.reset}`));
+      console.log(timmy.info(`Repository: ${colors.bright}default${colors.reset}`));
     }
 
     const repoConfig = resolveRepoConfig();
@@ -245,7 +245,7 @@ export async function rerunClaudeFixes(taskId: string): Promise<RerunResult> {
     return { success: true, branch: fixResult.branch };
   } catch (error) {
     const err = error as Error;
-    console.log(forky.error(`Claude fixes error: ${err.message}`));
+    console.log(timmy.error(`Claude fixes error: ${err.message}`));
     storage.pipeline.failStage(taskId, storage.pipeline.STAGES.CLAUDE_FIXING, err);
     await notifyFixesRerunFailed(taskId, err.message);
 

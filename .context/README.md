@@ -127,7 +127,7 @@ Each target repository can have its own context file:
 .context/projects/
 ├── kings-international.md    # Kings Int specific patterns
 ├── personal-website.md        # Personal site guidelines
-└── forky.md                   # Forky development patterns
+└── timmy.md                   # Timmy development patterns
 ```
 
 These contain:

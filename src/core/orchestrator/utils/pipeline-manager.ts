@@ -1,4 +1,4 @@
-import { forky, colors } from '../../../shared/ui';
+import { timmy, colors } from '../../../shared/ui';
 import * as storage from '../../../../lib/storage';
 import type { ClickUpTask } from '../../../../lib/clickup';
 
@@ -30,7 +30,7 @@ export function completePipeline(taskId: string): void {
   });
 
   console.log(
-    forky.success(`🎉 Multi-AI workflow complete for ${colors.bright}${taskId}${colors.reset}`)
+    timmy.success(`🎉 Multi-AI workflow complete for ${colors.bright}${taskId}${colors.reset}`)
   );
 }
 
@@ -42,7 +42,7 @@ export async function failPipeline(
   task: ClickUpTask,
   error: Error
 ): Promise<void> {
-  console.log(forky.error(`Orchestration error: ${error.message}`));
+  console.log(timmy.error(`Orchestration error: ${error.message}`));
   storage.pipeline.fail(taskId, error);
 
   // Queue for manual processing

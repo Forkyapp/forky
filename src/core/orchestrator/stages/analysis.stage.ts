@@ -1,5 +1,5 @@
 import path from 'path';
-import { forky, colors } from '../../../shared/ui';
+import { timmy, colors } from '../../../shared/ui';
 import * as storage from '../../../../lib/storage';
 import * as gemini from '../../ai-services/gemini.service';
 import * as clickup from '../../../../lib/clickup';
@@ -33,7 +33,7 @@ export async function executeAnalysisStage(
 
     if (analysis.fallback) {
       usedFallback = true;
-      console.log(forky.warning('Using fallback analysis'));
+      console.log(timmy.warning('Using fallback analysis'));
     }
 
     storage.pipeline.completeStage(taskId, storage.pipeline.STAGES.ANALYZING, {
@@ -70,12 +70,12 @@ export async function executeAnalysisStage(
     return analysis;
   } catch (error) {
     const err = error as Error;
-    console.log(forky.error(`Gemini analysis failed: ${err.message}`));
+    console.log(timmy.error(`Gemini analysis failed: ${err.message}`));
     storage.pipeline.failStage(taskId, storage.pipeline.STAGES.ANALYZING, err);
 
     // Continue without analysis
     console.log(
-      forky.info(`Continuing without ${colors.bright}Gemini${colors.reset} analysis`)
+      timmy.info(`Continuing without ${colors.bright}Gemini${colors.reset} analysis`)
     );
 
     return null;

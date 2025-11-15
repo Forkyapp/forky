@@ -1,6 +1,6 @@
 # Quick Start Guide
 
-Get Forky running in under 5 minutes!
+Get Timmy running in under 5 minutes!
 
 ## Prerequisites
 
@@ -15,8 +15,8 @@ Get Forky running in under 5 minutes!
 ### 1. Clone & Install
 
 ```bash
-git clone https://github.com/Forkyapp/clickup-claude-github.git forky
-cd forky
+git clone https://github.com/Timmyapp/clickup-claude-github.git timmy
+cd timmy
 npm install
 ```
 
@@ -32,18 +32,18 @@ Follow the prompts to configure:
 - Your first project
 - System settings
 
-### 3. Start Forky
+### 3. Start Timmy
 
 ```bash
 npm start
 ```
 
-That's it! Forky is now monitoring your ClickUp workspace.
+That's it! Timmy is now monitoring your ClickUp workspace.
 
 ## What Happens Next?
 
 1. **Assign a task in ClickUp** to your bot user
-2. **Forky detects it** (polls every 15 seconds)
+2. **Timmy detects it** (polls every 15 seconds)
 3. **Claude Code launches** automatically
 4. **Feature is implemented** by Claude
 5. **PR is created** on GitHub
@@ -61,7 +61,7 @@ npm run switch     # Switch active project
 npm run current    # Show current project
 
 # Running
-npm start          # Start Forky
+npm start          # Start Timmy
 npm run dev        # Development mode
 npm run build      # Build TypeScript
 
@@ -75,7 +75,7 @@ npm run lint       # Check code style
 After setup, you'll have:
 
 ```
-forky/
+timmy/
 ├── .env                  # Global credentials (API keys)
 ├── workspace.json        # Active project pointer
 ├── projects.json         # All your projects
@@ -145,7 +145,7 @@ npm run settings
 
 1. **Fill context files** with your coding patterns
 2. **Assign a test task** in ClickUp
-3. **Watch Forky work** its magic
+3. **Watch Timmy work** its magic
 4. **Review the PR** Claude creates
 5. **Refine your context** based on results
 
@@ -155,7 +155,7 @@ npm run settings
 - [Interactive Setup Guide](docs/INTERACTIVE_SETUP.md)
 - [Project Management](docs/PROJECT_MANAGEMENT.md)
 - [Context System](docs/CONTEXT_SYSTEM.md)
-- [GitHub Issues](https://github.com/Forkyapp/clickup-claude-github/issues)
+- [GitHub Issues](https://github.com/Timmyapp/clickup-claude-github/issues)
 
 ## Example Session
 
@@ -163,7 +163,7 @@ npm run settings
 $ npm run init
 
 ╔═══════════════════════════════════════════════════════════╗
-║                  🤖 Welcome to Forky!                    ║
+║                  🤖 Welcome to Timmy!                    ║
 ╚═══════════════════════════════════════════════════════════╝
 
 Step 1/4: GitHub Configuration
@@ -187,7 +187,7 @@ Disable comments? (N): n
 ✅ Setup Complete!
 
 $ npm start
-🤖 Forky starting...
+🤖 Timmy starting...
 ✅ Connected to ClickUp workspace: my-app
 ✅ GitHub authenticated as: kuxala
 🔄 Polling for new tasks...

@@ -1,7 +1,7 @@
-# CLAUDE.md - AI Assistant Guide for Forky Codebase
+# CLAUDE.md - AI Assistant Guide for Timmy Codebase
 
 **Last Updated:** 2025-11-15
-**Project:** Forky - ClickUp to Claude Code Integration
+**Project:** Timmy - ClickUp to Claude Code Integration
 **Version:** 1.0.0
 **Purpose:** Comprehensive guide for AI assistants working with this codebase
 
@@ -24,9 +24,9 @@
 
 ## Overview
 
-### What is Forky?
+### What is Timmy?
 
-Forky is an autonomous task automation system that bridges ClickUp task management with AI-powered code implementation. It polls ClickUp for tasks marked "bot in progress", orchestrates multiple AI services to analyze and implement features, and automatically creates GitHub pull requests.
+Timmy is an autonomous task automation system that bridges ClickUp task management with AI-powered code implementation. It polls ClickUp for tasks marked "bot in progress", orchestrates multiple AI services to analyze and implement features, and automatically creates GitHub pull requests.
 
 ### High-Level Workflow
 
@@ -69,7 +69,7 @@ Forky is an autonomous task automation system that bridges ClickUp task manageme
 ### Directory Layout
 
 ```
-forky/
+timmy/
 ├── src/                          # Modern refactored codebase (PRIMARY)
 │   ├── types/                   # TypeScript type definitions
 │   │   ├── clickup.ts           # ClickUp domain types
@@ -140,7 +140,7 @@ forky/
 ├── templates/                    # Configuration templates
 ├── .context/                     # Context for Claude Code
 │
-├── forky.ts                      # Main entry point
+├── timmy.ts                      # Main entry point
 ├── package.json                  # Dependencies and scripts
 ├── tsconfig.json                 # TypeScript configuration
 └── README.md                     # User documentation
@@ -150,7 +150,7 @@ forky/
 
 ```
 ┌──────────────────────────────────────────────────────────────┐
-│ LAYER 1: Entry Point (forky.ts)                             │
+│ LAYER 1: Entry Point (timmy.ts)                             │
 │ - Main event loop (60s polling)                              │
 │ - Graceful shutdown handling                                 │
 │ - Command detection from comments                            │
@@ -341,8 +341,8 @@ async function deleteBranch(branchName: string): Promise<void>
 
 ```bash
 # 1. Clone repository
-git clone https://github.com/yourusername/forky.git
-cd forky
+git clone https://github.com/yourusername/timmy.git
+cd timmy
 
 # 2. Install dependencies
 npm install
@@ -432,11 +432,11 @@ git push origin feature/task-123-user-authentication
 #### Path Aliases (ALWAYS USE THESE)
 ```typescript
 // ❌ BAD - Relative imports
-import { forky } from '../../../src/shared/ui';
+import { timmy } from '../../../src/shared/ui';
 import type { ClickUpTask } from '../../../src/types/clickup';
 
 // ✅ GOOD - Path aliases
-import { forky } from '@/shared/ui';
+import { timmy } from '@/shared/ui';
 import type { ClickUpTask } from '@/types/clickup';
 ```
 
@@ -453,7 +453,7 @@ import type { ClickUpTask, Comment } from '@/types/clickup';
 import type { LaunchOptions } from '@/types/ai';
 
 // ✅ Named imports for values
-import { forky, colors } from '@/shared/ui';
+import { timmy, colors } from '@/shared/ui';
 import config from '@/shared/config';
 ```
 
@@ -538,12 +538,12 @@ console.error('Failed to process:', error);
 
 #### UI Formatting for User-Facing Output
 ```typescript
-import { forky, colors } from '@/shared/ui';
+import { timmy, colors } from '@/shared/ui';
 
-console.log(forky.info('Task detected'));
-console.log(forky.success('✓ Implementation complete'));
-console.log(forky.error('✗ Failed to create PR'));
-console.log(forky.ai('🤖 Claude is thinking...'));
+console.log(timmy.info('Task detected'));
+console.log(timmy.success('✓ Implementation complete'));
+console.log(timmy.error('✗ Failed to create PR'));
+console.log(timmy.ai('🤖 Claude is thinking...'));
 ```
 
 ### 4. File Operations
@@ -1151,7 +1151,7 @@ npm test -- --testPathPattern=integration
 **IMPORTANT:** This codebase is undergoing a migration from `lib/` (legacy) to `src/` (modern).
 
 **Current State:**
-- Main entry point (`forky.ts`) imports from BOTH `lib/` and `src/`
+- Main entry point (`timmy.ts`) imports from BOTH `lib/` and `src/`
 - ~1,500+ lines of code duplicated between old and new implementations
 - New features should ONLY use `src/` modules
 
@@ -1184,11 +1184,11 @@ npm test -- --testPathPattern=integration
 
 1. **Don't use `console.log` directly**
    - Use `logger` from `@/shared/utils/logger.util` OR
-   - Use `forky` from `@/shared/ui` for user-facing messages
+   - Use `timmy` from `@/shared/ui` for user-facing messages
 
 2. **Don't use relative imports**
-   - ❌ `import { forky } from '../../../src/shared/ui'`
-   - ✅ `import { forky } from '@/shared/ui'`
+   - ❌ `import { timmy } from '../../../src/shared/ui'`
+   - ✅ `import { timmy } from '@/shared/ui'`
 
 3. **Don't use sync file operations**
    - ❌ `fs.readFileSync()`
@@ -1206,7 +1206,7 @@ npm test -- --testPathPattern=integration
 
 **When tracking down issues, follow this sequence:**
 
-1. **Entry Point:** `forky.ts` - Main polling loop
+1. **Entry Point:** `timmy.ts` - Main polling loop
 2. **Orchestrator:** `orchestrator.service.ts` - Pipeline coordination
 3. **Stages:** `orchestrator/stages/*.stage.ts` - Individual stage execution
 4. **Services:** `ai-services/*.service.ts` - AI tool integrations
@@ -1224,7 +1224,7 @@ When reviewing or writing code, verify:
 
 - [ ] Uses TypeScript path aliases (`@/...`)
 - [ ] Uses custom error classes, not generic `Error`
-- [ ] Uses `logger` or `forky`, not `console.log`
+- [ ] Uses `logger` or `timmy`, not `console.log`
 - [ ] Uses async file operations, not sync
 - [ ] Functions are small (<50 lines ideally)
 - [ ] Has appropriate error handling
@@ -1274,7 +1274,7 @@ When reviewing or writing code, verify:
 
 | Function | File | Purpose |
 |----------|------|---------|
-| **Entry Point** | `forky.ts` | Main application loop |
+| **Entry Point** | `timmy.ts` | Main application loop |
 | **Orchestration** | `src/core/orchestrator/orchestrator.service.ts` | Pipeline coordination |
 | **ClickUp API** | `lib/clickup.ts` | ClickUp integration (legacy) |
 | **GitHub API** | `lib/github.ts` | GitHub integration (legacy) |
@@ -1292,7 +1292,7 @@ When reviewing or writing code, verify:
 import config from '@/shared/config';
 
 // UI/Logging
-import { forky, colors } from '@/shared/ui';
+import { timmy, colors } from '@/shared/ui';
 import { logger } from '@/shared/utils/logger.util';
 
 // Types
@@ -1380,7 +1380,7 @@ throw new AIError(message, service)              // AI service errors
 
 ## Conclusion
 
-This guide provides a comprehensive overview of the Forky codebase for AI assistants. Key takeaways:
+This guide provides a comprehensive overview of the Timmy codebase for AI assistants. Key takeaways:
 
 1. **Architecture:** Multi-layer architecture with clear separation of concerns
 2. **Migration:** Actively migrating from `lib/` to `src/` - use `src/` only
@@ -1396,7 +1396,7 @@ When in doubt:
 - Write tests
 
 **Last Updated:** 2025-11-15
-**Maintained By:** Forky Development Team
+**Maintained By:** Timmy Development Team
 
 ---
 

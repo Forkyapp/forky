@@ -3,7 +3,7 @@ import path from 'path';
 import { promisify } from 'util';
 import { exec } from 'child_process';
 import config from '../../shared/config';
-import { forky, colors } from '../../shared/ui';
+import { timmy, colors } from '../../shared/ui';
 import * as clickup from '../../../lib/clickup';
 import * as storage from '../../../lib/storage';
 import { loadSmartContext } from '../context/smart-context-loader.service';
@@ -66,11 +66,11 @@ async function launchClaude(task: ClickUpTask, options: LaunchOptions = {}): Pro
     throw new Error('Repository path is not configured');
   }
 
-  console.log(forky.ai(`Deploying ${colors.bright}Claude${colors.reset} for ${colors.bright}${taskId}${colors.reset}: "${taskTitle}"`));
+  console.log(timmy.ai(`Deploying ${colors.bright}Claude${colors.reset} for ${colors.bright}${taskId}${colors.reset}: "${taskTitle}"`));
   ensureClaudeSettings(repoPath);
 
   // Load smart context based on task
-  console.log(forky.info('Loading relevant coding guidelines...'));
+  console.log(timmy.info('Loading relevant coding guidelines...'));
   const smartContext = await loadSmartContext({
     model: 'claude',
     taskDescription: `${taskTitle}\n\n${taskDescription}`,
@@ -197,7 +197,7 @@ Begin implementation now and make sure to create the PR when done!`;
 
     fs.writeFileSync(promptFile, prompt);
 
-    console.log(forky.info(`${colors.bright}Claude${colors.reset} starting implementation...`));
+    console.log(timmy.info(`${colors.bright}Claude${colors.reset} starting implementation...`));
 
     // Unset GITHUB_TOKEN to let gh use keyring auth
     const cleanEnv = { ...process.env };
@@ -216,7 +216,7 @@ Begin implementation now and make sure to create the PR when done!`;
         timeout: 1800000 // 30 minute timeout
       });
 
-      console.log(forky.success(`${colors.bright}Claude${colors.reset} completed implementation for ${colors.bright}task-${taskId}${colors.reset}`));
+      console.log(timmy.success(`${colors.bright}Claude${colors.reset} completed implementation for ${colors.bright}task-${taskId}${colors.reset}`));
 
       // Cleanup prompt file
       fs.unlinkSync(promptFile);
@@ -239,7 +239,7 @@ Begin implementation now and make sure to create the PR when done!`;
 
     } catch (claudeError) {
       const err = claudeError as Error;
-      console.log(forky.error(`${colors.bright}Claude${colors.reset} execution failed: ${err.message}`));
+      console.log(timmy.error(`${colors.bright}Claude${colors.reset} execution failed: ${err.message}`));
 
       // Cleanup prompt file
       if (fs.existsSync(promptFile)) {
@@ -251,8 +251,8 @@ Begin implementation now and make sure to create the PR when done!`;
 
   } catch (error) {
     const err = error as Error;
-    console.log(forky.error(`Deployment failed: ${err.message}`));
-    console.log(forky.info('Task queued for manual processing'));
+    console.log(timmy.error(`Deployment failed: ${err.message}`));
+    console.log(timmy.info('Task queued for manual processing'));
 
     await storage.queue.add(task);
 
@@ -275,7 +275,7 @@ async function fixTodoComments(task: ClickUpTask, options: FixTodoOptions = {}):
     throw new Error('Repository path is not configured');
   }
 
-  console.log(forky.ai(`${colors.bright}Claude${colors.reset} addressing TODO/FIXME comments for ${colors.bright}${taskId}${colors.reset}`));
+  console.log(timmy.ai(`${colors.bright}Claude${colors.reset} addressing TODO/FIXME comments for ${colors.bright}${taskId}${colors.reset}`));
   ensureClaudeSettings(repoPath);
 
   const prompt = `You need to address the TODO and FIXME comments that Codex added during code review.
@@ -349,7 +349,7 @@ Begin addressing the comments now - FIXME comments first, then TODO!`;
     const promptFile = path.join(__dirname, '..', `task-${taskId}-fix-todos-prompt.txt`);
     fs.writeFileSync(promptFile, prompt);
 
-    console.log(forky.info(`${colors.bright}Claude${colors.reset} starting TODO/FIXME fixes...`));
+    console.log(timmy.info(`${colors.bright}Claude${colors.reset} starting TODO/FIXME fixes...`));
 
     // Unset GITHUB_TOKEN to let gh use keyring auth
     const cleanEnv = { ...process.env };
@@ -367,13 +367,13 @@ Begin addressing the comments now - FIXME comments first, then TODO!`;
         timeout: 1800000 // 30 minute timeout
       });
 
-      console.log(forky.success(`${colors.bright}Claude${colors.reset} completed TODO/FIXME fixes for ${colors.bright}${branch}${colors.reset}`));
+      console.log(timmy.success(`${colors.bright}Claude${colors.reset} completed TODO/FIXME fixes for ${colors.bright}${branch}${colors.reset}`));
 
       // Cleanup prompt file
       fs.unlinkSync(promptFile);
 
       // Check if Claude made any changes and auto-commit/push them
-      console.log(forky.info('Checking for uncommitted changes from Claude fixes...'));
+      console.log(timmy.info('Checking for uncommitted changes from Claude fixes...'));
 
       try {
         const { stdout: statusOutput } = await execAsync(`cd "${repoPath}" && git status --porcelain`, {
@@ -381,7 +381,7 @@ Begin addressing the comments now - FIXME comments first, then TODO!`;
         });
 
         if (statusOutput.trim()) {
-          console.log(forky.info('Claude made changes. Committing and pushing...'));
+          console.log(timmy.info('Claude made changes. Committing and pushing...'));
 
           // Commit and push the changes
           await execAsync(
@@ -392,13 +392,13 @@ Begin addressing the comments now - FIXME comments first, then TODO!`;
             }
           );
 
-          console.log(forky.success('Claude fixes committed and pushed'));
+          console.log(timmy.success('Claude fixes committed and pushed'));
         } else {
-          console.log(forky.info('No changes to commit from Claude fixes'));
+          console.log(timmy.info('No changes to commit from Claude fixes'));
         }
       } catch (gitError) {
         const err = gitError as Error;
-        console.log(forky.warning(`Failed to auto-commit Claude fixes: ${err.message}`));
+        console.log(timmy.warning(`Failed to auto-commit Claude fixes: ${err.message}`));
         // Don't fail the whole fix process if git operations fail
       }
 
@@ -431,7 +431,7 @@ Begin addressing the comments now - FIXME comments first, then TODO!`;
 
     } catch (claudeError) {
       const err = claudeError as Error;
-      console.log(forky.error(`${colors.bright}Claude${colors.reset} fix execution failed: ${err.message}`));
+      console.log(timmy.error(`${colors.bright}Claude${colors.reset} fix execution failed: ${err.message}`));
 
       // Cleanup prompt file
       if (fs.existsSync(promptFile)) {
@@ -443,7 +443,7 @@ Begin addressing the comments now - FIXME comments first, then TODO!`;
 
   } catch (error) {
     const err = error as Error;
-    console.log(forky.error(`TODO fix failed: ${err.message}`));
+    console.log(timmy.error(`TODO fix failed: ${err.message}`));
     return { success: false, error: err.message };
   }
 }

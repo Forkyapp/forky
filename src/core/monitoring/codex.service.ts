@@ -3,7 +3,7 @@ import path from 'path';
 import { promisify } from 'util';
 import { exec, spawn, ChildProcess } from 'child_process';
 import config from '../../shared/config';
-import { forky, colors } from '../../shared/ui';
+import { timmy, colors } from '../../shared/ui';
 import { loadSmartContext } from '../context/smart-context-loader.service';
 import * as clickup from '../../../lib/clickup';
 import * as storage from '../../../lib/storage';
@@ -132,11 +132,11 @@ async function launchCodex(task: ClickUpTask, options: LaunchOptions = {}): Prom
     throw new Error('Repository path is not configured');
   }
 
-  console.log(forky.ai(`Deploying ${colors.bright}Codex${colors.reset} for ${colors.bright}${taskId}${colors.reset}: "${taskTitle}"`));
+  console.log(timmy.ai(`Deploying ${colors.bright}Codex${colors.reset} for ${colors.bright}${taskId}${colors.reset}: "${taskTitle}"`));
   ensureCodexSettings(repoPath);
 
   // Load smart context based on task
-  console.log(forky.info('Loading relevant coding guidelines...'));
+  console.log(timmy.info('Loading relevant coding guidelines...'));
   const smartContext = await loadSmartContext({
     model: 'codex',
     taskDescription: `${taskTitle}\n\n${taskDescription}`,
@@ -257,7 +257,7 @@ Begin implementation now and make sure to create the PR when done!`;
     const promptFile = path.join(__dirname, '..', `task-${taskId}-codex-prompt.txt`);
     fs.writeFileSync(promptFile, prompt);
 
-    console.log(forky.info(`${colors.bright}Codex${colors.reset} starting implementation...`));
+    console.log(timmy.info(`${colors.bright}Codex${colors.reset} starting implementation...`));
 
     // Unset GITHUB_TOKEN to let gh use keyring auth
     const cleanEnv = { ...process.env };
@@ -281,14 +281,14 @@ Begin implementation now and make sure to create the PR when done!`;
         timeout: 1800000 // 30 minute timeout
       });
 
-      console.log(forky.success(`${colors.bright}Codex${colors.reset} completed implementation for ${colors.bright}task-${taskId}${colors.reset}`));
+      console.log(timmy.success(`${colors.bright}Codex${colors.reset} completed implementation for ${colors.bright}task-${taskId}${colors.reset}`));
 
       // Cleanup files
       fs.unlinkSync(promptFile);
       fs.unlinkSync(inputFile);
 
       // Check if Codex made any changes and auto-commit/push them
-      console.log(forky.info('Checking for uncommitted changes from Codex implementation...'));
+      console.log(timmy.info('Checking for uncommitted changes from Codex implementation...'));
 
       try {
         const { stdout: statusOutput } = await execAsync(`cd "${repoPath}" && git status --porcelain`, {
@@ -296,7 +296,7 @@ Begin implementation now and make sure to create the PR when done!`;
         });
 
         if (statusOutput.trim()) {
-          console.log(forky.info('Codex made changes. Committing and pushing...'));
+          console.log(timmy.info('Codex made changes. Committing and pushing...'));
 
           // Commit and push the changes
           await execAsync(
@@ -307,13 +307,13 @@ Begin implementation now and make sure to create the PR when done!`;
             }
           );
 
-          console.log(forky.success('Codex implementation committed and pushed'));
+          console.log(timmy.success('Codex implementation committed and pushed'));
         } else {
-          console.log(forky.info('No changes to commit from Codex implementation'));
+          console.log(timmy.info('No changes to commit from Codex implementation'));
         }
       } catch (gitError) {
         const err = gitError as Error;
-        console.log(forky.warning(`Failed to auto-commit Codex changes: ${err.message}`));
+        console.log(timmy.warning(`Failed to auto-commit Codex changes: ${err.message}`));
         // Don't fail the whole implementation if git operations fail
       }
 
@@ -333,7 +333,7 @@ Begin implementation now and make sure to create the PR when done!`;
 
     } catch (codexError) {
       const err = codexError as Error;
-      console.log(forky.error(`${colors.bright}Codex${colors.reset} execution failed: ${err.message}`));
+      console.log(timmy.error(`${colors.bright}Codex${colors.reset} execution failed: ${err.message}`));
 
       // Cleanup files
       if (fs.existsSync(promptFile)) {
@@ -348,8 +348,8 @@ Begin implementation now and make sure to create the PR when done!`;
 
   } catch (error) {
     const err = error as Error;
-    console.log(forky.error(`Codex deployment failed: ${err.message}`));
-    console.log(forky.info('Task queued for manual processing'));
+    console.log(timmy.error(`Codex deployment failed: ${err.message}`));
+    console.log(timmy.info('Task queued for manual processing'));
 
     await storage.queue.add(task);
     return { success: false, error: err.message };
@@ -371,11 +371,11 @@ async function reviewClaudeChanges(task: ClickUpTask, options: ReviewOptions = {
     throw new Error('Repository path is not configured');
   }
 
-  console.log(forky.ai(`${colors.bright}Codex${colors.reset} reviewing Claude's changes for ${colors.bright}${taskId}${colors.reset}`));
+  console.log(timmy.ai(`${colors.bright}Codex${colors.reset} reviewing Claude's changes for ${colors.bright}${taskId}${colors.reset}`));
   ensureCodexSettings(repoPath);
 
   // Load smart context for review
-  console.log(forky.info('Loading relevant review guidelines...'));
+  console.log(timmy.info('Loading relevant review guidelines...'));
   const smartContext = await loadSmartContext({
     model: 'codex',
     taskDescription: `Code review for: ${taskTitle}\n\nReviewing implementation changes`,
@@ -461,7 +461,7 @@ Begin your review now and add TODO/FIXME comments to the code!`;
     const promptFile = path.join(__dirname, '..', `task-${taskId}-codex-review-prompt.txt`);
     fs.writeFileSync(promptFile, prompt);
 
-    console.log(forky.info(`${colors.bright}Codex${colors.reset} starting code review...`));
+    console.log(timmy.info(`${colors.bright}Codex${colors.reset} starting code review...`));
 
     // Unset GITHUB_TOKEN to let gh use keyring auth
     const cleanEnv = { ...process.env };
@@ -485,14 +485,14 @@ Begin your review now and add TODO/FIXME comments to the code!`;
         timeout: 1800000 // 30 minute timeout
       });
 
-      console.log(forky.success(`${colors.bright}Codex${colors.reset} completed code review for ${colors.bright}${branch}${colors.reset}`));
+      console.log(timmy.success(`${colors.bright}Codex${colors.reset} completed code review for ${colors.bright}${branch}${colors.reset}`));
 
       // Cleanup files
       fs.unlinkSync(promptFile);
       fs.unlinkSync(inputFile);
 
       // Check if Codex made any changes and auto-commit/push them
-      console.log(forky.info('Checking for uncommitted changes from Codex review...'));
+      console.log(timmy.info('Checking for uncommitted changes from Codex review...'));
 
       try {
         const { stdout: statusOutput } = await execAsync(`cd "${repoPath}" && git status --porcelain`, {
@@ -500,7 +500,7 @@ Begin your review now and add TODO/FIXME comments to the code!`;
         });
 
         if (statusOutput.trim()) {
-          console.log(forky.info('Codex made changes. Committing and pushing...'));
+          console.log(timmy.info('Codex made changes. Committing and pushing...'));
 
           // Commit and push the changes
           await execAsync(
@@ -511,13 +511,13 @@ Begin your review now and add TODO/FIXME comments to the code!`;
             }
           );
 
-          console.log(forky.success('Codex review changes committed and pushed'));
+          console.log(timmy.success('Codex review changes committed and pushed'));
         } else {
-          console.log(forky.info('No changes to commit from Codex review'));
+          console.log(timmy.info('No changes to commit from Codex review'));
         }
       } catch (gitError) {
         const err = gitError as Error;
-        console.log(forky.warning(`Failed to auto-commit Codex changes: ${err.message}`));
+        console.log(timmy.warning(`Failed to auto-commit Codex changes: ${err.message}`));
         // Don't fail the whole review if git operations fail
       }
 
@@ -550,7 +550,7 @@ Begin your review now and add TODO/FIXME comments to the code!`;
 
     } catch (codexError) {
       const err = codexError as Error;
-      console.log(forky.error(`${colors.bright}Codex${colors.reset} review execution failed: ${err.message}`));
+      console.log(timmy.error(`${colors.bright}Codex${colors.reset} review execution failed: ${err.message}`));
 
       // Cleanup files
       if (fs.existsSync(promptFile)) {
@@ -565,7 +565,7 @@ Begin your review now and add TODO/FIXME comments to the code!`;
 
   } catch (error) {
     const err = error as Error;
-    console.log(forky.error(`Codex review failed: ${err.message}`));
+    console.log(timmy.error(`Codex review failed: ${err.message}`));
     return { success: false, error: err.message };
   }
 }

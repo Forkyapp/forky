@@ -46,7 +46,7 @@ body:
       placeholder: |
         - OS: [e.g., macOS 14.1, Ubuntu 22.04]
         - Node.js version: [e.g., 18.17.0]
-        - Forky version: [e.g., 1.0.0]
+        - Timmy version: [e.g., 1.0.0]
         - Claude Code CLI version: [e.g., 2.0.5]
       render: markdown
     validations:

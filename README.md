@@ -1,4 +1,4 @@
-# Forky - ClickUp to Claude Code Integration
+# Timmy - ClickUp to Claude Code Integration
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.9-blue.svg)](https://www.typescriptlang.org/)
@@ -15,7 +15,7 @@ Automates ClickUp task detection and launches Claude Code to implement features 
 └──────────────────────────────────────────┘
                 ↓
 ┌──────────────────────────────────────────┐
-│ 2. FORKY: Polls ClickUp (every 60s)     │
+│ 2. TIMMY: Polls ClickUp (every 60s)     │
 │    - Detects new "bot in progress" task │
 │    - Automatically launches Claude Code  │
 │    - Opens in NEW Terminal window        │
@@ -79,7 +79,7 @@ npm run switch my-project
 
 ## Usage
 
-**Start Forky:**
+**Start Timmy:**
 ```bash
 npm start
 ```
@@ -87,7 +87,7 @@ npm start
 **Create a ClickUp Task:**
 1. Set status to "bot in progress"
 2. Add clear title and description
-3. Forky detects it (within 60s)
+3. Timmy detects it (within 60s)
 4. Claude Code launches automatically
 5. PR is created when done
 
@@ -145,10 +145,10 @@ npm run clean          # Clean build
 **Background execution:**
 ```bash
 # Using pm2
-pm2 start npm --name forky -- start
+pm2 start npm --name timmy -- start
 
 # Using nohup
-nohup npm start > forky.log 2>&1 &
+nohup npm start > timmy.log 2>&1 &
 ```
 
 ## Important Notes

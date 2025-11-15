@@ -1,4 +1,4 @@
-import { forky, colors } from '../../../shared/ui';
+import { timmy, colors } from '../../../shared/ui';
 import * as storage from '../../../../lib/storage';
 import * as claude from '../../ai-services/claude.service';
 import type { FixResult, StageContext } from '../types';
@@ -25,7 +25,7 @@ export async function executeFixesStage(context: StageContext): Promise<FixResul
     });
 
     console.log(
-      forky.success(
+      timmy.success(
         `${colors.bright}Claude${colors.reset} fixes complete for ${colors.bright}${taskId}${colors.reset}`
       )
     );
@@ -33,10 +33,10 @@ export async function executeFixesStage(context: StageContext): Promise<FixResul
     return fixResult;
   } catch (error) {
     const err = error as Error;
-    console.log(forky.error(`Claude fixes error: ${err.message}`));
+    console.log(timmy.error(`Claude fixes error: ${err.message}`));
     storage.pipeline.failStage(taskId, storage.pipeline.STAGES.CLAUDE_FIXING, err);
     // Continue even if fixes fail - not critical
-    console.log(forky.warning(`Continuing without Claude fixes`));
+    console.log(timmy.warning(`Continuing without Claude fixes`));
     return null;
   }
 }

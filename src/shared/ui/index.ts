@@ -42,7 +42,7 @@ const colors: Colors = {
   bgBlack: '\x1b[40m',
 };
 
-interface Forky {
+interface Timmy {
   header: (text: string) => string;
   banner: () => string;
   box: (text: string) => string;
@@ -75,20 +75,20 @@ interface SpinnerInstance {
 // Spinner frames for animation
 const spinnerFrames = ['⠋', '⠙', '⠹', '⠸', '⠼', '⠴', '⠦', '⠧', '⠇', '⠏'];
 
-const forky: Forky = {
+const timmy: Timmy = {
   header: (text: string): string => `${colors.bright}${colors.cyan}╔${'═'.repeat(text.length + 2)}╗\n║ ${text} ║\n╚${'═'.repeat(text.length + 2)}╝${colors.reset}`,
 
   banner: (): string => {
     const banner = `
 ${colors.bright}${colors.magenta}
-    ███████╗ ██████╗ ██████╗ ██╗  ██╗██╗   ██╗
-    ██╔════╝██╔═══██╗██╔══██╗██║ ██╔╝╚██╗ ██╔╝
-    █████╗  ██║   ██║██████╔╝█████╔╝  ╚████╔╝
-    ██╔══╝  ██║   ██║██╔══██╗██╔═██╗   ╚██╔╝
-    ██║     ╚██████╔╝██║  ██║██║  ██╗   ██║
-    ╚═╝      ╚═════╝ ╚═╝  ╚═╝╚═╝  ╚═╝   ╚═╝
+    ████████╗██╗███╗   ███╗███╗   ███╗██╗   ██╗
+    ╚══██╔══╝██║████╗ ████║████╗ ████║╚██╗ ██╔╝
+       ██║   ██║██╔████╔██║██╔████╔██║ ╚████╔╝
+       ██║   ██║██║╚██╔╝██║██║╚██╔╝██║  ╚██╔╝
+       ██║   ██║██║ ╚═╝ ██║██║ ╚═╝ ██║   ██║
+       ╚═╝   ╚═╝╚═╝     ╚═╝╚═╝     ╚═╝   ╚═╝
 ${colors.reset}${colors.cyan}
-    🍴 Autonomous Task Automation System ${colors.reset}
+    🤖 Autonomous Task Automation System ${colors.reset}
 ${colors.dim}${colors.gray}    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${colors.reset}
 `;
     return banner;
@@ -106,7 +106,7 @@ ${colors.dim}${colors.gray}    ━━━━━━━━━━━━━━━━�
 
   processing: (text: string): string => `${colors.bright}${colors.blue}⚡${colors.reset} ${colors.blue}${text}${colors.reset}`,
 
-  ai: (text: string): string => `${colors.bright}${colors.magenta}🍴 FORKY${colors.reset} ${colors.gray}»${colors.reset} ${colors.white}${text}${colors.reset}`,
+  ai: (text: string): string => `${colors.bright}${colors.magenta}🤖 TIMMY${colors.reset} ${colors.gray}»${colors.reset} ${colors.white}${text}${colors.reset}`,
 
   step: (num: number, text: string): string => `${colors.bright}${colors.cyan}[${num}]${colors.reset} ${colors.white}${text}${colors.reset}`,
 
@@ -147,13 +147,13 @@ ${colors.dim}${colors.gray}    ━━━━━━━━━━━━━━━━�
           if (intervalId) clearInterval(intervalId);
           isActive = false;
           process.stdout.write('\r\x1b[K');
-          console.log(forky.success(finalText || currentText));
+          console.log(timmy.success(finalText || currentText));
         },
         fail: (finalText?: string): void => {
           if (intervalId) clearInterval(intervalId);
           isActive = false;
           process.stdout.write('\r\x1b[K');
-          console.log(forky.error(finalText || currentText));
+          console.log(timmy.error(finalText || currentText));
         },
         stop: (): void => {
           if (intervalId) clearInterval(intervalId);
@@ -185,4 +185,4 @@ ${colors.dim}${colors.gray}    ━━━━━━━━━━━━━━━━�
   }
 };
 
-export { colors, forky, Colors, Forky, SpinnerInstance };
+export { colors, timmy, Colors, Timmy, SpinnerInstance };

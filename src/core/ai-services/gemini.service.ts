@@ -3,7 +3,7 @@ import path from 'path';
 import { promisify } from 'util';
 import { exec } from 'child_process';
 import config, { RepositoryConfig } from '../../shared/config';
-import { forky, colors } from '../../shared/ui';
+import { timmy, colors } from '../../shared/ui';
 import { withRetry, RetryOptions } from '../../shared/utils/retry.util';
 import { loadSmartContext } from '../context/smart-context-loader.service';
 import type { ClickUpTask } from '../../../src/types/clickup';
@@ -32,10 +32,10 @@ async function analyzeTask(task: ClickUpTask, options: AnalyzeTaskOptions = {}):
   const repoOwner = repoConfig?.owner || config.github.owner;
   const repoName = repoConfig?.repo || config.github.repo;
 
-  console.log(forky.processing(`${colors.bright}Gemini${colors.reset} analyzing task ${colors.bright}${taskId}${colors.reset}...`));
+  console.log(timmy.processing(`${colors.bright}Gemini${colors.reset} analyzing task ${colors.bright}${taskId}${colors.reset}...`));
 
   // Load smart context based on task
-  console.log(forky.info('Loading relevant documentation guidelines...'));
+  console.log(timmy.info('Loading relevant documentation guidelines...'));
   const smartContext = await loadSmartContext({
     model: 'gemini',
     taskDescription: `${taskTitle}\n\n${taskDescription}`,
@@ -148,7 +148,7 @@ Format your response in clear Markdown. Be specific about file paths and changes
         maxAttempts: 3,
         timeoutMs: 120000,
         onRetry: (attempt: number): Promise<void> => {
-          console.log(forky.info(`${colors.bright}Gemini${colors.reset} retry attempt ${attempt}/3...`));
+          console.log(timmy.info(`${colors.bright}Gemini${colors.reset} retry attempt ${attempt}/3...`));
           updateProgress(1, 3, `Retrying analysis (attempt ${attempt}/3)...`);
           return Promise.resolve();
         }
@@ -163,7 +163,7 @@ Format your response in clear Markdown. Be specific about file paths and changes
 
     updateProgress(3, 3, 'Analysis complete');
 
-    console.log(forky.success(`Feature spec created: ${featureSpecFile}`));
+    console.log(timmy.success(`Feature spec created: ${featureSpecFile}`));
 
     return {
       success: true,
@@ -176,7 +176,7 @@ Format your response in clear Markdown. Be specific about file paths and changes
 
   } catch (error) {
     const err = error as Error;
-    console.log(forky.error(`Gemini analysis failed: ${err.message}`));
+    console.log(timmy.error(`Gemini analysis failed: ${err.message}`));
 
     // Create fallback feature spec
     const fallbackSpec = `# Feature Specification - ${taskTitle}

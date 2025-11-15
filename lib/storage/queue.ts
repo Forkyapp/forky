@@ -1,6 +1,6 @@
 import fs from 'fs';
 import config from '../../src/shared/config';
-import { forky, colors } from '../../src/shared/ui';
+import { timmy, colors } from '../../src/shared/ui';
 import type { TaskData, QueueData, QueuedTask } from '../../src/types/storage';
 
 const FILES = {
@@ -35,11 +35,11 @@ export const queue = {
     const queueData = this.load();
 
     if (queueData.pending.find(t => t.id === taskId)) {
-      console.log(forky.warning(`Task ${taskId} already queued`));
+      console.log(timmy.warning(`Task ${taskId} already queued`));
       return { alreadyQueued: true };
     }
 
-    console.log(forky.info(`Queued task ${colors.bright}${taskId}${colors.reset}`));
+    console.log(timmy.info(`Queued task ${colors.bright}${taskId}${colors.reset}`));
 
     queueData.pending.push({
       id: taskId,

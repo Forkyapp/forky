@@ -3,7 +3,7 @@
 import dotenv from 'dotenv';
 dotenv.config();
 
-import { forky, colors } from './src/shared/ui';
+import { timmy, colors } from './src/shared/ui';
 import * as storage from './lib/storage';
 import * as codex from './src/core/monitoring/codex.service';
 import { RepositoryConfig, resolveRepoConfig } from './src/shared/config';
@@ -35,39 +35,39 @@ interface ReviewResult {
  * Retry only the Codex review stage for a specific task
  */
 async function retryCodexReview(taskId: string): Promise<void> {
-  console.log(forky.ai(`Retrying Codex review for ${colors.bright}${taskId}${colors.reset}`));
+  console.log(timmy.ai(`Retrying Codex review for ${colors.bright}${taskId}${colors.reset}`));
 
   // Get pipeline state
   const pipelineState = storage.pipeline.get(taskId);
 
   if (!pipelineState) {
-    console.log(forky.error(`Task ${taskId} not found in pipeline state`));
+    console.log(timmy.error(`Task ${taskId} not found in pipeline state`));
     process.exit(1);
   }
 
-  console.log(forky.info(`Task: ${pipelineState.taskName}`));
-  console.log(forky.info(`Current stage: ${pipelineState.currentStage}`));
-  console.log(forky.info(`Status: ${pipelineState.status}`));
+  console.log(timmy.info(`Task: ${pipelineState.taskName}`));
+  console.log(timmy.info(`Current stage: ${pipelineState.currentStage}`));
+  console.log(timmy.info(`Status: ${pipelineState.status}`));
 
   // Check if Claude implementation was completed
   const implementingStage = pipelineState.stages.find(s => s.stage === 'implementing');
   if (!implementingStage || implementingStage.status !== 'completed') {
-    console.log(forky.error('Claude implementation stage not completed. Cannot run Codex review.'));
+    console.log(timmy.error('Claude implementation stage not completed. Cannot run Codex review.'));
     process.exit(1);
   }
 
   const branch = implementingStage.branch || `task-${taskId}`;
-  console.log(forky.info(`Branch: ${branch}`));
+  console.log(timmy.info(`Branch: ${branch}`));
 
   // Get repository configuration from active workspace
   const activeProject = workspace.getActiveProject();
   if (!activeProject) {
-    console.log(forky.error('No active project configured. Run: npm run switch <project>'));
+    console.log(timmy.error('No active project configured. Run: npm run switch <project>'));
     process.exit(1);
   }
 
-  console.log(forky.info(`Project: ${colors.bright}${activeProject.name}${colors.reset}`));
-  console.log(forky.info(`Repository: ${activeProject.github.owner}/${activeProject.github.repo}`));
+  console.log(timmy.info(`Project: ${colors.bright}${activeProject.name}${colors.reset}`));
+  console.log(timmy.info(`Repository: ${activeProject.github.owner}/${activeProject.github.repo}`));
 
   const repoConfig: RepositoryConfig = resolveRepoConfig();
 
@@ -92,14 +92,14 @@ async function retryCodexReview(taskId: string): Promise<void> {
       branch: reviewResult.branch
     });
 
-    console.log(forky.success(`${colors.bright}Codex${colors.reset} review complete for ${colors.bright}${taskId}${colors.reset}`));
-    console.log(forky.success('✅ Done! You can now continue with Claude fixes if needed.'));
+    console.log(timmy.success(`${colors.bright}Codex${colors.reset} review complete for ${colors.bright}${taskId}${colors.reset}`));
+    console.log(timmy.success('✅ Done! You can now continue with Claude fixes if needed.'));
 
   } catch (error) {
     const err = error as Error;
-    console.log(forky.error(`Codex review error: ${err.message}`));
+    console.log(timmy.error(`Codex review error: ${err.message}`));
     storage.pipeline.failStage(taskId, storage.pipeline.STAGES.CODEX_REVIEWING, err);
-    console.log(forky.warning('Review failed. Check the error above.'));
+    console.log(timmy.warning('Review failed. Check the error above.'));
     process.exit(1);
   }
 }
@@ -112,14 +112,14 @@ async function retryCodexReview(taskId: string): Promise<void> {
 const taskId = process.argv[2];
 
 if (!taskId) {
-  console.log(forky.error('Usage: node retry-codex-review.ts <task-id>'));
-  console.log(forky.info('Example: node retry-codex-review.ts 86eveugud'));
+  console.log(timmy.error('Usage: node retry-codex-review.ts <task-id>'));
+  console.log(timmy.info('Example: node retry-codex-review.ts 86eveugud'));
   process.exit(1);
 }
 
 // Run the retry
 retryCodexReview(taskId).catch(error => {
   const err = error as Error;
-  console.log(forky.error(`Fatal error: ${err.message}`));
+  console.log(timmy.error(`Fatal error: ${err.message}`));
   process.exit(1);
 });

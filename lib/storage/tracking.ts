@@ -2,7 +2,7 @@ import fs from 'fs';
 import { exec } from 'child_process';
 import { promisify } from 'util';
 import config from '../../src/shared/config';
-import { forky, colors } from '../../src/shared/ui';
+import { timmy, colors } from '../../src/shared/ui';
 import type { TaskData, TrackingEntry, PRCheckResult, PRFoundInfo } from '../../src/types/storage';
 
 const execAsync = promisify(exec);
@@ -45,7 +45,7 @@ export const tracking = {
 
     prTrackingData.push(trackingEntry);
     this.save(prTrackingData);
-    console.log(forky.info(`Started PR tracking for task ${task.id}`));
+    console.log(timmy.info(`Started PR tracking for task ${task.id}`));
   },
 
   async checkForPR(trackingEntry: TrackingEntry): Promise<PRCheckResult> {
@@ -94,7 +94,7 @@ export const tracking = {
       const elapsed = now.getTime() - startedAt.getTime();
 
       if (elapsed > config.prTracking.timeoutMs) {
-        console.log(forky.warning(`Task ${colors.bright}${trackingEntry.taskId}${colors.reset} timeout (30min)`));
+        console.log(timmy.warning(`Task ${colors.bright}${trackingEntry.taskId}${colors.reset} timeout (30min)`));
 
         await clickupModule.addComment(
           trackingEntry.taskId,
@@ -111,8 +111,8 @@ export const tracking = {
       const result = await this.checkForPR(trackingEntry);
 
       if (result.found) {
-        console.log(forky.success(`Task ${colors.bright}${trackingEntry.taskId}${colors.reset} → PR #${result.number}`));
-        console.log(forky.info(result.url!));
+        console.log(timmy.success(`Task ${colors.bright}${trackingEntry.taskId}${colors.reset} → PR #${result.number}`));
+        console.log(timmy.info(result.url!));
 
         try {
           await clickupModule.addComment(

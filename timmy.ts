@@ -17,7 +17,7 @@ dotenv.config();
 
 import fs from 'fs';
 import config from './src/shared/config';
-import { forky, colors } from './src/shared/ui';
+import { timmy, colors } from './src/shared/ui';
 import { setupInteractiveMode, type AppState } from './src/shared/interactive-cli';
 import * as storage from './lib/storage';
 import * as clickup from './lib/clickup';
@@ -66,7 +66,7 @@ async function checkTaskCommands(): Promise<void> {
         const command = clickup.parseCommand(comment.comment_text);
 
         if (command) {
-          console.log('\n' + forky.ai(`Command detected: ${colors.bright}${command.type}${colors.reset} (Task ${task.id})`));
+          console.log('\n' + timmy.ai(`Command detected: ${colors.bright}${command.type}${colors.reset} (Task ${task.id})`));
           storage.processedComments.add(comment.id);
 
           // Post immediate acknowledgment
@@ -93,7 +93,7 @@ async function checkTaskCommands(): Promise<void> {
             }
           } catch (error) {
             const err = error as Error;
-            console.log(forky.error(`Command execution failed: ${err.message}`));
+            console.log(timmy.error(`Command execution failed: ${err.message}`));
             await clickup.addComment(
               task.id,
               `❌ **Command Failed**\n\n` +
@@ -106,7 +106,7 @@ async function checkTaskCommands(): Promise<void> {
     }
   } catch (error) {
     const err = error as Error;
-    console.log(forky.error(`Comment checking error: ${err.message}`));
+    console.log(timmy.error(`Comment checking error: ${err.message}`));
   }
 }
 
@@ -122,7 +122,7 @@ async function pollAndProcess(): Promise<void> {
 
     for (const task of tasks) {
       if (!appState.isRunning) {
-        console.log(forky.warning('Polling stopped by user'));
+        console.log(timmy.warning('Polling stopped by user'));
         return;
       }
 
@@ -131,10 +131,10 @@ async function pollAndProcess(): Promise<void> {
       }
 
       // Enhanced task header - only show when processing
-      console.log('\n' + forky.doubleDivider());
-      console.log(forky.section(`🎯 Task: ${task.id}`));
-      console.log(`  ${forky.label('Name', task.name)}`);
-      console.log(forky.divider());
+      console.log('\n' + timmy.doubleDivider());
+      console.log(timmy.section(`🎯 Task: ${task.id}`));
+      console.log(`  ${timmy.label('Name', task.name)}`);
+      console.log(timmy.divider());
 
       storage.cache.add(task);
       appState.isProcessing = true;
@@ -145,11 +145,11 @@ async function pollAndProcess(): Promise<void> {
         const result: ProcessTaskResult = await orchestrator.processTask(task);
 
         if (!result.success) {
-          console.log(forky.warning(`Task queued for manual processing`));
+          console.log(timmy.warning(`Task queued for manual processing`));
         }
       } catch (error) {
         const err = error as Error;
-        console.log(forky.error(`Task processing failed: ${err.message}`));
+        console.log(timmy.error(`Task processing failed: ${err.message}`));
       } finally {
         appState.isProcessing = false;
         appState.currentTask = null;
@@ -158,9 +158,9 @@ async function pollAndProcess(): Promise<void> {
 
   } catch (error) {
     const err = error as Error;
-    console.log(forky.error(`Polling error: ${err.message}`));
+    console.log(timmy.error(`Polling error: ${err.message}`));
     if (err.stack) {
-      console.log(forky.error(`Stack trace: ${err.stack}`));
+      console.log(timmy.error(`Stack trace: ${err.stack}`));
     }
   }
 }
@@ -172,16 +172,16 @@ function gracefulShutdown(): void {
     clearInterval(appState.pollInterval);
   }
 
-  console.log('\n' + forky.doubleDivider());
-  console.log(forky.warning('Shutting down gracefully...'));
-  console.log(forky.divider());
+  console.log('\n' + timmy.doubleDivider());
+  console.log(timmy.warning('Shutting down gracefully...'));
+  console.log(timmy.divider());
 
   storage.cache.save();
   storage.processedComments.save();
 
-  console.log(forky.success('State saved successfully'));
-  console.log(forky.ai('Goodbye! 👋'));
-  console.log(forky.doubleDivider() + '\n');
+  console.log(timmy.success('State saved successfully'));
+  console.log(timmy.ai('Goodbye! 👋'));
+  console.log(timmy.doubleDivider() + '\n');
 
   process.exit(0);
 }
@@ -197,36 +197,36 @@ if (require.main === module) {
   storage.processedComments.init();
 
   console.clear();
-  console.log(forky.banner());
+  console.log(timmy.banner());
 
   // Show configuration with sections
-  console.log(forky.section('⚙️  System Configuration'));
-  console.log(forky.label('  ClickUp Workspace', config.clickup.workspaceId || 'Not configured'));
-  console.log(forky.label('  GitHub Repository', `${config.github.owner}/${config.github.repo}`));
-  console.log(forky.label('  Repository Path', config.github.repoPath || 'Not configured'));
-  console.log(forky.label('  Poll Interval', `${config.system.pollIntervalMs / 1000}s`));
+  console.log(timmy.section('⚙️  System Configuration'));
+  console.log(timmy.label('  ClickUp Workspace', config.clickup.workspaceId || 'Not configured'));
+  console.log(timmy.label('  GitHub Repository', `${config.github.owner}/${config.github.repo}`));
+  console.log(timmy.label('  Repository Path', config.github.repoPath || 'Not configured'));
+  console.log(timmy.label('  Poll Interval', `${config.system.pollIntervalMs / 1000}s`));
   console.log('');
 
   if (!config.github.repoPath || !fs.existsSync(config.github.repoPath)) {
-    console.log(forky.error('Repository path not configured in .env'));
+    console.log(timmy.error('Repository path not configured in .env'));
     process.exit(1);
   }
 
   claude.ensureClaudeSettings();
 
   // Status indicators
-  console.log(forky.section('🚀 System Status'));
-  console.log(`  ${forky.badge('ONLINE', 'green')} ${colors.gray}Monitoring workspace${colors.reset}`);
-  console.log(`  ${forky.badge('QUIET', 'cyan')} ${colors.gray}Silent polling every ${config.system.pollIntervalMs / 1000}s${colors.reset}`);
+  console.log(timmy.section('🚀 System Status'));
+  console.log(`  ${timmy.badge('ONLINE', 'green')} ${colors.gray}Monitoring workspace${colors.reset}`);
+  console.log(`  ${timmy.badge('QUIET', 'cyan')} ${colors.gray}Silent polling every ${config.system.pollIntervalMs / 1000}s${colors.reset}`);
   console.log('');
 
   // Workflow overview
-  console.log(forky.section('🤖 Multi-AI Pipeline'));
+  console.log(timmy.section('🤖 Multi-AI Pipeline'));
   console.log(`  ${colors.cyan}1${colors.reset} ${colors.gray}→${colors.reset} ${colors.magenta}Gemini Analysis${colors.reset} ${colors.gray}→${colors.reset} ${colors.cyan}2${colors.reset} ${colors.gray}→${colors.reset} ${colors.blue}Claude Implementation${colors.reset} ${colors.gray}→${colors.reset} ${colors.cyan}3${colors.reset} ${colors.gray}→${colors.reset} ${colors.yellow}Codex Review${colors.reset} ${colors.gray}→${colors.reset} ${colors.cyan}4${colors.reset} ${colors.gray}→${colors.reset} ${colors.green}Claude Fixes${colors.reset}`);
-  console.log(forky.doubleDivider() + '\n');
+  console.log(timmy.doubleDivider() + '\n');
 
   // Interactive mode hint
-  console.log(forky.info('Type "help" for available commands\n'));
+  console.log(timmy.info('Type "help" for available commands\n'));
 
   // Set up interactive command interface
   const rl = setupInteractiveMode(

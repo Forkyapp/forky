@@ -10,7 +10,7 @@ We release patches for security vulnerabilities. Currently supported versions:
 
 ## Reporting a Vulnerability
 
-We take the security of Forky seriously. If you believe you have found a security vulnerability, please report it to us as described below.
+We take the security of Timmy seriously. If you believe you have found a security vulnerability, please report it to us as described below.
 
 ### Please do the following:
 
@@ -39,7 +39,7 @@ We take the security of Forky seriously. If you believe you have found a securit
 
 ## Security Best Practices
 
-When using Forky:
+When using Timmy:
 
 ### Environment Variables
 
@@ -50,7 +50,7 @@ When using Forky:
 
 ### API Keys and Tokens
 
-Forky requires several API keys:
+Timmy requires several API keys:
 
 - `CLICKUP_API_KEY` - ClickUp API access
 - `GITHUB_TOKEN` - GitHub API access (with minimal required permissions)
@@ -90,7 +90,7 @@ All code changes undergo review to catch potential security issues:
 
 ### Local Execution
 
-Forky runs locally on your machine and:
+Timmy runs locally on your machine and:
 - Has access to your filesystem (limited to configured repository)
 - Makes API calls on your behalf
 - Launches processes (Claude Code sessions)

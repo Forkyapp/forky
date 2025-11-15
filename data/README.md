@@ -1,6 +1,6 @@
 # Data Directory Structure
 
-This directory contains all runtime state and cache files for Forky. All files in this directory are excluded from version control.
+This directory contains all runtime state and cache files for Timmy. All files in this directory are excluded from version control.
 
 ## Directory Organization
 
@@ -52,13 +52,13 @@ cp review-tracking.json.example data/tracking/review-tracking.json
 To backup all state:
 
 ```bash
-tar -czf forky-backup-$(date +%Y%m%d).tar.gz data/
+tar -czf timmy-backup-$(date +%Y%m%d).tar.gz data/
 ```
 
 To restore:
 
 ```bash
-tar -xzf forky-backup-YYYYMMDD.tar.gz
+tar -xzf timmy-backup-YYYYMMDD.tar.gz
 ```
 
 ## Reset

@@ -1,6 +1,6 @@
-# Contributing to Forky
+# Contributing to Timmy
 
-Thank you for your interest in contributing to Forky! This document provides guidelines and instructions for contributing.
+Thank you for your interest in contributing to Timmy! This document provides guidelines and instructions for contributing.
 
 ## Code of Conduct
 
@@ -74,8 +74,8 @@ Enhancement suggestions are tracked as GitHub issues. When creating an enhanceme
 
 1. Clone your fork:
    ```bash
-   git clone https://github.com/YOUR-USERNAME/forky.git
-   cd forky
+   git clone https://github.com/YOUR-USERNAME/timmy.git
+   cd timmy
    ```
 
 2. Install dependencies:
@@ -160,9 +160,9 @@ npm test -- --coverage
 │   ├── codex.ts              # Codex code review
 │   ├── claude.ts             # Claude AI integration
 │   └── orchestrator.ts       # Multi-AI orchestration
-├── forky.ts                  # Main entry point
+├── timmy.ts                  # Main entry point
 ├── retry-codex-review.ts     # Utility script
-├── forky.test.ts             # Jest test suite
+├── timmy.test.ts             # Jest test suite
 └── dist/                     # Compiled JavaScript
 ```
 
@@ -190,4 +190,4 @@ Feel free to open an issue for:
 
 ## License
 
-By contributing to Forky, you agree that your contributions will be licensed under the MIT License.
+By contributing to Timmy, you agree that your contributions will be licensed under the MIT License.

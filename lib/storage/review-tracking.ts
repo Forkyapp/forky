@@ -3,7 +3,7 @@ import path from 'path';
 import { exec } from 'child_process';
 import { promisify } from 'util';
 import { resolveRepoConfig } from '../../src/shared/config';
-import { forky, colors } from '../../src/shared/ui';
+import { timmy, colors } from '../../src/shared/ui';
 import type { TaskData, ReviewEntry, PRFoundInfo, CommitCheckResult } from '../../src/types/storage';
 import { pipeline } from './pipeline';
 
@@ -37,7 +37,7 @@ export const reviewTracking = {
     // Check if review cycle already exists for this task
     const existing = reviewTrackingData.find(r => r.taskId === task.id);
     if (existing) {
-      console.log(forky.warning(`Review cycle already exists for task ${task.id}`));
+      console.log(timmy.warning(`Review cycle already exists for task ${task.id}`));
       return false;
     }
 
@@ -65,7 +65,7 @@ export const reviewTracking = {
 
     reviewTrackingData.push(reviewEntry);
     this.save(reviewTrackingData);
-    console.log(forky.info(`Started review cycle for task ${task.id} (repo: ${repoName})`));
+    console.log(timmy.info(`Started review cycle for task ${task.id} (repo: ${repoName})`));
     return true;
   },
 
@@ -138,8 +138,8 @@ export const reviewTracking = {
 
       if (reviewEntry.stage === 'waiting_for_codex_review' && commitResult.isReview) {
         // Codex review commit detected!
-        console.log(forky.success(`Codex review complete for ${colors.bright}${reviewEntry.taskId}${colors.reset}`));
-        console.log(forky.info(`Commit: ${commitResult.message}`));
+        console.log(timmy.success(`Codex review complete for ${colors.bright}${reviewEntry.taskId}${colors.reset}`));
+        console.log(timmy.info(`Commit: ${commitResult.message}`));
 
         await clickupModule.addComment(
           reviewEntry.taskId,
@@ -153,7 +153,7 @@ export const reviewTracking = {
         reviewEntry.iteration++;
         this.save(reviewTrackingData);
 
-        console.log(forky.ai(`Triggering Claude to fix TODOs for ${colors.bright}${reviewEntry.taskId}${colors.reset}`));
+        console.log(timmy.ai(`Triggering Claude to fix TODOs for ${colors.bright}${reviewEntry.taskId}${colors.reset}`));
         const task = { id: reviewEntry.taskId, name: reviewEntry.taskName };
         const repoConfig = {
           owner: reviewEntry.owner!,
@@ -164,8 +164,8 @@ export const reviewTracking = {
 
       } else if (reviewEntry.stage === 'waiting_for_claude_fixes' && commitResult.isFix) {
         // Claude fixes commit detected!
-        console.log(forky.success(`Claude fixes complete for ${colors.bright}${reviewEntry.taskId}${colors.reset}`));
-        console.log(forky.info(`Commit: ${commitResult.message}`));
+        console.log(timmy.success(`Claude fixes complete for ${colors.bright}${reviewEntry.taskId}${colors.reset}`));
+        console.log(timmy.info(`Commit: ${commitResult.message}`));
 
         await clickupModule.addComment(
           reviewEntry.taskId,
@@ -180,7 +180,7 @@ export const reviewTracking = {
           reviewEntry.stage = 'waiting_for_codex_review';
           this.save(reviewTrackingData);
 
-          console.log(forky.ai(`Starting review iteration ${reviewEntry.iteration + 1} for ${colors.bright}${reviewEntry.taskId}${colors.reset}`));
+          console.log(timmy.ai(`Starting review iteration ${reviewEntry.iteration + 1} for ${colors.bright}${reviewEntry.taskId}${colors.reset}`));
           const task = { id: reviewEntry.taskId, name: reviewEntry.taskName };
           const repoConfig = {
             owner: reviewEntry.owner!,
@@ -190,7 +190,7 @@ export const reviewTracking = {
           await codexModule.reviewClaudeChanges(task, { repoConfig });
         } else {
           // Review cycle complete
-          console.log(forky.success(`Review cycle complete for ${colors.bright}${reviewEntry.taskId}${colors.reset} (${reviewEntry.iteration} iterations)`));
+          console.log(timmy.success(`Review cycle complete for ${colors.bright}${reviewEntry.taskId}${colors.reset} (${reviewEntry.iteration} iterations)`));
 
           await clickupModule.addComment(
             reviewEntry.taskId,

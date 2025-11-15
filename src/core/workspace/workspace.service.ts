@@ -1,6 +1,6 @@
 import fs from 'fs';
 import path from 'path';
-import { forky, colors } from '../../shared/ui';
+import { timmy, colors } from '../../shared/ui';
 
 interface WorkspaceConfig {
   active?: string;
@@ -47,11 +47,11 @@ export const workspace = {
         const parsed = JSON.parse(content);
         return parsed;
       } else {
-        console.error(forky.error(`workspace.json not found at: ${workspaceFile}`));
+        console.error(timmy.error(`workspace.json not found at: ${workspaceFile}`));
       }
     } catch (error) {
-      console.error(forky.error(`Failed to load workspace.json: ${(error as Error).message}`));
-      console.error(forky.error(`Path: ${workspaceFile}`));
+      console.error(timmy.error(`Failed to load workspace.json: ${(error as Error).message}`));
+      console.error(timmy.error(`Path: ${workspaceFile}`));
     }
     return null;
   },
@@ -63,7 +63,7 @@ export const workspace = {
     try {
       fs.writeFileSync(workspaceFile, JSON.stringify(config, null, 2));
     } catch (error) {
-      console.error(forky.error(`Failed to save workspace.json: ${(error as Error).message}`));
+      console.error(timmy.error(`Failed to save workspace.json: ${(error as Error).message}`));
     }
   },
 
@@ -76,7 +76,7 @@ export const workspace = {
         return JSON.parse(fs.readFileSync(projectsFile, 'utf8'));
       }
     } catch (error) {
-      console.error(forky.error(`Failed to load projects.json: ${(error as Error).message}`));
+      console.error(timmy.error(`Failed to load projects.json: ${(error as Error).message}`));
     }
     return null;
   },
@@ -87,26 +87,26 @@ export const workspace = {
   getActiveProject(): ProjectConfig | null {
     const workspaceConfig = this.loadWorkspace();
     if (!workspaceConfig) {
-      console.error(forky.error('No active project set in workspace.json'));
+      console.error(timmy.error('No active project set in workspace.json'));
       return null;
     }
 
     // Support both 'active' and 'activeProject' field names
     const activeProjectName = workspaceConfig.active || workspaceConfig.activeProject;
     if (!activeProjectName) {
-      console.error(forky.error('No active project set in workspace.json'));
+      console.error(timmy.error('No active project set in workspace.json'));
       return null;
     }
 
     const projectsConfig = this.loadProjects();
     if (!projectsConfig) {
-      console.error(forky.error('Failed to load projects.json'));
+      console.error(timmy.error('Failed to load projects.json'));
       return null;
     }
 
     const project = projectsConfig.projects[activeProjectName];
     if (!project) {
-      console.error(forky.error(`Project "${activeProjectName}" not found in projects.json`));
+      console.error(timmy.error(`Project "${activeProjectName}" not found in projects.json`));
       return null;
     }
 
@@ -127,13 +127,13 @@ export const workspace = {
   switchProject(projectName: string): boolean {
     const projectsConfig = this.loadProjects();
     if (!projectsConfig) {
-      console.error(forky.error('Failed to load projects.json'));
+      console.error(timmy.error('Failed to load projects.json'));
       return false;
     }
 
     if (!projectsConfig.projects[projectName]) {
-      console.error(forky.error(`Project "${projectName}" not found in projects.json`));
-      console.log(forky.info('Available projects:'));
+      console.error(timmy.error(`Project "${projectName}" not found in projects.json`));
+      console.log(timmy.info('Available projects:'));
       Object.keys(projectsConfig.projects).forEach(name => {
         const project = projectsConfig.projects[name];
         console.log(`  ${colors.bright}${name}${colors.reset} - ${project.name}`);
@@ -147,10 +147,10 @@ export const workspace = {
     });
 
     const project = projectsConfig.projects[projectName];
-    console.log(forky.success(`Switched to project: ${colors.bright}${project.name}${colors.reset}`));
-    console.log(forky.info(`ClickUp Workspace: ${project.clickup.workspaceId}`));
-    console.log(forky.info(`GitHub: ${project.github.owner}/${project.github.repo}`));
-    console.log(forky.info(`Path: ${project.github.path}`));
+    console.log(timmy.success(`Switched to project: ${colors.bright}${project.name}${colors.reset}`));
+    console.log(timmy.info(`ClickUp Workspace: ${project.clickup.workspaceId}`));
+    console.log(timmy.info(`GitHub: ${project.github.owner}/${project.github.repo}`));
+    console.log(timmy.info(`Path: ${project.github.path}`));
 
     return true;
   },
@@ -161,7 +161,7 @@ export const workspace = {
   listProjects(): void {
     const projectsConfig = this.loadProjects();
     if (!projectsConfig) {
-      console.error(forky.error('Failed to load projects.json'));
+      console.error(timmy.error('Failed to load projects.json'));
       return;
     }
 
@@ -186,7 +186,7 @@ export const workspace = {
     });
 
     console.log('\n═══════════════════════════════════════════════════════');
-    console.log(forky.info('To switch projects: npm run switch <project-name>'));
+    console.log(timmy.info('To switch projects: npm run switch <project-name>'));
     console.log('');
   },
 
@@ -198,8 +198,8 @@ export const workspace = {
     const project = this.getActiveProject();
 
     if (!project || !projectName) {
-      console.error(forky.error('No active project configured'));
-      console.log(forky.info('Run: npm run projects'));
+      console.error(timmy.error('No active project configured'));
+      console.log(timmy.info('Run: npm run projects'));
       return;
     }
 
