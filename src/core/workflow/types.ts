@@ -2,7 +2,6 @@
  * Workflow Types - Type definitions for workflow orchestration
  */
 
-import type { ClickUpTask } from '@/types/clickup';
 import type { PipelineData } from '../../../lib/storage';
 import type { AnalysisResult } from '../stages/types';
 
