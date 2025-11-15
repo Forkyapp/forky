@@ -13,7 +13,7 @@ import 'tsconfig-paths/register';
 import dotenv from 'dotenv';
 dotenv.config();
 
-import { initializeContextOrchestrator, getContextOrchestrator } from './src/core/context/context-orchestrator';
+import { initializeContextOrchestrator } from './src/core/context/context-orchestrator';
 import { timmy, colors } from './src/shared/ui';
 
 async function testContextLoading() {
