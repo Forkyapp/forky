@@ -181,7 +181,7 @@ export class DiscordService {
     }
 
     this.isPolling = true;
-    logger.info('Starting Discord message polling', {
+    logger.debug('Starting Discord message polling', {
       intervalMs: config.discord.pollIntervalMs,
     });
 
