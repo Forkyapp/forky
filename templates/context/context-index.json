@@ -1,0 +1,1010 @@
+{
+  "generatedAt": "2025-11-15T16:02:19.546Z",
+  "totalFiles": 32,
+  "files": [
+    {
+      "path": "CONTEXT_LOADER.md",
+      "title": "Context Loader System",
+      "category": "uncategorized",
+      "tags": [],
+      "related": [],
+      "difficulty": "beginner",
+      "lines": 322,
+      "lastUpdated": "2025-11-15"
+    },
+    {
+      "path": "guides/common-commands.md",
+      "title": "Common Commands",
+      "category": "guides",
+      "tags": [
+        "commands",
+        "yarn",
+        "npm",
+        "cli",
+        "development"
+      ],
+      "related": [
+        "../project/tech-stack",
+        "../project/setup",
+        "quick-start"
+      ],
+      "difficulty": "beginner",
+      "lines": 280,
+      "lastUpdated": "2025-11-15"
+    },
+    {
+      "path": "guides/path-aliases.md",
+      "title": "Path Aliases",
+      "category": "guides",
+      "tags": [
+        "imports",
+        "path-aliases",
+        "typescript",
+        "monorepo"
+      ],
+      "related": [
+        "code-organization",
+        "../project/monorepo-structure"
+      ],
+      "difficulty": "beginner",
+      "lines": 175,
+      "lastUpdated": "2025-11-15"
+    },
+    {
+      "path": "patterns/backend/authentication.md",
+      "title": "Authentication Patterns",
+      "category": "patterns/backend",
+      "tags": [
+        "authentication",
+        "jwt",
+        "tokens",
+        "auth"
+      ],
+      "related": [
+        "guards-decorators",
+        "services"
+      ],
+      "difficulty": "intermediate",
+      "lines": 29,
+      "lastUpdated": "2025-11-15"
+    },
+    {
+      "path": "patterns/backend/controllers.md",
+      "title": "Controller Pattern",
+      "category": "patterns/backend",
+      "tags": [
+        "nestjs",
+        "controllers",
+        "rest-api",
+        "decorators",
+        "guards"
+      ],
+      "related": [
+        "services",
+        "repositories",
+        "guards-decorators"
+      ],
+      "difficulty": "beginner",
+      "lines": 348,
+      "lastUpdated": "2025-11-15"
+    },
+    {
+      "path": "patterns/backend/guards-decorators.md",
+      "title": "Guards and Decorators",
+      "category": "patterns/backend",
+      "tags": [
+        "nestjs",
+        "guards",
+        "decorators",
+        "authorization",
+        "authentication"
+      ],
+      "related": [
+        "controllers",
+        "authentication"
+      ],
+      "difficulty": "intermediate",
+      "lines": 28,
+      "lastUpdated": "2025-11-15"
+    },
+    {
+      "path": "patterns/backend/prisma-patterns.md",
+      "title": "Prisma Patterns",
+      "category": "patterns/backend",
+      "tags": [
+        "prisma",
+        "database",
+        "orm",
+        "queries"
+      ],
+      "related": [
+        "repositories",
+        "transactions"
+      ],
+      "difficulty": "intermediate",
+      "lines": 28,
+      "lastUpdated": "2025-11-15"
+    },
+    {
+      "path": "patterns/backend/repositories.md",
+      "title": "Repository Pattern",
+      "category": "patterns/backend",
+      "tags": [
+        "nestjs",
+        "prisma",
+        "repository",
+        "database",
+        "transactions"
+      ],
+      "related": [
+        "services",
+        "controllers",
+        "prisma-patterns",
+        "transactions"
+      ],
+      "difficulty": "intermediate",
+      "lines": 426,
+      "lastUpdated": "2025-11-15"
+    },
+    {
+      "path": "patterns/backend/services.md",
+      "title": "Service Pattern",
+      "category": "patterns/backend",
+      "tags": [
+        "nestjs",
+        "services",
+        "business-logic",
+        "transactions",
+        "multi-tenancy"
+      ],
+      "related": [
+        "repositories",
+        "controllers",
+        "transactions",
+        "guards-decorators"
+      ],
+      "difficulty": "intermediate",
+      "lines": 466,
+      "lastUpdated": "2025-11-15"
+    },
+    {
+      "path": "patterns/backend/transactions.md",
+      "title": "Transaction Patterns",
+      "category": "patterns/backend",
+      "tags": [
+        "prisma",
+        "transactions",
+        "database",
+        "atomic-operations"
+      ],
+      "related": [
+        "repositories",
+        "services",
+        "prisma-patterns"
+      ],
+      "difficulty": "intermediate",
+      "lines": 29,
+      "lastUpdated": "2025-11-15"
+    },
+    {
+      "path": "patterns/frontend/auth-hooks.md",
+      "title": "Authentication-Aware Hooks",
+      "category": "patterns/frontend",
+      "tags": [
+        "react-query",
+        "auth",
+        "hooks",
+        "user-context",
+        "role-based"
+      ],
+      "related": [
+        "react-query-basics",
+        "cache-management",
+        "derived-hooks"
+      ],
+      "difficulty": "intermediate",
+      "lines": 252,
+      "lastUpdated": "2025-11-15"
+    },
+    {
+      "path": "patterns/frontend/cache-management.md",
+      "title": "Cache Management",
+      "category": "patterns/frontend",
+      "tags": [
+        "react-query",
+        "cache",
+        "optimistic-updates",
+        "invalidation"
+      ],
+      "related": [
+        "react-query-basics",
+        "auth-hooks"
+      ],
+      "difficulty": "intermediate",
+      "lines": 323,
+      "lastUpdated": "2025-11-15"
+    },
+    {
+      "path": "patterns/frontend/derived-hooks.md",
+      "title": "Derived Hooks",
+      "category": "patterns/frontend",
+      "tags": [
+        "react-query",
+        "hooks",
+        "data-transformation",
+        "composition",
+        "derived-data"
+      ],
+      "related": [
+        "react-query-basics",
+        "cache-management",
+        "auth-hooks"
+      ],
+      "difficulty": "intermediate",
+      "lines": 293,
+      "lastUpdated": "2025-11-15"
+    },
+    {
+      "path": "patterns/frontend/error-handling.md",
+      "title": "Frontend Error Handling",
+      "category": "patterns/frontend",
+      "tags": [
+        "react-query",
+        "error-handling",
+        "retry",
+        "standardexception",
+        "toast"
+      ],
+      "related": [
+        "react-query-basics",
+        "../shared/error-handling"
+      ],
+      "difficulty": "intermediate",
+      "lines": 373,
+      "lastUpdated": "2025-11-15"
+    },
+    {
+      "path": "patterns/frontend/form-patterns.md",
+      "title": "Form Patterns",
+      "category": "patterns/frontend",
+      "tags": [
+        "forms",
+        "validation",
+        "react-hook-form"
+      ],
+      "related": [],
+      "difficulty": "beginner",
+      "lines": 19,
+      "lastUpdated": "2025-11-15"
+    },
+    {
+      "path": "patterns/frontend/react-query-basics.md",
+      "title": "React Query Basics",
+      "category": "patterns/frontend",
+      "tags": [
+        "react-query",
+        "hooks",
+        "data-fetching",
+        "tanstack-query"
+      ],
+      "related": [
+        "cache-management",
+        "auth-hooks",
+        "derived-hooks"
+      ],
+      "difficulty": "beginner",
+      "lines": 233,
+      "lastUpdated": "2025-11-15"
+    },
+    {
+      "path": "patterns/frontend/routing-patterns.md",
+      "title": "Routing Patterns",
+      "category": "patterns/frontend",
+      "tags": [
+        "routing",
+        "react-router",
+        "navigation"
+      ],
+      "related": [],
+      "difficulty": "beginner",
+      "lines": 19,
+      "lastUpdated": "2025-11-15"
+    },
+    {
+      "path": "patterns/frontend/styling-patterns.md",
+      "title": "Styling Patterns",
+      "category": "patterns/frontend",
+      "tags": [
+        "emotion",
+        "css-in-js",
+        "styling"
+      ],
+      "related": [],
+      "difficulty": "beginner",
+      "lines": 19,
+      "lastUpdated": "2025-11-15"
+    },
+    {
+      "path": "patterns/frontend/translation-patterns.md",
+      "title": "Translation Patterns",
+      "category": "patterns/frontend",
+      "tags": [
+        "i18n",
+        "i18next",
+        "translation",
+        "multi-language"
+      ],
+      "related": [],
+      "difficulty": "beginner",
+      "lines": 19,
+      "lastUpdated": "2025-11-15"
+    },
+    {
+      "path": "patterns/shared/constants-enums.md",
+      "title": "Constants and Enums",
+      "category": "patterns/shared",
+      "tags": [
+        "constants",
+        "enums",
+        "typescript",
+        "configuration"
+      ],
+      "related": [
+        "type-safety",
+        "zod-schemas"
+      ],
+      "difficulty": "beginner",
+      "lines": 295,
+      "lastUpdated": "2025-11-15"
+    },
+    {
+      "path": "patterns/shared/dto-types.md",
+      "title": "DTO Type Patterns",
+      "category": "patterns/shared",
+      "tags": [
+        "dto",
+        "types",
+        "typescript",
+        "zod"
+      ],
+      "related": [
+        "zod-schemas",
+        "type-safety"
+      ],
+      "difficulty": "beginner",
+      "lines": 215,
+      "lastUpdated": "2025-11-15"
+    },
+    {
+      "path": "patterns/shared/error-handling.md",
+      "title": "Error Handling Patterns",
+      "category": "patterns/shared",
+      "tags": [
+        "error-handling",
+        "exceptions",
+        "standardexception",
+        "typescript"
+      ],
+      "related": [
+        "type-safety",
+        "zod-schemas"
+      ],
+      "difficulty": "intermediate",
+      "lines": 300,
+      "lastUpdated": "2025-11-15"
+    },
+    {
+      "path": "patterns/shared/type-safety.md",
+      "title": "Type Safety Patterns",
+      "category": "patterns/shared",
+      "tags": [
+        "typescript",
+        "type-safety",
+        "type-guards",
+        "generics"
+      ],
+      "related": [
+        "dto-types",
+        "error-handling"
+      ],
+      "difficulty": "intermediate",
+      "lines": 301,
+      "lastUpdated": "2025-11-15"
+    },
+    {
+      "path": "patterns/shared/zod-schemas.md",
+      "title": "Zod Schema Patterns",
+      "category": "patterns/shared",
+      "tags": [
+        "zod",
+        "validation",
+        "schemas",
+        "typescript"
+      ],
+      "related": [
+        "dto-types",
+        "error-handling"
+      ],
+      "difficulty": "beginner",
+      "lines": 324,
+      "lastUpdated": "2025-11-15"
+    },
+    {
+      "path": "project/architecture.md",
+      "title": "Architecture Patterns",
+      "category": "project",
+      "tags": [
+        "architecture",
+        "design",
+        "patterns",
+        "structure"
+      ],
+      "related": [
+        "overview",
+        "tech-stack",
+        "monorepo-structure"
+      ],
+      "difficulty": "intermediate",
+      "lines": 31,
+      "lastUpdated": "2025-11-15"
+    },
+    {
+      "path": "project/monorepo-structure.md",
+      "title": "Monorepo Structure",
+      "category": "project",
+      "tags": [
+        "monorepo",
+        "structure",
+        "organization",
+        "architecture"
+      ],
+      "related": [
+        "overview",
+        "tech-stack",
+        "../guides/file-naming",
+        "../guides/code-organization"
+      ],
+      "difficulty": "beginner",
+      "lines": 182,
+      "lastUpdated": "2025-11-15"
+    },
+    {
+      "path": "project/overview.md",
+      "title": "Product Overview",
+      "category": "project",
+      "tags": [
+        "product",
+        "business",
+        "platform",
+        "overview"
+      ],
+      "related": [
+        "tech-stack",
+        "architecture",
+        "monorepo-structure"
+      ],
+      "difficulty": "beginner",
+      "lines": 51,
+      "lastUpdated": "2025-11-15"
+    },
+    {
+      "path": "project/setup.md",
+      "title": "Setup Guide",
+      "category": "project",
+      "tags": [
+        "setup",
+        "installation",
+        "environment",
+        "configuration"
+      ],
+      "related": [
+        "overview",
+        "tech-stack",
+        "../guides/common-commands"
+      ],
+      "difficulty": "beginner",
+      "lines": 170,
+      "lastUpdated": "2025-11-15"
+    },
+    {
+      "path": "project/tech-stack.md",
+      "title": "Technology Stack",
+      "category": "project",
+      "tags": [
+        "tech-stack",
+        "tools",
+        "frameworks",
+        "libraries"
+      ],
+      "related": [
+        "overview",
+        "monorepo-structure",
+        "setup",
+        "../guides/common-commands"
+      ],
+      "difficulty": "beginner",
+      "lines": 73,
+      "lastUpdated": "2025-11-15"
+    },
+    {
+      "path": "specs/duplication.md",
+      "title": "Student Profile Merging",
+      "category": "uncategorized",
+      "tags": [],
+      "related": [],
+      "difficulty": "beginner",
+      "lines": 163,
+      "lastUpdated": "2025-11-15"
+    },
+    {
+      "path": "specs/student-profile.md",
+      "title": "Student Profile Requirement Modal",
+      "category": "uncategorized",
+      "tags": [],
+      "related": [],
+      "difficulty": "beginner",
+      "lines": 71,
+      "lastUpdated": "2025-11-15"
+    },
+    {
+      "path": "specs/transfer-student.md",
+      "title": "Transfer Student API Endpoint",
+      "category": "uncategorized",
+      "tags": [],
+      "related": [],
+      "difficulty": "beginner",
+      "lines": 41,
+      "lastUpdated": "2025-11-15"
+    }
+  ],
+  "categories": {
+    "uncategorized": [
+      "CONTEXT_LOADER.md",
+      "specs/duplication.md",
+      "specs/student-profile.md",
+      "specs/transfer-student.md"
+    ],
+    "guides": [
+      "guides/common-commands.md",
+      "guides/path-aliases.md"
+    ],
+    "patterns/backend": [
+      "patterns/backend/authentication.md",
+      "patterns/backend/controllers.md",
+      "patterns/backend/guards-decorators.md",
+      "patterns/backend/prisma-patterns.md",
+      "patterns/backend/repositories.md",
+      "patterns/backend/services.md",
+      "patterns/backend/transactions.md"
+    ],
+    "patterns/frontend": [
+      "patterns/frontend/auth-hooks.md",
+      "patterns/frontend/cache-management.md",
+      "patterns/frontend/derived-hooks.md",
+      "patterns/frontend/error-handling.md",
+      "patterns/frontend/form-patterns.md",
+      "patterns/frontend/react-query-basics.md",
+      "patterns/frontend/routing-patterns.md",
+      "patterns/frontend/styling-patterns.md",
+      "patterns/frontend/translation-patterns.md"
+    ],
+    "patterns/shared": [
+      "patterns/shared/constants-enums.md",
+      "patterns/shared/dto-types.md",
+      "patterns/shared/error-handling.md",
+      "patterns/shared/type-safety.md",
+      "patterns/shared/zod-schemas.md"
+    ],
+    "project": [
+      "project/architecture.md",
+      "project/monorepo-structure.md",
+      "project/overview.md",
+      "project/setup.md",
+      "project/tech-stack.md"
+    ]
+  },
+  "tags": {
+    "commands": [
+      "guides/common-commands.md"
+    ],
+    "yarn": [
+      "guides/common-commands.md"
+    ],
+    "npm": [
+      "guides/common-commands.md"
+    ],
+    "cli": [
+      "guides/common-commands.md"
+    ],
+    "development": [
+      "guides/common-commands.md"
+    ],
+    "imports": [
+      "guides/path-aliases.md"
+    ],
+    "path-aliases": [
+      "guides/path-aliases.md"
+    ],
+    "typescript": [
+      "guides/path-aliases.md",
+      "patterns/shared/constants-enums.md",
+      "patterns/shared/dto-types.md",
+      "patterns/shared/error-handling.md",
+      "patterns/shared/type-safety.md",
+      "patterns/shared/zod-schemas.md"
+    ],
+    "monorepo": [
+      "guides/path-aliases.md",
+      "project/monorepo-structure.md"
+    ],
+    "authentication": [
+      "patterns/backend/authentication.md",
+      "patterns/backend/guards-decorators.md"
+    ],
+    "jwt": [
+      "patterns/backend/authentication.md"
+    ],
+    "tokens": [
+      "patterns/backend/authentication.md"
+    ],
+    "auth": [
+      "patterns/backend/authentication.md",
+      "patterns/frontend/auth-hooks.md"
+    ],
+    "nestjs": [
+      "patterns/backend/controllers.md",
+      "patterns/backend/guards-decorators.md",
+      "patterns/backend/repositories.md",
+      "patterns/backend/services.md"
+    ],
+    "controllers": [
+      "patterns/backend/controllers.md"
+    ],
+    "rest-api": [
+      "patterns/backend/controllers.md"
+    ],
+    "decorators": [
+      "patterns/backend/controllers.md",
+      "patterns/backend/guards-decorators.md"
+    ],
+    "guards": [
+      "patterns/backend/controllers.md",
+      "patterns/backend/guards-decorators.md"
+    ],
+    "authorization": [
+      "patterns/backend/guards-decorators.md"
+    ],
+    "prisma": [
+      "patterns/backend/prisma-patterns.md",
+      "patterns/backend/repositories.md",
+      "patterns/backend/transactions.md"
+    ],
+    "database": [
+      "patterns/backend/prisma-patterns.md",
+      "patterns/backend/repositories.md",
+      "patterns/backend/transactions.md"
+    ],
+    "orm": [
+      "patterns/backend/prisma-patterns.md"
+    ],
+    "queries": [
+      "patterns/backend/prisma-patterns.md"
+    ],
+    "repository": [
+      "patterns/backend/repositories.md"
+    ],
+    "transactions": [
+      "patterns/backend/repositories.md",
+      "patterns/backend/services.md",
+      "patterns/backend/transactions.md"
+    ],
+    "services": [
+      "patterns/backend/services.md"
+    ],
+    "business-logic": [
+      "patterns/backend/services.md"
+    ],
+    "multi-tenancy": [
+      "patterns/backend/services.md"
+    ],
+    "atomic-operations": [
+      "patterns/backend/transactions.md"
+    ],
+    "react-query": [
+      "patterns/frontend/auth-hooks.md",
+      "patterns/frontend/cache-management.md",
+      "patterns/frontend/derived-hooks.md",
+      "patterns/frontend/error-handling.md",
+      "patterns/frontend/react-query-basics.md"
+    ],
+    "hooks": [
+      "patterns/frontend/auth-hooks.md",
+      "patterns/frontend/derived-hooks.md",
+      "patterns/frontend/react-query-basics.md"
+    ],
+    "user-context": [
+      "patterns/frontend/auth-hooks.md"
+    ],
+    "role-based": [
+      "patterns/frontend/auth-hooks.md"
+    ],
+    "cache": [
+      "patterns/frontend/cache-management.md"
+    ],
+    "optimistic-updates": [
+      "patterns/frontend/cache-management.md"
+    ],
+    "invalidation": [
+      "patterns/frontend/cache-management.md"
+    ],
+    "data-transformation": [
+      "patterns/frontend/derived-hooks.md"
+    ],
+    "composition": [
+      "patterns/frontend/derived-hooks.md"
+    ],
+    "derived-data": [
+      "patterns/frontend/derived-hooks.md"
+    ],
+    "error-handling": [
+      "patterns/frontend/error-handling.md",
+      "patterns/shared/error-handling.md"
+    ],
+    "retry": [
+      "patterns/frontend/error-handling.md"
+    ],
+    "standardexception": [
+      "patterns/frontend/error-handling.md",
+      "patterns/shared/error-handling.md"
+    ],
+    "toast": [
+      "patterns/frontend/error-handling.md"
+    ],
+    "forms": [
+      "patterns/frontend/form-patterns.md"
+    ],
+    "validation": [
+      "patterns/frontend/form-patterns.md",
+      "patterns/shared/zod-schemas.md"
+    ],
+    "react-hook-form": [
+      "patterns/frontend/form-patterns.md"
+    ],
+    "data-fetching": [
+      "patterns/frontend/react-query-basics.md"
+    ],
+    "tanstack-query": [
+      "patterns/frontend/react-query-basics.md"
+    ],
+    "routing": [
+      "patterns/frontend/routing-patterns.md"
+    ],
+    "react-router": [
+      "patterns/frontend/routing-patterns.md"
+    ],
+    "navigation": [
+      "patterns/frontend/routing-patterns.md"
+    ],
+    "emotion": [
+      "patterns/frontend/styling-patterns.md"
+    ],
+    "css-in-js": [
+      "patterns/frontend/styling-patterns.md"
+    ],
+    "styling": [
+      "patterns/frontend/styling-patterns.md"
+    ],
+    "i18n": [
+      "patterns/frontend/translation-patterns.md"
+    ],
+    "i18next": [
+      "patterns/frontend/translation-patterns.md"
+    ],
+    "translation": [
+      "patterns/frontend/translation-patterns.md"
+    ],
+    "multi-language": [
+      "patterns/frontend/translation-patterns.md"
+    ],
+    "constants": [
+      "patterns/shared/constants-enums.md"
+    ],
+    "enums": [
+      "patterns/shared/constants-enums.md"
+    ],
+    "configuration": [
+      "patterns/shared/constants-enums.md",
+      "project/setup.md"
+    ],
+    "dto": [
+      "patterns/shared/dto-types.md"
+    ],
+    "types": [
+      "patterns/shared/dto-types.md"
+    ],
+    "zod": [
+      "patterns/shared/dto-types.md",
+      "patterns/shared/zod-schemas.md"
+    ],
+    "exceptions": [
+      "patterns/shared/error-handling.md"
+    ],
+    "type-safety": [
+      "patterns/shared/type-safety.md"
+    ],
+    "type-guards": [
+      "patterns/shared/type-safety.md"
+    ],
+    "generics": [
+      "patterns/shared/type-safety.md"
+    ],
+    "schemas": [
+      "patterns/shared/zod-schemas.md"
+    ],
+    "architecture": [
+      "project/architecture.md",
+      "project/monorepo-structure.md"
+    ],
+    "design": [
+      "project/architecture.md"
+    ],
+    "patterns": [
+      "project/architecture.md"
+    ],
+    "structure": [
+      "project/architecture.md",
+      "project/monorepo-structure.md"
+    ],
+    "organization": [
+      "project/monorepo-structure.md"
+    ],
+    "product": [
+      "project/overview.md"
+    ],
+    "business": [
+      "project/overview.md"
+    ],
+    "platform": [
+      "project/overview.md"
+    ],
+    "overview": [
+      "project/overview.md"
+    ],
+    "setup": [
+      "project/setup.md"
+    ],
+    "installation": [
+      "project/setup.md"
+    ],
+    "environment": [
+      "project/setup.md"
+    ],
+    "tech-stack": [
+      "project/tech-stack.md"
+    ],
+    "tools": [
+      "project/tech-stack.md"
+    ],
+    "frameworks": [
+      "project/tech-stack.md"
+    ],
+    "libraries": [
+      "project/tech-stack.md"
+    ]
+  },
+  "relatedGraph": {
+    "guides/common-commands.md": [
+      "../project/tech-stack",
+      "../project/setup",
+      "quick-start"
+    ],
+    "guides/path-aliases.md": [
+      "code-organization",
+      "../project/monorepo-structure"
+    ],
+    "patterns/backend/authentication.md": [
+      "guards-decorators",
+      "services"
+    ],
+    "patterns/backend/controllers.md": [
+      "services",
+      "repositories",
+      "guards-decorators"
+    ],
+    "patterns/backend/guards-decorators.md": [
+      "controllers",
+      "authentication"
+    ],
+    "patterns/backend/prisma-patterns.md": [
+      "repositories",
+      "transactions"
+    ],
+    "patterns/backend/repositories.md": [
+      "services",
+      "controllers",
+      "prisma-patterns",
+      "transactions"
+    ],
+    "patterns/backend/services.md": [
+      "repositories",
+      "controllers",
+      "transactions",
+      "guards-decorators"
+    ],
+    "patterns/backend/transactions.md": [
+      "repositories",
+      "services",
+      "prisma-patterns"
+    ],
+    "patterns/frontend/auth-hooks.md": [
+      "react-query-basics",
+      "cache-management",
+      "derived-hooks"
+    ],
+    "patterns/frontend/cache-management.md": [
+      "react-query-basics",
+      "auth-hooks"
+    ],
+    "patterns/frontend/derived-hooks.md": [
+      "react-query-basics",
+      "cache-management",
+      "auth-hooks"
+    ],
+    "patterns/frontend/error-handling.md": [
+      "react-query-basics",
+      "../shared/error-handling"
+    ],
+    "patterns/frontend/react-query-basics.md": [
+      "cache-management",
+      "auth-hooks",
+      "derived-hooks"
+    ],
+    "patterns/shared/constants-enums.md": [
+      "type-safety",
+      "zod-schemas"
+    ],
+    "patterns/shared/dto-types.md": [
+      "zod-schemas",
+      "type-safety"
+    ],
+    "patterns/shared/error-handling.md": [
+      "type-safety",
+      "zod-schemas"
+    ],
+    "patterns/shared/type-safety.md": [
+      "dto-types",
+      "error-handling"
+    ],
+    "patterns/shared/zod-schemas.md": [
+      "dto-types",
+      "error-handling"
+    ],
+    "project/architecture.md": [
+      "overview",
+      "tech-stack",
+      "monorepo-structure"
+    ],
+    "project/monorepo-structure.md": [
+      "overview",
+      "tech-stack",
+      "../guides/file-naming",
+      "../guides/code-organization"
+    ],
+    "project/overview.md": [
+      "tech-stack",
+      "architecture",
+      "monorepo-structure"
+    ],
+    "project/setup.md": [
+      "overview",
+      "tech-stack",
+      "../guides/common-commands"
+    ],
+    "project/tech-stack.md": [
+      "overview",
+      "monorepo-structure",
+      "setup",
+      "../guides/common-commands"
+    ]
+  }
+}
