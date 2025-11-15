@@ -87,16 +87,39 @@ timmy/
 │   │   ├── ui/                  # Terminal UI formatting
 │   │   └── interactive-cli.ts   # Interactive mode handler
 │   │
-│   ├── core/                    # Core business logic
-│   │   ├── orchestrator/        # Main workflow orchestration
-│   │   │   ├── stages/          # Pipeline stages (4 stages)
-│   │   │   ├── utils/           # Pipeline utilities
-│   │   │   └── orchestrator.service.ts
+│   ├── core/                    # Core business logic (REFACTORED 2025-11-15)
+│   │   ├── workflow/            # ⭐ NEW - Main workflow orchestration
+│   │   │   ├── orchestrator.ts           # Simplified orchestrator (~75 lines)
+│   │   │   ├── workflow-executor.ts      # Stage execution logic
+│   │   │   ├── types.ts                  # Workflow types
+│   │   │   └── index.ts
+│   │   │
+│   │   ├── stages/              # ⭐ NEW - Independent pipeline stages
+│   │   │   ├── base-stage.ts             # Abstract base stage class
+│   │   │   ├── analysis.stage.ts         # Gemini analysis
+│   │   │   ├── implementation.stage.ts   # Claude implementation
+│   │   │   ├── review.stage.ts           # Codex review
+│   │   │   ├── fixes.stage.ts            # Claude fixes
+│   │   │   ├── types.ts                  # Stage result types
+│   │   │   └── index.ts
+│   │   │
+│   │   ├── notifications/       # ⭐ NEW - Centralized notifications
+│   │   │   ├── notification-manager.ts   # Notification coordinator
+│   │   │   ├── clickup-notifier.ts       # ClickUp notifications
+│   │   │   ├── types.ts                  # Notification types
+│   │   │   └── index.ts
+│   │   │
+│   │   ├── orchestrator/        # Legacy wrapper (backward compatibility)
+│   │   │   ├── orchestrator.service.ts   # Delegates to workflow/
+│   │   │   ├── stages/                   # (OLD - use core/stages/)
+│   │   │   ├── utils/                    # (OLD - use core/notifications/)
+│   │   │   └── types.ts
 │   │   │
 │   │   ├── ai-services/         # AI model integrations
 │   │   │   ├── claude.service.ts
 │   │   │   ├── gemini.service.ts
-│   │   │   └── qwen.service.ts (disabled)
+│   │   │   ├── qwen.service.ts           # (disabled, future use)
+│   │   │   └── ai-brain.service.ts
 │   │   │
 │   │   ├── repositories/        # Data access layer
 │   │   │   ├── cache.repository.ts
@@ -108,6 +131,9 @@ timmy/
 │   │   ├── monitoring/          # Code review and monitoring
 │   │   │   ├── codex.service.ts
 │   │   │   └── progress-monitor.service.ts
+│   │   │
+│   │   ├── rag/                 # (disabled, future use)
+│   │   │   └── ...
 │   │   │
 │   │   ├── workspace/           # Multi-project management
 │   │   │   └── workspace.service.ts
@@ -1375,6 +1401,108 @@ throw new StorageError(message, filePath, err)   // File I/O errors
 throw new RepositoryError(message, err)          // Repository errors
 throw new AIError(message, service)              // AI service errors
 ```
+
+---
+
+## Recent Refactoring (November 2025)
+
+### Core Folder Restructuring
+
+**Date:** 2025-11-15
+**Status:** ✅ Complete
+**Details:** See `REFACTOR_SUMMARY.md` for full details
+
+The `src/core/` folder has been significantly refactored to improve organization, maintainability, and testability:
+
+#### New Modules
+
+1. **`workflow/`** - Main workflow orchestration
+   - `orchestrator.ts` - Simplified orchestrator (255 lines → 75 lines)
+   - `workflow-executor.ts` - Stage execution logic
+   - `types.ts` - Workflow-specific types
+
+2. **`stages/`** - Independent pipeline stages
+   - `base-stage.ts` - Abstract base class with common functionality
+   - `analysis.stage.ts` - Gemini analysis (refactored)
+   - `implementation.stage.ts` - Claude implementation (refactored)
+   - `review.stage.ts` - Codex review (refactored)
+   - `fixes.stage.ts` - Claude fixes (refactored)
+   - `types.ts` - Stage result types
+
+3. **`notifications/`** - Centralized notification system
+   - `notification-manager.ts` - Coordinates all notifications
+   - `clickup-notifier.ts` - ClickUp-specific formatting
+   - `types.ts` - Notification types
+
+#### Key Improvements
+
+- **Separation of Concerns**: Each module has a single, clear responsibility
+- **Dependency Injection**: All stages use DI for better testability
+- **Base Stage Pattern**: Common functionality extracted to `BaseStage` class
+- **Type Safety**: Strong typing throughout with dedicated type files
+- **Backward Compatibility**: Old `orchestrator/` now delegates to new modules
+
+#### Usage Guidelines
+
+**❌ DON'T USE (OLD):**
+```typescript
+// Old way - still works but deprecated
+import { executeAnalysisStage } from '@/core/orchestrator/stages';
+import { notifyWorkflowComplete } from '@/core/orchestrator/utils/notifications';
+```
+
+**✅ USE (NEW):**
+```typescript
+// New way - recommended
+import { taskOrchestrator } from '@/core/workflow';
+import { AnalysisStage } from '@/core/stages';
+import { notificationManager } from '@/core/notifications';
+```
+
+#### Adding New Stages
+
+To add a new pipeline stage:
+
+1. Create stage class in `src/core/stages/`:
+
+```typescript
+import { BaseStage } from './base-stage';
+import type { StageContext, BaseStageResult } from './types';
+
+export class MyStage extends BaseStage<MyResult> {
+  protected readonly stageName = 'MyStage';
+
+  async execute(context: StageContext): Promise<MyResult> {
+    this.logAI('Starting my stage...', 'AI Service');
+    // Implementation
+    this.logSuccess('Stage complete!');
+    return { success: true };
+  }
+}
+```
+
+2. Add to `workflow-executor.ts`:
+
+```typescript
+private readonly myStage: MyStage;
+
+constructor() {
+  this.myStage = new MyStage();
+}
+
+// In execute():
+await this.myStage.run(baseContext);
+```
+
+3. Export from `stages/index.ts`
+
+#### Benefits
+
+- **70% reduction** in orchestrator code (255 → 75 lines)
+- **Easy to test**: Mock dependencies via constructor injection
+- **Easy to extend**: Add stages by extending `BaseStage`
+- **Easy to maintain**: Clear separation, small focused files
+- **Fully backward compatible**: Existing code works without changes
 
 ---
 

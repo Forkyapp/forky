@@ -1,3 +1,34 @@
+/**
+ * Qwen AI Service - Automated Unit Test Generation
+ *
+ * ⚠️ STATUS: NOT CURRENTLY USED - RESERVED FOR FUTURE USE
+ *
+ * This service integrates Qwen AI for automated comprehensive unit test generation.
+ * Currently disabled in the pipeline (see orchestrator.service.ts line 108-110) but
+ * fully implemented and ready to enable.
+ *
+ * **Capabilities:**
+ * - Analyzes code changes in feature branches
+ * - Generates comprehensive unit tests (happy path, edge cases, error handling)
+ * - Follows project testing conventions and patterns
+ * - Auto-commits and pushes test files
+ * - Aims for 80%+ test coverage
+ *
+ * **To Enable:**
+ * Uncomment the Qwen testing stage in orchestrator.service.ts (Stage 4)
+ *
+ * **Future Enhancements:**
+ * - Integration test generation
+ * - E2E test scaffolding
+ * - Test quality analysis
+ *
+ * DO NOT REMOVE - This is fully functional code ready to be enabled.
+ *
+ * @module ai-services/qwen
+ * @status disabled
+ * @readyToEnable true
+ */
+
 import fs from 'fs';
 import path from 'path';
 import { promisify } from 'util';
