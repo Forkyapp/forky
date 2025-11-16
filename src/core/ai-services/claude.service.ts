@@ -232,12 +232,19 @@ Begin implementation now and make sure to create the PR when done!`;
 
   try {
     const promptFile = path.join(__dirname, '..', `task-${taskId}-prompt.txt`);
-    const logFile = path.join(__dirname, '..', 'logs', `${taskId}-claude.log`);
+    const logsDir = path.join(__dirname, '..', 'logs');
+    const logFile = path.join(logsDir, `${taskId}-claude.log`);
     const progressFile = path.join(__dirname, '..', 'progress', `${taskId}-claude.json`);
+
+    // Ensure logs directory exists
+    if (!fs.existsSync(logsDir)) {
+      fs.mkdirSync(logsDir, { recursive: true });
+    }
 
     fs.writeFileSync(promptFile, prompt);
 
-    console.log(timmy.info(`${colors.bright}Claude${colors.reset} starting implementation...`));
+    console.log(timmy.info(`${colors.bright}Claude${colors.reset} starting implementation in background...`));
+    console.log(timmy.info(`Log file: ${colors.dim}${logFile}${colors.reset}`));
 
     // Unset GITHUB_TOKEN to let gh use keyring auth
     const cleanEnv = { ...process.env };
@@ -252,7 +259,10 @@ Begin implementation now and make sure to create the PR when done!`;
       await new Promise<void>((resolve, reject) => {
         const processId = `claude-${taskId}`;
 
-        console.log(timmy.info('Starting Claude process (tracked for proper shutdown)...'));
+        console.log(timmy.info('Starting Claude process in background (tracked for proper shutdown)...'));
+
+        // Create log stream for output
+        const logStream = fs.createWriteStream(logFile, { flags: 'a' });
 
         const child = processManager.spawn(
           processId,
@@ -262,7 +272,8 @@ Begin implementation now and make sure to create the PR when done!`;
             cwd: workingPath,
             env: cleanEnv,
             shell: '/bin/bash',
-            stdio: 'inherit' // Show output in real-time
+            stdio: ['ignore', logStream, logStream], // Run in background, redirect output to log file
+            detached: false // Keep attached so process manager can track it
           }
         );
 
@@ -270,6 +281,7 @@ Begin implementation now and make sure to create the PR when done!`;
         const timeout = setTimeout(() => {
           if (!hasExited) {
             console.log(timmy.error('Claude process timed out (30 minutes)'));
+            logStream.end();
             processManager.kill(processId, 'SIGKILL');
             reject(new Error('Claude execution timed out after 30 minutes'));
           }
@@ -279,6 +291,9 @@ Begin implementation now and make sure to create the PR when done!`;
           hasExited = true;
           clearTimeout(timeout);
           processManager.unregister(processId);
+
+          // Close log stream
+          logStream.end();
 
           if (code === 0) {
             resolve();
@@ -291,6 +306,10 @@ Begin implementation now and make sure to create the PR when done!`;
           hasExited = true;
           clearTimeout(timeout);
           processManager.unregister(processId);
+
+          // Close log stream
+          logStream.end();
+
           reject(error);
         });
       });
@@ -444,9 +463,18 @@ Begin addressing the comments now - FIXME comments first, then TODO!`;
 
   try {
     const promptFile = path.join(__dirname, '..', `task-${taskId}-fix-todos-prompt.txt`);
+    const logsDir = path.join(__dirname, '..', 'logs');
+    const logFile = path.join(logsDir, `${taskId}-claude-fixes.log`);
+
+    // Ensure logs directory exists
+    if (!fs.existsSync(logsDir)) {
+      fs.mkdirSync(logsDir, { recursive: true });
+    }
+
     fs.writeFileSync(promptFile, prompt);
 
-    console.log(timmy.info(`${colors.bright}Claude${colors.reset} starting TODO/FIXME fixes...`));
+    console.log(timmy.info(`${colors.bright}Claude${colors.reset} starting TODO/FIXME fixes in background...`));
+    console.log(timmy.info(`Log file: ${colors.dim}${logFile}${colors.reset}`));
 
     // Unset GITHUB_TOKEN to let gh use keyring auth
     const cleanEnv = { ...process.env };
@@ -460,7 +488,10 @@ Begin addressing the comments now - FIXME comments first, then TODO!`;
       await new Promise<void>((resolve, reject) => {
         const processId = `claude-fix-${taskId}`;
 
-        console.log(timmy.info('Starting Claude fix process (tracked for proper shutdown)...'));
+        console.log(timmy.info('Starting Claude fix process in background (tracked for proper shutdown)...'));
+
+        // Create log stream for output
+        const logStream = fs.createWriteStream(logFile, { flags: 'a' });
 
         const child = processManager.spawn(
           processId,
@@ -470,7 +501,8 @@ Begin addressing the comments now - FIXME comments first, then TODO!`;
             cwd: workingPath,
             env: cleanEnv,
             shell: '/bin/bash',
-            stdio: 'inherit' // Show output in real-time
+            stdio: ['ignore', logStream, logStream], // Run in background, redirect output to log file
+            detached: false // Keep attached so process manager can track it
           }
         );
 
@@ -478,6 +510,7 @@ Begin addressing the comments now - FIXME comments first, then TODO!`;
         const timeout = setTimeout(() => {
           if (!hasExited) {
             console.log(timmy.error('Claude fix process timed out (30 minutes)'));
+            logStream.end();
             processManager.kill(processId, 'SIGKILL');
             reject(new Error('Claude fix execution timed out after 30 minutes'));
           }
@@ -487,6 +520,9 @@ Begin addressing the comments now - FIXME comments first, then TODO!`;
           hasExited = true;
           clearTimeout(timeout);
           processManager.unregister(processId);
+
+          // Close log stream
+          logStream.end();
 
           if (code === 0) {
             resolve();
@@ -499,6 +535,10 @@ Begin addressing the comments now - FIXME comments first, then TODO!`;
           hasExited = true;
           clearTimeout(timeout);
           processManager.unregister(processId);
+
+          // Close log stream
+          logStream.end();
+
           reject(error);
         });
       });
