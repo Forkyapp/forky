@@ -63,9 +63,45 @@ export class DiscordService {
     // Connect to Discord
     await this.client.connect();
 
+    // Mark all existing messages as processed to avoid responding to old messages
+    await this.markExistingMessagesAsProcessed();
 
     if (this.events.onReady) {
       this.events.onReady();
+    }
+  }
+
+  /**
+   * Mark all existing messages as processed on startup
+   * This prevents the bot from responding to old messages
+   */
+  private async markExistingMessagesAsProcessed(): Promise<void> {
+    if (!this.client) {
+      return;
+    }
+
+    try {
+      const messageMap = await this.client.fetchMessagesFromChannels({
+        channelIds: config.discord.channelIds,
+        limit: 50,
+      });
+
+      let markedCount = 0;
+      for (const [, messages] of messageMap.entries()) {
+        for (const message of messages) {
+          if (!message.author.bot && !this.messageRepository.has(message.id)) {
+            this.markAsProcessed(message, []);
+            markedCount++;
+          }
+        }
+      }
+
+      if (markedCount > 0) {
+        logger.info(`Marked ${markedCount} existing messages as processed on startup`);
+      }
+    } catch (error) {
+      const err = error instanceof Error ? error : new Error(String(error));
+      logger.error('Failed to mark existing messages as processed', err);
     }
   }
 
