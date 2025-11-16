@@ -16,11 +16,13 @@ const execAsync = promisify(exec);
 const colors = {
   reset: '\x1b[0m',
   bright: '\x1b[1m',
+  dim: '\x1b[2m',
   green: '\x1b[32m',
   blue: '\x1b[34m',
   yellow: '\x1b[33m',
   cyan: '\x1b[36m',
   red: '\x1b[31m',
+  magenta: '\x1b[35m',
 };
 
 interface SetupConfig {
@@ -215,61 +217,40 @@ class InteractiveSetup {
   }
 
   private async configureOptionalServices(): Promise<void> {
-    this.log('\n🔌 Optional Services Configuration', 'bright');
-    this.log('These services enhance Timmy\'s capabilities but are not required.\n', 'cyan');
-
     // OpenAI API
-    const useOpenAI = await this.confirm('Configure OpenAI API? (for RAG-based context loading)', false);
-    if (useOpenAI) {
-      this.log('\n📝 Getting your OpenAI API Key:', 'cyan');
-      this.log('  1. Go to: https://platform.openai.com/api-keys', 'cyan');
-      this.log('  2. Click "Create new secret key"', 'cyan');
-      this.log('  3. Copy the key\n', 'cyan');
+    this.log('\n📝 OpenAI API Key (for RAG-based context loading):', 'cyan');
+    this.log('  Get your key at: https://platform.openai.com/api-keys', 'dim');
+    this.log('  (Press Enter to skip)\n', 'dim');
 
-      const openBrowser = await this.confirm('Open OpenAI API keys page in browser?', true);
-      if (openBrowser) {
-        try {
-          await execAsync('open https://platform.openai.com/api-keys');
-          this.log('✅ Opened OpenAI API keys page in browser\n', 'green');
-        } catch {
-          // Ignore error if browser doesn't open
-        }
-      }
+    const openaiKey = await this.question('OpenAI API Key: ');
+    this.config.openaiApiKey = openaiKey || '';
 
-      this.config.openaiApiKey = await this.question('OpenAI API Key: ');
+    if (openaiKey) {
+      this.log('✓ OpenAI API configured', 'green');
     } else {
-      this.config.openaiApiKey = '';
+      this.log('Skipped OpenAI API (you can add it later in .env)', 'dim');
     }
 
     // Discord Bot
-    const useDiscord = await this.confirm('\nConfigure Discord Bot? (for monitoring Discord channels)', false);
-    if (useDiscord) {
-      this.log('\n📝 Setting up Discord Bot:', 'cyan');
-      this.log('  1. Go to: https://discord.com/developers/applications', 'cyan');
-      this.log('  2. Create a new application', 'cyan');
-      this.log('  3. Go to "Bot" section and create a bot', 'cyan');
-      this.log('  4. Copy the bot token\n', 'cyan');
+    this.log('\n📝 Discord Bot (for monitoring Discord channels):', 'cyan');
+    this.log('  Get started at: https://discord.com/developers/applications', 'dim');
+    this.log('  (Press Enter to skip)\n', 'dim');
 
-      const openDiscord = await this.confirm('Open Discord Developer Portal in browser?', true);
-      if (openDiscord) {
-        try {
-          await execAsync('open https://discord.com/developers/applications');
-          this.log('✅ Opened Discord Developer Portal in browser\n', 'green');
-        } catch {
-          // Ignore error if browser doesn't open
-        }
-      }
+    const discordToken = await this.question('Discord Bot Token: ');
 
+    if (discordToken) {
       this.config.discordEnabled = true;
-      this.config.discordBotToken = await this.question('Discord Bot Token: ');
+      this.config.discordBotToken = discordToken;
       this.config.discordGuildId = await this.question('Discord Guild (Server) ID: ');
-      this.log('\nEnter channel IDs to monitor (comma-separated):', 'cyan');
+      this.log('Enter channel IDs to monitor (comma-separated):', 'cyan');
       this.config.discordChannelIds = await this.question('Channel IDs: ');
+      this.log('✓ Discord Bot configured', 'green');
     } else {
       this.config.discordEnabled = false;
       this.config.discordBotToken = '';
       this.config.discordGuildId = '';
       this.config.discordChannelIds = '';
+      this.log('Skipped Discord Bot (you can add it later in .env)', 'dim');
     }
   }
 
@@ -326,13 +307,8 @@ class InteractiveSetup {
     this.config.clickupBotUserId = userId!;
     this.log(`\n✓ Bot User ID: ${userId}`, 'green');
 
-    // OAuth secret (optional)
-    const needSecret = await this.confirm('\nDo you have a ClickUp OAuth Secret? (optional)', false);
-    if (needSecret) {
-      this.config.clickupSecret = await this.question('ClickUp Secret: ');
-    } else {
-      this.config.clickupSecret = '';
-    }
+    // OAuth secret (skip for most users - can be added later in .env if needed)
+    this.config.clickupSecret = '';
 
     // Auto-detect workspaces
     this.log('\n🔍 Detecting your ClickUp workspaces...', 'cyan');
@@ -365,16 +341,53 @@ class InteractiveSetup {
     }
   }
 
+  private showConfigurationSummary(): void {
+    this.log('\n' + '='.repeat(60), 'cyan');
+    this.log('📋 Configuration Summary', 'bright');
+    this.log('='.repeat(60) + '\n', 'cyan');
+
+    this.log(`${colors.bright}GitHub${colors.reset}`);
+    this.log(`  Username: ${colors.cyan}${this.config.githubUsername}${colors.reset}`);
+    this.log(`  Token: ${colors.dim}${this.config.githubToken?.substring(0, 10)}...${colors.reset}`);
+
+    this.log(`\n${colors.bright}ClickUp${colors.reset}`);
+    this.log(`  Workspace ID: ${colors.cyan}${this.config.clickupWorkspaceId}${colors.reset}`);
+    this.log(`  Bot User ID: ${colors.cyan}${this.config.clickupBotUserId}${colors.reset}`);
+
+    this.log(`\n${colors.bright}Project${colors.reset}`);
+    this.log(`  Name: ${colors.cyan}${this.config.projectName}${colors.reset}`);
+    this.log(`  Description: ${colors.dim}${this.config.projectDescription}${colors.reset}`);
+    this.log(`  Repository: ${colors.cyan}${this.config.repoOwner}/${this.config.repoName}${colors.reset}`);
+    this.log(`  Path: ${colors.dim}${this.config.repoPath}${colors.reset}`);
+    this.log(`  Base Branch: ${colors.cyan}${this.config.baseBranch}${colors.reset}`);
+
+    this.log(`\n${colors.bright}System${colors.reset}`);
+    this.log(`  Poll Interval: ${colors.cyan}${(this.config.pollInterval || 15000) / 1000}s${colors.reset}`);
+    this.log(`  Disable Comments: ${this.config.disableComments ? colors.red + 'Yes' : colors.green + 'No'}${colors.reset}`);
+    this.log(`  Auto-create Repos: ${this.config.autoCreateRepo ? colors.green + 'Yes' : colors.dim + 'No'}${colors.reset}`);
+
+    this.log(`\n${colors.bright}Optional Services${colors.reset}`);
+    this.log(`  OpenAI API: ${this.config.openaiApiKey ? colors.green + 'Configured' : colors.dim + 'Not configured'}${colors.reset}`);
+    this.log(`  Discord Bot: ${this.config.discordEnabled ? colors.green + 'Enabled' : colors.dim + 'Disabled'}${colors.reset}`);
+
+    this.log('\n' + '='.repeat(60), 'cyan');
+  }
+
   async run(): Promise<void> {
     console.clear();
     this.log('╔═══════════════════════════════════════════════════════════╗', 'cyan');
     this.log('║                                                           ║', 'cyan');
-    this.log('║                  🤖 Welcome to Forky!                    ║', 'cyan');
+    this.log('║                  🤖 Welcome to Timmy!                    ║', 'cyan');
     this.log('║                                                           ║', 'cyan');
     this.log('║          Autonomous Task Automation System                ║', 'cyan');
     this.log('║                                                           ║', 'cyan');
     this.log('╚═══════════════════════════════════════════════════════════╝', 'cyan');
     this.log('\nLet\'s get you set up! This will only take a few minutes.\n');
+    this.log('We need to configure:', 'bright');
+    this.log('  • GitHub (for managing code)', 'cyan');
+    this.log('  • ClickUp (for task management)', 'cyan');
+    this.log('  • Your project details', 'cyan');
+    this.log('  • Optional services (OpenAI, Discord)\n', 'dim');
 
     // Check if already configured
     if (fs.existsSync('.env') && fs.existsSync('workspace.json')) {
@@ -391,9 +404,11 @@ class InteractiveSetup {
     }
 
     try {
+      const totalSteps = 5;
+
       // Step 1: GitHub Authentication
       this.log('\n' + '='.repeat(60), 'cyan');
-      this.log('Step 1/4: GitHub Configuration', 'bright');
+      this.log(`Step 1/${totalSteps}: GitHub Configuration`, 'bright');
       this.log('='.repeat(60) + '\n', 'cyan');
 
       const useGitHubAuth = await this.confirm(
@@ -435,21 +450,14 @@ class InteractiveSetup {
 
       // Step 2: ClickUp Configuration
       this.log('\n' + '='.repeat(60), 'cyan');
-      this.log('Step 2/5: ClickUp Configuration', 'bright');
+      this.log(`Step 2/${totalSteps}: ClickUp Configuration`, 'bright');
       this.log('='.repeat(60) + '\n', 'cyan');
 
       await this.configureClickUp();
 
-      // Step 3: Optional Services Configuration
+      // Step 3: Project Configuration
       this.log('\n' + '='.repeat(60), 'cyan');
-      this.log('Step 3/5: Optional Services (OpenAI, Discord)', 'bright');
-      this.log('='.repeat(60) + '\n', 'cyan');
-
-      await this.configureOptionalServices();
-
-      // Step 4: Project Configuration
-      this.log('\n' + '='.repeat(60), 'cyan');
-      this.log('Step 4/5: Project Configuration', 'bright');
+      this.log(`Step 3/${totalSteps}: Project Configuration`, 'bright');
       this.log('='.repeat(60) + '\n', 'cyan');
 
       this.config.projectName = await this.question('Project name (e.g., "my-app"): ');
@@ -458,15 +466,53 @@ class InteractiveSetup {
       this.config.repoOwner = await this.question(`Repository owner (default: ${githubUsername}): `) || githubUsername;
       this.config.repoName = await this.question('Repository name: ');
 
+      // Better path handling with validation
       this.log('\nEnter the full path where your repository is located:', 'cyan');
-      const defaultPath = `/Users/${process.env.USER}/Documents/${this.config.repoName}`;
-      this.config.repoPath = await this.question(`Repository path (default: ${defaultPath}): `) || defaultPath;
+      this.log('(Leave empty to use current directory)', 'dim');
 
+      let repoPath: string | undefined;
+      let pathValid = false;
+
+      while (!pathValid) {
+        const inputPath = await this.question('Repository path: ');
+
+        if (!inputPath) {
+          // Use current directory
+          repoPath = process.cwd();
+          this.log(`Using current directory: ${repoPath}`, 'green');
+          pathValid = true;
+        } else {
+          // Expand ~ to home directory
+          const expandedPath = inputPath.replace(/^~/, process.env.HOME || '');
+
+          if (fs.existsSync(expandedPath)) {
+            repoPath = expandedPath;
+            this.log(`✓ Path exists: ${repoPath}`, 'green');
+            pathValid = true;
+          } else {
+            this.log(`⚠️  Path does not exist: ${expandedPath}`, 'yellow');
+            const createIt = await this.confirm('Create this directory?', false);
+
+            if (createIt) {
+              try {
+                fs.mkdirSync(expandedPath, { recursive: true });
+                repoPath = expandedPath;
+                this.log(`✓ Created directory: ${repoPath}`, 'green');
+                pathValid = true;
+              } catch (error) {
+                this.log(`❌ Failed to create directory: ${(error as Error).message}`, 'red');
+              }
+            }
+          }
+        }
+      }
+
+      this.config.repoPath = repoPath!;
       this.config.baseBranch = await this.question('Base branch (default: main): ') || 'main';
 
-      // Step 5: System Settings
+      // Step 4: System Settings
       this.log('\n' + '='.repeat(60), 'cyan');
-      this.log('Step 5/5: System Settings', 'bright');
+      this.log(`Step 4/${totalSteps}: System Settings`, 'bright');
       this.log('='.repeat(60) + '\n', 'cyan');
 
       const pollInterval = await this.question('Polling interval in seconds (default: 15): ');
@@ -474,6 +520,37 @@ class InteractiveSetup {
 
       this.config.disableComments = await this.confirm('Disable all comments (ClickUp and GitHub)?', false);
       this.config.autoCreateRepo = await this.confirm('Auto-create GitHub repos when needed?', false);
+
+      // Step 5: Optional Services Configuration
+      this.log('\n' + '='.repeat(60), 'cyan');
+      this.log(`Step 5/${totalSteps}: Optional Services (Optional)`, 'bright');
+      this.log('='.repeat(60) + '\n', 'cyan');
+
+      this.log('These services are optional but enhance Timmy:', 'cyan');
+      this.log('  • OpenAI API - Better context loading (improves AI accuracy)', 'dim');
+      this.log('  • Discord Bot - Monitor Discord channels for issues\n', 'dim');
+
+      const configureOptional = await this.confirm('Configure these now? (you can skip and add later)', false);
+      if (configureOptional) {
+        await this.configureOptionalServices();
+      } else {
+        this.config.openaiApiKey = '';
+        this.config.discordEnabled = false;
+        this.config.discordBotToken = '';
+        this.config.discordGuildId = '';
+        this.config.discordChannelIds = '';
+        this.log('\n✓ Skipped optional services (add them later in .env if needed)', 'dim');
+      }
+
+      // Show configuration summary before saving
+      this.showConfigurationSummary();
+
+      const confirmSave = await this.confirm('\nSave this configuration?', true);
+      if (!confirmSave) {
+        this.log('\n❌ Setup cancelled. No changes were saved.', 'yellow');
+        this.rl.close();
+        return;
+      }
 
       // Save configuration
       await this.saveConfiguration();
@@ -486,8 +563,11 @@ class InteractiveSetup {
       this.log('Your configuration has been saved. Next steps:\n', 'bright');
       this.log('  1. Install dependencies: npm install', 'cyan');
       this.log('  2. Build the project: npm run build', 'cyan');
-      this.log('  3. Start Forky: npm start', 'cyan');
-      this.log('\nTo modify settings later, run: npm run settings\n', 'yellow');
+      this.log('  3. Start Timmy: npm start', 'cyan');
+      this.log('\nUseful commands:', 'bright');
+      this.log('  • Modify settings: npm run settings', 'dim');
+      this.log('  • Switch projects: npm run switch <project-name>', 'dim');
+      this.log('  • List projects: npm run projects\n', 'dim');
 
     } catch (error) {
       this.log(`\n❌ Setup failed: ${(error as Error).message}`, 'red');
@@ -515,7 +595,7 @@ CLICKUP_BOT_USER_ID=${this.config.clickupBotUserId}
 GITHUB_TOKEN=${this.config.githubToken}
 
 # OpenAI API Key (Optional - for RAG/embeddings context loading)
-${this.config.openaiApiKey ? `OPENAI_API_KEY=${this.config.openaiApiKey}` : '# OPENAI_API_KEY=sk_your_key_here'}
+${this.config.openaiApiKey && this.config.openaiApiKey.trim() ? `OPENAI_API_KEY=${this.config.openaiApiKey.trim()}` : '# OPENAI_API_KEY=sk_your_key_here'}
 
 # Discord Bot (Optional - for monitoring Discord channels)
 ${this.config.discordEnabled ? `DISCORD_ENABLED=true
