@@ -118,11 +118,51 @@ export class ClickUpClient extends BaseAPIClient {
       tags?: string[];
     }
   ): Promise<ClickUpTask> {
+    const endpoint = `/list/${listId}/task`;
+
+    console.log('🔵 ClickUp API: Creating task', {
+      endpoint,
+      listId,
+      taskName: params.name,
+      assignees: params.assignees,
+      status: params.status,
+      priority: params.priority,
+      tags: params.tags,
+    });
+
     try {
-      return await this.post<ClickUpTask>(`/list/${listId}/task`, params);
+      const task = await this.post<ClickUpTask>(endpoint, params);
+
+      console.log('✅ ClickUp API: Task created successfully', {
+        taskId: task.id,
+        taskName: task.name,
+        taskUrl: task.url,
+      });
+
+      return task;
     } catch (error) {
+      const err = error as Error;
+
+      console.error('❌ ClickUp API: Task creation failed', {
+        endpoint,
+        listId,
+        errorMessage: err.message,
+        errorName: err.name,
+        errorStack: err.stack,
+      });
+
+      // Log additional error details if available
+      if ('response' in error) {
+        const axiosError = error as { response?: { status?: number; data?: unknown } };
+        console.error('❌ ClickUp API: Response details', {
+          status: axiosError.response?.status,
+          data: axiosError.response?.data,
+        });
+      }
+
       throw new ClickUpAPIError(
-        `Failed to create task in list ${listId}: ${(error as Error).message}`
+        `Failed to create task in list ${listId}: ${err.message}`,
+        error
       );
     }
   }

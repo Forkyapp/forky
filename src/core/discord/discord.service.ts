@@ -346,12 +346,13 @@ export class DiscordService {
         if (analyzed.matches.length > 0) {
           matchedMessages++;
 
-          logger.info('Keyword match found in Discord message', {
+          logger.info('🎯 Keyword match found in Discord message', {
             messageId: message.id,
             channelId: message.channelId,
             author: message.author.username,
             keywords: analyzed.matches.map((m) => m.keyword),
             priority: analyzed.priority,
+            content: message.content.substring(0, 100),
           });
 
           console.log(
@@ -361,8 +362,25 @@ export class DiscordService {
           );
 
           // Emit event
+          logger.debug('Emitting onMessageDetected event', {
+            hasEventHandler: !!this.events.onMessageDetected,
+            messageId: message.id,
+          });
+
           if (this.events.onMessageDetected) {
-            await this.events.onMessageDetected(analyzed);
+            try {
+              await this.events.onMessageDetected(analyzed);
+              logger.info('✅ Event handler completed successfully', {
+                messageId: message.id,
+              });
+            } catch (eventError) {
+              logger.error('❌ Event handler failed', {
+                error: eventError instanceof Error ? eventError.message : String(eventError),
+                messageId: message.id,
+              });
+            }
+          } else {
+            logger.warn('⚠️  No onMessageDetected event handler registered');
           }
 
           // Mark message as processed
