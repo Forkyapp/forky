@@ -233,7 +233,6 @@ if (require.main === module) {
           // Register event handler for detected messages
           discordService.on({
             onMessageDetected: async (analyzedMessage) => {
-              console.log(timmy.ai(`📨 Discord message detected with keywords: ${analyzedMessage.matches.map(m => m.keyword).join(', ')}`));
 
               // Create ClickUp task from Discord message
               const { createTaskFromDiscordMessage } = await import('./src/core/discord/discord-clickup-bridge');
