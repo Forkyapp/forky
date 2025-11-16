@@ -8,6 +8,8 @@ const FILES = {
 
 const STAGES = {
   DETECTED: 'detected',
+  INVESTIGATING: 'investigating',
+  INVESTIGATED: 'investigated',
   ANALYZING: 'analyzing',
   ANALYZED: 'analyzed',
   IMPLEMENTING: 'implementing',

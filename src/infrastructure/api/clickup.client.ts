@@ -59,6 +59,17 @@ export class ClickUpClient extends BaseAPIClient {
   }
 
   /**
+   * Update task description
+   */
+  async updateTaskDescription(taskId: string, description: string): Promise<void> {
+    try {
+      await this.put(`/task/${taskId}`, { description });
+    } catch (error) {
+      throw new ClickUpAPIError(`Failed to update description for task ${taskId}: ${(error as Error).message}`);
+    }
+  }
+
+  /**
    * Add comment to task
    */
   async addComment(taskId: string, commentText: string): Promise<ClickUpCommentResponse> {

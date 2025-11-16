@@ -13,6 +13,7 @@ import { getWorktreeManager } from '../workspace/worktree-manager.service';
 import type { ClickUpTask } from '@/types/clickup';
 import type { RepositoryConfig } from '@/shared/config';
 import {
+  InvestigationStage,
   AnalysisStage,
   ImplementationStage,
   ReviewStage,
@@ -29,6 +30,7 @@ import type { ProcessTaskResult, WorkflowOptions } from './types';
  * Executes tasks through the multi-stage AI pipeline
  */
 export class WorkflowExecutor {
+  private readonly investigationStage: InvestigationStage;
   private readonly analysisStage: AnalysisStage;
   private readonly implementationStage: ImplementationStage;
   private readonly reviewStage: ReviewStage;
@@ -36,6 +38,7 @@ export class WorkflowExecutor {
 
   constructor() {
     // Initialize all stages
+    this.investigationStage = new InvestigationStage();
     this.analysisStage = new AnalysisStage();
     this.implementationStage = new ImplementationStage();
     this.reviewStage = new ReviewStage();
@@ -104,23 +107,34 @@ export class WorkflowExecutor {
     };
 
     try {
-      // Stage 1: Gemini Analysis
+      // Stage 1: Claude Investigation
+      if (!this.shouldSkipStage('investigation', options)) {
+        await this.runStageWithRetry(
+          'investigation',
+          async () => {
+            console.log(timmy.info('Stage 1: Claude Investigation'));
+            return await this.investigationStage.run(baseContext);
+          }
+        );
+      }
+
+      // Stage 2: Gemini Analysis
       if (!this.shouldSkipStage('analysis', options)) {
         analysis = await this.runStageWithRetry(
           'analysis',
           async () => {
-            console.log(timmy.info('Stage 1: Gemini Analysis'));
+            console.log(timmy.info('Stage 2: Gemini Analysis'));
             return await this.analysisStage.run(baseContext);
           }
         );
       }
 
-      // Stage 2: Claude Implementation (CRITICAL)
+      // Stage 3: Claude Implementation (CRITICAL)
       if (!this.shouldSkipStage('implementation', options)) {
         const implResult = await this.runStageWithRetry(
           'implementation',
           async () => {
-            console.log(timmy.info('Stage 2: Claude Implementation'));
+            console.log(timmy.info('Stage 3: Claude Implementation'));
             const implContext: ImplementationStageContext = {
               ...baseContext,
               analysis,
@@ -135,23 +149,23 @@ export class WorkflowExecutor {
         }
       }
 
-      // Stage 3: Codex Review
+      // Stage 4: Codex Review
       if (!this.shouldSkipStage('review', options)) {
         await this.runStageWithRetry(
           'review',
           async () => {
-            console.log(timmy.info('Stage 3: Codex Code Review'));
+            console.log(timmy.info('Stage 4: Codex Code Review'));
             return await this.reviewStage.run(baseContext);
           }
         );
       }
 
-      // Stage 4: Claude Fixes
+      // Stage 5: Claude Fixes
       if (!this.shouldSkipStage('fixes', options)) {
         await this.runStageWithRetry(
           'fixes',
           async () => {
-            console.log(timmy.info('Stage 4: Claude Fixes'));
+            console.log(timmy.info('Stage 5: Claude Fixes'));
             return await this.fixesStage.run(baseContext);
           }
         );

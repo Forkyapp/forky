@@ -57,6 +57,25 @@ async function updateStatus(taskId: string, statusId: string): Promise<void> {
   }
 }
 
+async function updateTaskDescription(taskId: string, description: string): Promise<void> {
+  try {
+    await axios.put(
+      `https://api.clickup.com/api/v2/task/${taskId}`,
+      { description },
+      {
+        headers: {
+          'Authorization': config.clickup.apiKey,
+          'Content-Type': 'application/json'
+        }
+      }
+    );
+    console.log(timmy.success(`Task description updated for ${taskId}`));
+  } catch (error) {
+    console.log(timmy.error(`Description update failed: ${(error as Error).message}`));
+    throw error;
+  }
+}
+
 async function addComment(taskId: string, commentText: string): Promise<CommentResponse> {
   // Check if comments are disabled
   if (process.env.DISABLE_COMMENTS === 'true') {
@@ -176,6 +195,7 @@ function detectRepository(task: ClickUpTask): string | null {
 export {
   getAssignedTasks,
   updateStatus,
+  updateTaskDescription,
   addComment,
   getTaskComments,
   parseCommand,

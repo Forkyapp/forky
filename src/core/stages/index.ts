@@ -9,6 +9,7 @@ export * from './types';
 export * from './base-stage';
 
 // Individual stages
+export { InvestigationStage } from './investigation.stage';
 export { AnalysisStage } from './analysis.stage';
 export { ImplementationStage } from './implementation.stage';
 export { ReviewStage } from './review.stage';

@@ -51,6 +51,20 @@ export interface BaseStageResult {
 }
 
 /**
+ * Result from Claude investigation stage
+ */
+export interface InvestigationResult extends BaseStageResult {
+  /** Enhanced task description with technical details */
+  detailedDescription: string;
+  /** List of files identified in codebase */
+  filesIdentified: string[];
+  /** Technical context and analysis */
+  technicalContext: string;
+  /** Path to the investigation report file */
+  investigationFile?: string;
+}
+
+/**
  * Result from Gemini analysis stage
  */
 export interface AnalysisResult extends BaseStageResult {
