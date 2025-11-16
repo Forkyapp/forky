@@ -44,6 +44,7 @@ interface Config {
     geminiCliPath: string;
     codexCliPath: string;
     qwenCliPath: string;
+    verbose: boolean;
   };
   autoRepo: {
     enabled: boolean;
@@ -109,6 +110,7 @@ const config: Config = {
     geminiCliPath: process.env.GEMINI_CLI_PATH || 'gemini',
     codexCliPath: process.env.CODEX_CLI_PATH || 'codex',
     qwenCliPath: process.env.QWEN_CLI_PATH || 'qwen',
+    verbose: process.env.VERBOSE === 'true', // Default: false (quiet mode)
   },
   autoRepo: {
     enabled: process.env.AUTO_CREATE_REPO !== 'false', // Default: true

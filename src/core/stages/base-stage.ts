@@ -21,6 +21,7 @@
 
 import { timmy, colors } from '@/shared/ui';
 import { logger } from '@/shared/utils/logger.util';
+import { isVerbose } from '@/shared/utils/verbose.util';
 import type { StageContext, BaseStageResult, StageMetadata } from './types';
 
 /**
@@ -44,12 +45,16 @@ export abstract class BaseStage<TResult extends BaseStageResult = BaseStageResul
 
   /**
    * Update progress with a status message
+   * Only logs in verbose mode (non-essential info)
    *
    * @param message The progress message
    * @param context Optional context data
    */
   protected async updateProgress(message: string, context?: Record<string, unknown>): Promise<void> {
-    console.log(timmy.info(`[${this.stageName}] ${message}`));
+    if (isVerbose()) {
+      console.log(timmy.info(`[${this.stageName}] ${message}`));
+    }
+    // Always log to file
     if (context) {
       logger.info(message, { stage: this.stageName, ...context });
     }

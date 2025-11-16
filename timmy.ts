@@ -22,6 +22,7 @@ import fs from 'fs';
 import config from './src/shared/config';
 import { timmy, colors } from './src/shared/ui';
 import { logger } from './src/shared/utils/logger.util';
+import { setVerboseMode } from './src/shared/utils/verbose.util';
 import { setupInteractiveMode, type AppState } from './src/shared/interactive-cli';
 import * as storage from './lib/storage';
 import * as clickup from './lib/clickup';
@@ -48,7 +49,8 @@ const appState: AppState = {
   isRunning: true,
   pollInterval: null,
   isProcessing: false,
-  currentTask: null
+  currentTask: null,
+  verbose: config.system.verbose
 };
 
 // ============================================
@@ -228,6 +230,9 @@ if (require.main === module) {
     storage.cache.init();
     storage.processedComments.init();
 
+    // Initialize verbose mode
+    setVerboseMode(config.system.verbose);
+
     // Context orchestrator will be lazy-initialized on first use
     // (no need to initialize at startup, saves 5-10 seconds!)
 
@@ -356,7 +361,8 @@ if (require.main === module) {
 export {
   pollAndProcess,
   gracefulShutdown,
-  checkTaskCommands
+  checkTaskCommands,
+  appState
 };
 
 // Re-export from modules for backward compatibility with tests
