@@ -3,6 +3,8 @@
  * Structured logging with levels and formatting
  */
 
+import { isVerbose } from './verbose.util';
+
 export enum LogLevel {
   DEBUG = 0,
   INFO = 1,
@@ -79,6 +81,12 @@ class Logger {
    */
   private log(level: LogLevel, message: string, context?: Record<string, unknown>): void {
     if (level < this.level) {
+      return;
+    }
+
+    // Skip INFO and DEBUG logs when verbose mode is off
+    // WARN and ERROR always show
+    if ((level === LogLevel.INFO || level === LogLevel.DEBUG) && !isVerbose()) {
       return;
     }
 

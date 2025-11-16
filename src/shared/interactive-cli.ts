@@ -6,6 +6,7 @@ import * as storage from '../../lib/storage';
 import { discordService } from '@/core/discord/discord.service';
 import { getContextOrchestrator } from '@/core/context/context-orchestrator';
 import config from './config';
+import { setVerboseMode } from './utils/verbose.util';
 
 // ============================================
 // INTERFACES
@@ -16,6 +17,7 @@ export interface AppState {
   pollInterval: NodeJS.Timeout | null;
   isProcessing: boolean;
   currentTask: string | null;
+  verbose: boolean;
 }
 
 // ============================================
@@ -39,10 +41,12 @@ export function handleCommand(
       console.log(`  ${timmy.label('status, s', 'Show overall system status')}`);
       console.log(`  ${timmy.label('stop', 'Stop polling (keeps app running)')}`);
       console.log(`  ${timmy.label('start', 'Resume polling')}`);
+      console.log(`  ${timmy.label('verbose [on|off]', 'Toggle verbose logging mode')}`);
       console.log(`  ${timmy.label('clear, cls', 'Clear terminal screen')}`);
       console.log(`  ${timmy.label('quit, q, exit', 'Exit application')}`);
 
       console.log('\n' + `${colors.bright}${colors.cyan}Information${colors.reset}`);
+      console.log(`  ${timmy.label('logs [taskId]', 'View logs (current task or specific task)')}`);
       console.log(`  ${timmy.label('discord', 'Show Discord bot status and stats')}`);
       console.log(`  ${timmy.label('context', 'Show context loading statistics')}`);
       console.log(`  ${timmy.label('cache', 'Show cached tasks')}`);
@@ -51,6 +55,7 @@ export function handleCommand(
       console.log('\n' + `${colors.bright}${colors.cyan}Management${colors.reset}`);
       console.log(`  ${timmy.label('cache clear', 'Clear task cache')}`);
       console.log(`  ${timmy.label('context clear', 'Clear embeddings cache')}`);
+      console.log(`  ${timmy.label('worktree clean', 'Remove all Timmy worktrees')}`);
       console.log(`  ${timmy.label('discord test', 'Send test message to Discord')}`);
 
       console.log(timmy.divider() + '\n');
@@ -242,6 +247,7 @@ export function handleCommand(
       console.log(`  ${timmy.label('Context Mode', config.context.mode)}`);
       console.log(`  ${timmy.label('RAG Enabled', config.context.openaiApiKey ? 'Yes' : 'No')}`);
       console.log(`  ${timmy.label('Discord Enabled', config.discord.enabled ? 'Yes' : 'No')}`);
+      console.log(`  ${timmy.label('Verbose Mode', appState.verbose ? 'On' : 'Off')}`);
 
       // Runtime statistics
       console.log(`\n${colors.bright}${colors.cyan}Runtime${colors.reset}`);
@@ -252,6 +258,83 @@ export function handleCommand(
       }
 
       console.log(timmy.divider() + '\n');
+      break;
+    }
+
+    case 'verbose':
+    case 'verbose on':
+    case 'verbose off': {
+      if (cmd === 'verbose') {
+        // Toggle
+        appState.verbose = !appState.verbose;
+      } else if (cmd === 'verbose on') {
+        appState.verbose = true;
+      } else {
+        appState.verbose = false;
+      }
+
+      // Sync with global verbose mode
+      setVerboseMode(appState.verbose);
+
+      console.log(timmy.success(`Verbose mode ${appState.verbose ? 'enabled' : 'disabled'}`));
+      if (!appState.verbose) {
+        console.log(timmy.info('Only essential logs will be shown. Use "logs" command to view detailed logs.'));
+      }
+      break;
+    }
+
+    case 'logs': {
+      const taskId = appState.currentTask;
+      if (!taskId) {
+        console.log(timmy.warning('No active task. Specify task ID: logs <taskId>'));
+        break;
+      }
+
+      const logsDir = path.join(process.cwd(), 'src', 'core', 'logs');
+      const logFiles = [
+        path.join(logsDir, `${taskId}-claude.log`),
+        path.join(logsDir, `${taskId}-claude-fixes.log`)
+      ];
+
+      let foundLogs = false;
+      for (const logFile of logFiles) {
+        if (fs.existsSync(logFile)) {
+          console.log('\n' + timmy.section(`📋 ${path.basename(logFile)}`));
+          const content = fs.readFileSync(logFile, 'utf8');
+          const lines = content.split('\n');
+          const lastLines = lines.slice(-50); // Show last 50 lines
+          console.log(lastLines.join('\n'));
+          console.log(timmy.divider());
+          foundLogs = true;
+        }
+      }
+
+      if (!foundLogs) {
+        console.log(timmy.info(`No logs found for task ${taskId}`));
+        console.log(timmy.dim(`Looking in: ${logsDir}`));
+      }
+      break;
+    }
+
+    case 'worktree clean': {
+      if (!config.github.repoPath) {
+        console.log(timmy.error('Repository path not configured'));
+        break;
+      }
+
+      console.log(timmy.processing('Removing all Timmy worktrees...'));
+
+      import('@/core/workspace/worktree-manager.service').then(async ({ getWorktreeManager }) => {
+        try {
+          const worktreeManager = getWorktreeManager(config.github.repoPath!);
+          await worktreeManager.cleanupStaleWorktrees(config.github.repoPath!, 0); // 0 hours = remove all
+          console.log(timmy.success('✓ All worktrees removed'));
+        } catch (error) {
+          console.log(timmy.error(`Failed to clean worktrees: ${(error as Error).message}`));
+        }
+      }).catch((error: Error) => {
+        console.log(timmy.error(`Failed to load worktree manager: ${error.message}`));
+      });
       break;
     }
 
