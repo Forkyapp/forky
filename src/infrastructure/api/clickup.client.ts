@@ -103,4 +103,25 @@ export class ClickUpClient extends BaseAPIClient {
       throw new ClickUpAPIError(`Failed to fetch assigned tasks: ${(error as Error).message}`);
     }
   }
+
+  /**
+   * Create a new task in a list
+   */
+  async createTask(
+    listId: string,
+    params: {
+      name: string;
+      description?: string;
+      assignees?: number[];
+      status?: string;
+      priority?: number;
+      tags?: string[];
+    }
+  ): Promise<ClickUpTask> {
+    try {
+      return await this.post<ClickUpTask>(`/list/${listId}/task`, params);
+    } catch (error) {
+      throw new ClickUpAPIError(`Failed to create task in list ${listId}: ${(error as Error).message}`);
+    }
+  }
 }

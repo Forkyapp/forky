@@ -326,9 +326,10 @@ DISCORD_AI_ENABLED=true  # Enable AI Brain
 ### Project Management
 
 ```bash
-npm run projects        # List all projects
-npm run switch <name>   # Switch active project
-npm run current         # Show current project
+npm run projects           # List all projects
+npm run switch <name>      # Switch active project
+npm run current            # Show current project
+npm run create-test-task   # Create a test task in ClickUp (verify integration)
 ```
 
 ### Interactive Commands

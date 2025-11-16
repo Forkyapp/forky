@@ -19,6 +19,7 @@
     "switch": "ts-node scripts/switch-project.ts",
     "projects": "ts-node scripts/list-projects.ts",
     "current": "ts-node scripts/current-project.ts",
+    "create-test-task": "ts-node scripts/create-test-task.ts",
     "build:context-index": "ts-node scripts/build-context-index.ts",
     "migrate:json-to-sqlite": "ts-node scripts/migrate-json-to-sqlite.ts"
   },
