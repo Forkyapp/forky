@@ -13,17 +13,9 @@ import { timmy, colors } from '../../shared/ui';
 import { withRetry, RetryOptions } from '../../shared/utils/retry.util';
 import type { ClickUpTask } from '../../types/clickup';
 import type { ExecResult } from '../../types/common';
+import type { InvestigationResult } from '../stages/types';
 
 const execAsync = promisify(exec);
-
-export interface InvestigationResult {
-  success: boolean;
-  detailedDescription: string;
-  filesIdentified: string[];
-  technicalContext: string;
-  investigationFile?: string;
-  error?: string;
-}
 
 interface InvestigateOptions {
   repoConfig?: RepositoryConfig;
@@ -265,4 +257,4 @@ ${investigationReport}
 `;
 }
 
-export { investigateIssue, InvestigationResult, InvestigateOptions };
+export { investigateIssue, InvestigateOptions };

@@ -19,7 +19,6 @@ import {
   ReviewStage,
   FixesStage,
   type AnalysisResult,
-  type InvestigationResult,
   type StageContext,
   type ImplementationStageContext,
 } from '../stages';
@@ -61,7 +60,6 @@ export class WorkflowExecutor {
     logger.info('Workflow started', { taskId, taskName });
 
     let repoConfig: RepositoryConfig;
-    let investigation: InvestigationResult | null = null;
     let analysis: AnalysisResult | null = null;
     let worktreePath: string | undefined;
     let worktreeManager: ReturnType<typeof getWorktreeManager> | null = null;
@@ -111,7 +109,7 @@ export class WorkflowExecutor {
     try {
       // Stage 1: Claude Investigation
       if (!this.shouldSkipStage('investigation', options)) {
-        investigation = await this.runStageWithRetry(
+        await this.runStageWithRetry(
           'investigation',
           async () => {
             console.log(timmy.info('Stage 1: Claude Investigation'));

@@ -47,7 +47,7 @@ export class InvestigationStage extends BaseStage<InvestigationResult> {
       }
 
       // Update ClickUp task description with investigation findings
-      this.logProcessing('Updating task description with technical details...');
+      await this.updateProgress('Updating task description with technical details...');
       await clickup.updateTaskDescription(taskId, investigation.detailedDescription);
       this.logSuccess('Task description updated');
 
