@@ -266,18 +266,6 @@ export class DiscordService {
         if (isBotMentioned) {
           matchedMessages++;
 
-          logger.info('Bot mentioned in Discord message - using AI brain', {
-            messageId: message.id,
-            channelId: message.channelId,
-            author: message.author.username,
-          });
-
-          console.log(
-            timmy.success(
-              `🔔 Bot mentioned by ${message.author.username} - responding with AI`
-            )
-          );
-
           try {
             // Use AI brain to generate response
             const response = await aiBrainService.chat(
@@ -289,10 +277,6 @@ export class DiscordService {
             // Send response back to Discord
             if (this.client) {
               await this.client.sendMessage(message.channelId, response);
-              logger.info('AI response sent to Discord', {
-                messageId: message.id,
-                responseLength: response.length,
-              });
             }
 
             // Create analyzed message for event
