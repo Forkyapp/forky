@@ -35,6 +35,15 @@ interface SetupConfig {
   githubUsername: string;
   useGitHubAuth: boolean;
 
+  // OpenAI (optional)
+  openaiApiKey: string;
+
+  // Discord (optional)
+  discordEnabled: boolean;
+  discordBotToken: string;
+  discordGuildId: string;
+  discordChannelIds: string;
+
   // Project
   projectName: string;
   projectDescription: string;
@@ -205,6 +214,65 @@ class InteractiveSetup {
     }
   }
 
+  private async configureOptionalServices(): Promise<void> {
+    this.log('\n🔌 Optional Services Configuration', 'bright');
+    this.log('These services enhance Timmy\'s capabilities but are not required.\n', 'cyan');
+
+    // OpenAI API
+    const useOpenAI = await this.confirm('Configure OpenAI API? (for RAG-based context loading)', false);
+    if (useOpenAI) {
+      this.log('\n📝 Getting your OpenAI API Key:', 'cyan');
+      this.log('  1. Go to: https://platform.openai.com/api-keys', 'cyan');
+      this.log('  2. Click "Create new secret key"', 'cyan');
+      this.log('  3. Copy the key\n', 'cyan');
+
+      const openBrowser = await this.confirm('Open OpenAI API keys page in browser?', true);
+      if (openBrowser) {
+        try {
+          await execAsync('open https://platform.openai.com/api-keys');
+          this.log('✅ Opened OpenAI API keys page in browser\n', 'green');
+        } catch {
+          // Ignore error if browser doesn't open
+        }
+      }
+
+      this.config.openaiApiKey = await this.question('OpenAI API Key: ');
+    } else {
+      this.config.openaiApiKey = '';
+    }
+
+    // Discord Bot
+    const useDiscord = await this.confirm('\nConfigure Discord Bot? (for monitoring Discord channels)', false);
+    if (useDiscord) {
+      this.log('\n📝 Setting up Discord Bot:', 'cyan');
+      this.log('  1. Go to: https://discord.com/developers/applications', 'cyan');
+      this.log('  2. Create a new application', 'cyan');
+      this.log('  3. Go to "Bot" section and create a bot', 'cyan');
+      this.log('  4. Copy the bot token\n', 'cyan');
+
+      const openDiscord = await this.confirm('Open Discord Developer Portal in browser?', true);
+      if (openDiscord) {
+        try {
+          await execAsync('open https://discord.com/developers/applications');
+          this.log('✅ Opened Discord Developer Portal in browser\n', 'green');
+        } catch {
+          // Ignore error if browser doesn't open
+        }
+      }
+
+      this.config.discordEnabled = true;
+      this.config.discordBotToken = await this.question('Discord Bot Token: ');
+      this.config.discordGuildId = await this.question('Discord Guild (Server) ID: ');
+      this.log('\nEnter channel IDs to monitor (comma-separated):', 'cyan');
+      this.config.discordChannelIds = await this.question('Channel IDs: ');
+    } else {
+      this.config.discordEnabled = false;
+      this.config.discordBotToken = '';
+      this.config.discordGuildId = '';
+      this.config.discordChannelIds = '';
+    }
+  }
+
   private async configureClickUp(): Promise<void> {
     this.log('Let\'s connect to ClickUp!\n', 'bright');
 
@@ -367,14 +435,21 @@ class InteractiveSetup {
 
       // Step 2: ClickUp Configuration
       this.log('\n' + '='.repeat(60), 'cyan');
-      this.log('Step 2/4: ClickUp Configuration', 'bright');
+      this.log('Step 2/5: ClickUp Configuration', 'bright');
       this.log('='.repeat(60) + '\n', 'cyan');
 
       await this.configureClickUp();
 
-      // Step 3: Project Configuration
+      // Step 3: Optional Services Configuration
       this.log('\n' + '='.repeat(60), 'cyan');
-      this.log('Step 3/4: Project Configuration', 'bright');
+      this.log('Step 3/5: Optional Services (OpenAI, Discord)', 'bright');
+      this.log('='.repeat(60) + '\n', 'cyan');
+
+      await this.configureOptionalServices();
+
+      // Step 4: Project Configuration
+      this.log('\n' + '='.repeat(60), 'cyan');
+      this.log('Step 4/5: Project Configuration', 'bright');
       this.log('='.repeat(60) + '\n', 'cyan');
 
       this.config.projectName = await this.question('Project name (e.g., "my-app"): ');
@@ -389,9 +464,9 @@ class InteractiveSetup {
 
       this.config.baseBranch = await this.question('Base branch (default: main): ') || 'main';
 
-      // Step 4: System Settings
+      // Step 5: System Settings
       this.log('\n' + '='.repeat(60), 'cyan');
-      this.log('Step 4/4: System Settings', 'bright');
+      this.log('Step 5/5: System Settings', 'bright');
       this.log('='.repeat(60) + '\n', 'cyan');
 
       const pollInterval = await this.question('Polling interval in seconds (default: 15): ');
@@ -439,6 +514,22 @@ CLICKUP_BOT_USER_ID=${this.config.clickupBotUserId}
 # GitHub Token (single token works for all repos you have access to)
 GITHUB_TOKEN=${this.config.githubToken}
 
+# OpenAI API Key (Optional - for RAG/embeddings context loading)
+${this.config.openaiApiKey ? `OPENAI_API_KEY=${this.config.openaiApiKey}` : '# OPENAI_API_KEY=sk_your_key_here'}
+
+# Discord Bot (Optional - for monitoring Discord channels)
+${this.config.discordEnabled ? `DISCORD_ENABLED=true
+DISCORD_BOT_TOKEN=${this.config.discordBotToken}
+DISCORD_GUILD_ID=${this.config.discordGuildId}
+DISCORD_CHANNEL_IDS=${this.config.discordChannelIds}
+DISCORD_KEYWORDS=bug,issue,error,problem,broken,crash,fix
+DISCORD_POLL_INTERVAL_MS=600000` : `# DISCORD_ENABLED=false
+# DISCORD_BOT_TOKEN=your_token_here
+# DISCORD_GUILD_ID=your_guild_id_here
+# DISCORD_CHANNEL_IDS=channel_id_1,channel_id_2
+# DISCORD_KEYWORDS=bug,issue,error,problem,broken,crash,fix
+# DISCORD_POLL_INTERVAL_MS=600000`}
+
 # ============================================
 # SYSTEM SETTINGS
 # ============================================
@@ -450,6 +541,7 @@ POLL_INTERVAL_MS=${this.config.pollInterval}
 CLAUDE_CLI_PATH=/Users/${process.env.USER}/.local/bin/claude
 GEMINI_CLI_PATH=gemini
 CODEX_CLI_PATH=codex
+QWEN_CLI_PATH=qwen
 
 # ============================================
 # FEATURE FLAGS
@@ -464,6 +556,20 @@ AUTO_REPO_PRIVATE=true
 AUTO_REPO_BASE_DIR=/Users/${process.env.USER}/Documents/Personal-Projects
 AUTO_REPO_DEFAULT_BRANCH=${this.config.baseBranch}
 GITHUB_DEFAULT_USERNAME=${this.config.githubUsername}
+
+# ============================================
+# CONTEXT LOADING CONFIGURATION
+# ============================================
+
+# Context mode: 'free' (Smart Loader), 'premium' (RAG), or 'hybrid' (both)
+CONTEXT_MODE=hybrid
+
+# Fallback to Smart Loader if RAG fails
+CONTEXT_FALLBACK=true
+
+# Enable context caching
+CONTEXT_CACHE_ENABLED=true
+CONTEXT_CACHE_TTL=3600
 
 # ============================================
 # PROJECT CONFIGURATION

@@ -183,16 +183,35 @@ npm run build
 
 ## Setup
 
-**Interactive (Recommended):**
+**Interactive Setup (Recommended):**
 ```bash
 npm run init
 ```
 
-**Manual:**
+This interactive setup will guide you through:
+- GitHub authentication (with browser or token)
+- ClickUp API key configuration
+- Optional OpenAI API (for RAG-based context loading)
+- Optional Discord Bot (for monitoring Discord channels)
+- Project configuration
+- System settings
+
+**Manual Setup:**
 ```bash
-npm run setup
-# Edit .env with your credentials
+# 1. Copy the example environment file
+cp .env.example .env
+
+# 2. Edit .env with your credentials
+#    - CLICKUP_API_KEY: Get from https://app.clickup.com/settings/apps
+#    - GITHUB_TOKEN: Create at https://github.com/settings/tokens
+#    - OPENAI_API_KEY: (Optional) From https://platform.openai.com/api-keys
+#    - DISCORD_BOT_TOKEN: (Optional) From https://discord.com/developers/applications
+
+# 3. Configure your projects
 # Edit projects.json with your projects
+nano projects.json
+
+# 4. Switch to your project
 npm run switch my-project
 ```
 
