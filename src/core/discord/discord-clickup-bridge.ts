@@ -9,7 +9,6 @@ import { ClickUpClient } from '@/infrastructure/api/clickup.client';
 import config from '@/shared/config';
 import { CLICKUP_STATUS } from '@/shared/constants';
 import { logger } from '@/shared/utils/logger.util';
-import { timmy } from '@/shared/ui';
 
 export interface DiscordTaskCreationResult {
   success: boolean;
@@ -25,8 +24,12 @@ export interface DiscordTaskCreationResult {
 function extractTitle(message: AnalyzedMessage): string {
   const content = message.message.content;
 
-  // Remove bot mentions from title
-  const cleanContent = content.replace(/<@!?\d+>/g, '').trim();
+  // Remove all Discord mentions (users and roles) from title
+  const cleanContent = content
+    .replace(/<@!?\d+>/g, '')      // Remove user mentions
+    .replace(/<@&\d+>/g, '')       // Remove role mentions
+    .replace(/<#\d+>/g, '')        // Remove channel mentions
+    .trim();
 
   // Pattern 1: "Bug: Title here" or "Issue: Title here"
   const colonMatch = cleanContent.match(/(?:bug|issue|error|problem|fix):\s*([^\n]+)/i);
@@ -46,25 +49,26 @@ function extractTitle(message: AnalyzedMessage): string {
 
 /**
  * Extract task description from Discord message
- * Includes full message content, author, and Discord link
+ * Includes full message content and Discord link
  */
 function extractDescription(message: AnalyzedMessage): string {
-  const { message: msg, priority, matches } = message;
+  const { message: msg } = message;
+
+  // Remove Discord mentions from content
+  const cleanContent = msg.content
+    .replace(/<@!?\d+>/g, '')      // Remove user mentions
+    .replace(/<@&\d+>/g, '')       // Remove role mentions
+    .replace(/<#\d+>/g, '')        // Remove channel mentions
+    .trim();
 
   return `
 **Reported via Discord**
 
-**Author:** ${msg.author.username}
-**Channel:** <#${msg.channelId}>
-**Priority:** ${priority}
-**Keywords:** ${matches.map(m => m.keyword).join(', ')}
 **Message Link:** https://discord.com/channels/${msg.guildId}/${msg.channelId}/${msg.id}
 
 ---
 
-**Issue Description:**
-
-${msg.content}
+${cleanContent}
 
 ${msg.attachments.length > 0 ? `\n**Attachments:**\n${msg.attachments.map(a => `- [${a.filename}](${a.url})`).join('\n')}` : ''}
 `.trim();
@@ -120,27 +124,9 @@ function determineTaskStatus(message: string): string {
 export async function createTaskFromDiscordMessage(
   analyzedMessage: AnalyzedMessage
 ): Promise<DiscordTaskCreationResult> {
-  logger.info('🚀 Starting Discord → ClickUp task creation', {
-    messageId: analyzedMessage.message.id,
-    author: analyzedMessage.message.author.username,
-    channelId: analyzedMessage.message.channelId,
-    keywords: analyzedMessage.matches.map(m => m.keyword),
-  });
-
   try {
     // Validate configuration
-    logger.debug('Validating ClickUp configuration', {
-      hasApiKey: !!config.clickup.apiKey,
-      apiKeyPrefix: config.clickup.apiKey?.substring(0, 10),
-      hasBotUserId: !!config.clickup.botUserId,
-      botUserId: config.clickup.botUserId,
-      hasListId: !!config.clickup.listId,
-      listId: config.clickup.listId,
-    });
-
     if (!config.clickup.listId) {
-      logger.warn('CLICKUP_LIST_ID not configured - skipping task creation');
-      console.log(timmy.warning('⚠️  CLICKUP_LIST_ID not configured - Discord task creation disabled'));
       return {
         success: false,
         error: 'CLICKUP_LIST_ID not configured in .env. Discord task creation is disabled.',
@@ -148,38 +134,23 @@ export async function createTaskFromDiscordMessage(
     }
 
     if (!config.clickup.apiKey) {
-      logger.error('CLICKUP_API_KEY not configured');
       throw new Error('CLICKUP_API_KEY not configured in .env');
     }
 
     if (!config.clickup.botUserId) {
-      logger.error('CLICKUP_BOT_USER_ID not configured');
       throw new Error('CLICKUP_BOT_USER_ID not configured in .env');
     }
 
     // Extract task details
-    logger.debug('Extracting task details from Discord message');
     const title = extractTitle(analyzedMessage);
     const description = extractDescription(analyzedMessage);
     const priority = getPriorityValue(analyzedMessage.priority);
-    const tags = ['discord', ...analyzedMessage.matches.map(m => m.keyword)];
+    const tags = ['ai created'];
 
     // Determine status based on message content
     const status = determineTaskStatus(analyzedMessage.message.content);
 
-    logger.info('📝 Task details extracted', {
-      title,
-      descriptionLength: description.length,
-      priority,
-      tags,
-      status,
-    });
-
-    console.log(timmy.info(`📝 Creating task: "${title.substring(0, 50)}${title.length > 50 ? '...' : ''}"`));
-    console.log(timmy.info(`   Status: ${status}`));
-
     // Create ClickUp client
-    logger.debug('Initializing ClickUp client');
     const clickupClient = new ClickUpClient({
       apiKey: config.clickup.apiKey,
     });
@@ -194,45 +165,14 @@ export async function createTaskFromDiscordMessage(
       tags,
     };
 
-    logger.info('📤 Sending task creation request to ClickUp API', {
-      listId: config.clickup.listId,
-      payload: {
-        name: taskPayload.name,
-        descriptionLength: taskPayload.description.length,
-        assignees: taskPayload.assignees,
-        status: taskPayload.status,
-        priority: taskPayload.priority,
-        tags: taskPayload.tags,
-      },
-    });
-
     // Create task
     const task = await clickupClient.createTask(config.clickup.listId, taskPayload);
-
-    logger.info('✅ Successfully created ClickUp task', {
-      taskId: task.id,
-      taskUrl: task.url,
-      messageId: analyzedMessage.message.id,
-      author: analyzedMessage.message.author.username,
-    });
-
-    console.log(timmy.success(`✓ Created ClickUp task: ${task.id}`));
-    console.log(timmy.info(`  Title: ${title}`));
-    console.log(timmy.info(`  Priority: ${analyzedMessage.priority}`));
-    if (task.url) {
-      console.log(timmy.info(`  URL: ${task.url}`));
-    }
 
     return { success: true, task };
 
   } catch (error) {
     const err = error instanceof Error ? error : new Error(String(error));
-    logger.error('❌ Failed to create ClickUp task from Discord message', err, {
-      messageId: analyzedMessage.message.id,
-      author: analyzedMessage.message.author.username,
-    });
-
-    console.log(timmy.error(`✗ Task creation failed: ${err.message}`));
+    logger.error('Failed to create ClickUp task from Discord', err);
 
     return {
       success: false,

@@ -240,23 +240,19 @@ if (require.main === module) {
               const result = await createTaskFromDiscordMessage(analyzedMessage);
 
               if (result.success && result.task) {
-                console.log(timmy.success(`✓ Created ClickUp task ${result.task.id} - Pipeline will process automatically`));
-
-                // Optional: Reply to Discord to confirm task creation
+                // Send minimal Discord response
                 try {
                   const client = (discordService as any).client;
                   if (client && result.task.url) {
                     await client.sendMessage(
                       analyzedMessage.message.channelId,
-                      `✅ Task created: ${result.task.url}\n\nI'll start working on this now! The pipeline will:\n1. Analyze the issue (Gemini)\n2. Implement a fix (Claude)\n3. Review the code (Codex)\n4. Create a PR (GitHub)\n\nI'll update you when it's ready! 🚀`
+                      `✅ Task created: ${result.task.url}`
                     );
                   }
                 } catch (err) {
-                  // Silently ignore Discord message send errors
                   logger.error('Failed to send Discord confirmation', err instanceof Error ? err : new Error(String(err)));
                 }
               } else if (result.error) {
-                console.log(timmy.error(`✗ Failed to create task: ${result.error}`));
                 logger.error('Discord task creation failed', new Error(result.error));
               }
             },

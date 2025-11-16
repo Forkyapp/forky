@@ -171,54 +171,39 @@ export class DiscordService {
         return;
       }
 
-      logger.info('📩 Mention received', {
-        messageId: message.id,
-        author: message.author.username,
-        content: message.content.substring(0, 100),
-      });
-
       // Check for keywords in the message
       const analyzed = this.analyzeMessage(message);
 
-      logger.info('🔍 Analyzing mention for keywords', {
-        content: message.content,
-        configuredKeywords: config.discord.keywords,
-        matchesFound: analyzed.matches.length,
-      });
-
-      // If keywords detected, create ClickUp task
+      // If keywords detected, create ClickUp task (task creation handler will send confirmation)
       if (analyzed.matches.length > 0) {
-        logger.info('🎯 Keywords detected in mention', {
-          keywords: analyzed.matches.map((m) => m.keyword),
-          priority: analyzed.priority,
-        });
-
         // Emit event to create task
         if (this.events.onMessageDetected) {
           try {
             await this.events.onMessageDetected(analyzed);
-            logger.info('✅ Task creation triggered from mention');
           } catch (eventError) {
             const err = eventError instanceof Error ? eventError : new Error(String(eventError));
-            logger.error('❌ Task creation failed from mention', err);
+            logger.error('Task creation failed from mention', err);
           }
         }
+
+        // Mark as processed
+        this.markAsProcessed(message, analyzed.matches);
+      } else {
+        // No keywords - use AI brain for casual conversation
+        const response = await aiBrainService.chat(
+          message.author.id,
+          message.channelId,
+          message.content
+        );
+
+        // Send response back to Discord
+        if (this.client) {
+          await this.client.sendMessage(message.channelId, response);
+        }
+
+        // Mark as processed
+        this.markAsProcessed(message, [{ keyword: '@mention', position: 0, context: message.content }]);
       }
-
-      // Use AI brain to generate response
-      const response = await aiBrainService.chat(
-        message.author.id,
-        message.channelId,
-        message.content
-      );
-
-      // Send response back to Discord
-      if (this.client) {
-        await this.client.sendMessage(message.channelId, response);
-      }
-
-      // Mark as processed
-      this.markAsProcessed(message, analyzed.matches.length > 0 ? analyzed.matches : [{ keyword: '@mention', position: 0, context: message.content }]);
     } catch (error) {
       const err = error instanceof Error ? error : new Error(String(error));
       logger.error('Failed to handle real-time mention', err);
@@ -239,11 +224,6 @@ export class DiscordService {
     }
 
     this.isPolling = true;
-    logger.debug('Starting Discord message polling', {
-      intervalMs: config.discord.pollIntervalMs,
-    });
-
-    console.log(timmy.info('🔵 Discord bot monitoring started'));
 
     // Initial poll
     this.pollMessages().catch((error) => {
@@ -277,7 +257,6 @@ export class DiscordService {
     }
 
     this.isPolling = false;
-    logger.info('Discord message polling stopped');
   }
 
   /**
@@ -293,14 +272,7 @@ export class DiscordService {
       limit: 50, // Fetch last 50 messages per channel
     });
 
-    let totalMessages = 0;
-    let newMessages = 0;
-    let matchedMessages = 0;
-
     for (const [, messages] of messageMap.entries()) {
-
-      totalMessages += messages.length;
-
       for (const message of messages) {
         // Skip bot messages
         if (message.author.bot) {
@@ -317,17 +289,8 @@ export class DiscordService {
         const botUserId = this.client?.getBotUserId();
         const isBotMentioned = botUserId && message.mentions.includes(botUserId);
 
-        // Debug logging (disabled - too verbose)
-        // logger.debug('Processing message', {
-        //   messageId: message.id,
-        //   author: message.author.username,
-        // });
-
-        newMessages++;
-
         // If bot is mentioned, use AI brain to chat with the user
         if (isBotMentioned) {
-          matchedMessages++;
 
           try {
             // Use AI brain to generate response
@@ -376,43 +339,14 @@ export class DiscordService {
         const analyzed = this.analyzeMessage(message);
 
         if (analyzed.matches.length > 0) {
-          matchedMessages++;
-
-          logger.info('🎯 Keyword match found in Discord message', {
-            messageId: message.id,
-            channelId: message.channelId,
-            author: message.author.username,
-            keywords: analyzed.matches.map((m) => m.keyword),
-            priority: analyzed.priority,
-            content: message.content.substring(0, 100),
-          });
-
-          console.log(
-            timmy.success(
-              `🔍 Found message with keywords: ${analyzed.matches.map((m) => m.keyword).join(', ')}`
-            )
-          );
-
           // Emit event
-          logger.debug('Emitting onMessageDetected event', {
-            hasEventHandler: !!this.events.onMessageDetected,
-            messageId: message.id,
-          });
-
           if (this.events.onMessageDetected) {
             try {
               await this.events.onMessageDetected(analyzed);
-              logger.info('✅ Event handler completed successfully', {
-                messageId: message.id,
-              });
             } catch (eventError) {
               const err = eventError instanceof Error ? eventError : new Error(String(eventError));
-              logger.error('❌ Event handler failed', err, {
-                messageId: message.id,
-              });
+              logger.error('Event handler failed', err);
             }
-          } else {
-            logger.warn('⚠️  No onMessageDetected event handler registered');
           }
 
           // Mark message as processed
@@ -420,13 +354,6 @@ export class DiscordService {
         }
       }
     }
-
-    // Log polling summary
-    logger.debug('Discord polling summary', {
-      totalMessages,
-      newMessages,
-      matchedMessages,
-    });
 
     // Clean up old processed messages (older than 30 days)
     this.messageRepository.cleanup(30);
@@ -594,8 +521,6 @@ export class DiscordService {
       await this.client.disconnect();
       this.client = null;
     }
-
-    logger.info('Discord service shut down');
   }
 }
 
