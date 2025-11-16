@@ -461,9 +461,18 @@ Begin your review now and add TODO/FIXME comments to the code!`;
 
   try {
     const promptFile = path.join(__dirname, '..', `task-${taskId}-codex-review-prompt.txt`);
+    const logsDir = path.join(__dirname, '..', 'logs');
+    const logFile = path.join(logsDir, `${taskId}-codex.log`);
+
+    // Ensure logs directory exists
+    if (!fs.existsSync(logsDir)) {
+      fs.mkdirSync(logsDir, { recursive: true });
+    }
+
     fs.writeFileSync(promptFile, prompt);
 
     console.log(timmy.info(`${colors.bright}Codex${colors.reset} starting code review...`));
+    console.log(timmy.info(`Log file: ${colors.dim}${logFile}${colors.reset}`));
 
     // Unset GITHUB_TOKEN to let gh use keyring auth
     const cleanEnv = { ...process.env };
@@ -480,14 +489,29 @@ Begin your review now and add TODO/FIXME comments to the code!`;
     const codexCommand = `cd "${repoPath}" && codex exec --full-auto --sandbox danger-full-access < "${inputFile}"`;
 
     try {
-      await execAsync(codexCommand, {
+      const { stdout, stderr } = await execAsync(codexCommand, {
         env: cleanEnv,
         shell: '/bin/bash',
         maxBuffer: 1024 * 1024 * 50, // 50MB buffer
         timeout: 1800000 // 30 minute timeout
       });
 
+      // Save Codex output to log file for debugging
+      const logOutput = `=== CODEX REVIEW OUTPUT ===\n\n` +
+        `STDOUT:\n${stdout || '(empty)'}\n\n` +
+        `STDERR:\n${stderr || '(empty)'}\n`;
+      fs.writeFileSync(logFile, logOutput);
+
+      // Log summary to logger
+      if (stdout) {
+        logger.info('Codex stdout', { output: stdout.substring(0, 1000) }); // First 1000 chars
+      }
+      if (stderr) {
+        logger.warn('Codex stderr', { output: stderr.substring(0, 1000) });
+      }
+
       console.log(timmy.success(`${colors.bright}Codex${colors.reset} completed code review for ${colors.bright}${branch}${colors.reset}`));
+      console.log(timmy.info(`Review output saved to: ${colors.dim}${logFile}${colors.reset}`));
 
       // Cleanup files
       fs.unlinkSync(promptFile);
