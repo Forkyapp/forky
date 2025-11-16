@@ -17,7 +17,7 @@ export class DiscordMessageRepository {
   /**
    * Check if message has been processed
    */
-  async has(messageId: string): Promise<boolean> {
+  has(messageId: string): boolean {
     const result = this.db.prepare(`
       SELECT 1 FROM discord_messages
       WHERE message_id = ? AND expires_at > datetime('now')
@@ -29,7 +29,7 @@ export class DiscordMessageRepository {
   /**
    * Add processed message
    */
-  async add(message: ProcessedMessage): Promise<void> {
+  add(message: ProcessedMessage): void {
     const now = new Date().toISOString();
     const expiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(); // 30 days
 
@@ -52,7 +52,7 @@ export class DiscordMessageRepository {
   /**
    * Get all processed messages (for compatibility)
    */
-  async getAll(): Promise<ProcessedMessage[]> {
+  getAll(): ProcessedMessage[] {
     const rows = this.db.prepare(`
       SELECT
         message_id as messageId,
@@ -76,7 +76,7 @@ export class DiscordMessageRepository {
    * Cleanup old processed messages
    * @param olderThanDays Remove messages older than this many days (default: 30)
    */
-  async cleanup(olderThanDays: number = 30): Promise<void> {
+  cleanup(olderThanDays: number = 30): void {
     const cutoffDate = new Date(Date.now() - olderThanDays * 24 * 60 * 60 * 1000).toISOString();
 
     const result = this.db.prepare(`
@@ -94,7 +94,7 @@ export class DiscordMessageRepository {
   /**
    * Clear all messages (for testing)
    */
-  async clear(): Promise<void> {
+  clear(): void {
     this.db.prepare(`DELETE FROM discord_messages`).run();
   }
 }

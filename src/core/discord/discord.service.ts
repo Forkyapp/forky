@@ -130,7 +130,7 @@ export class DiscordService {
       };
 
       // Check if already processed
-      const isProcessed = await this.messageRepository.has(message.id);
+      const isProcessed = this.messageRepository.has(message.id);
       if (isProcessed) {
         return;
       }
@@ -150,7 +150,7 @@ export class DiscordService {
       }
 
       // Mark as processed
-      await this.markAsProcessed(message, [{ keyword: '@mention', position: 0, context: message.content }]);
+      this.markAsProcessed(message, [{ keyword: '@mention', position: 0, context: message.content }]);
     } catch (error) {
       const err = error instanceof Error ? error : new Error(String(error));
       logger.error('Failed to handle real-time mention', err);
@@ -240,7 +240,7 @@ export class DiscordService {
         }
 
         // Check if already processed
-        const isProcessed = await this.messageRepository.has(message.id);
+        const isProcessed = this.messageRepository.has(message.id);
         if (isProcessed) {
           continue;
         }
@@ -300,7 +300,7 @@ export class DiscordService {
           }
 
           // Mark as processed
-          await this.markAsProcessed(message, [{ keyword: '@mention', position: 0, context: message.content }]);
+          this.markAsProcessed(message, [{ keyword: '@mention', position: 0, context: message.content }]);
           continue;
         }
 
@@ -330,7 +330,7 @@ export class DiscordService {
           }
 
           // Mark message as processed
-          await this.markAsProcessed(message, analyzed.matches);
+          this.markAsProcessed(message, analyzed.matches);
         }
       }
     }
@@ -343,7 +343,7 @@ export class DiscordService {
     });
 
     // Clean up old processed messages (older than 30 days)
-    await this.messageRepository.cleanup(30);
+    this.messageRepository.cleanup(30);
   }
 
   /**
@@ -421,10 +421,10 @@ export class DiscordService {
   /**
    * Mark message as processed
    */
-  private async markAsProcessed(
+  private markAsProcessed(
     message: DiscordMessage,
     matches: KeywordMatch[]
-  ): Promise<void> {
+  ): void {
     const processed: ProcessedMessage = {
       messageId: message.id,
       channelId: message.channelId,
@@ -432,7 +432,7 @@ export class DiscordService {
       keywords: matches.map((m) => m.keyword),
     };
 
-    await this.messageRepository.add(processed);
+    this.messageRepository.add(processed);
   }
 
   /**
@@ -474,12 +474,12 @@ export class DiscordService {
   /**
    * Get statistics about processed messages
    */
-  async getStats(): Promise<{
+  getStats(): {
     totalProcessed: number;
     processedToday: number;
     matchedToday: number;
-  }> {
-    const all = await this.messageRepository.getAll();
+  } {
+    const all = this.messageRepository.getAll();
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
