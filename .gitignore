@@ -70,3 +70,6 @@ templates/context/**/*.md
 # Old folders
 local/
 /api/
+*.db
+*.db-shm
+*.db-wal

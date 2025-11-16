@@ -7,7 +7,7 @@
     "init": "ts-node scripts/interactive-setup.ts",
     "settings": "ts-node scripts/settings.ts",
     "setup": "bash scripts/setup.sh",
-    "build": "tsc && tsc-alias",
+    "build": "tsc && tsc-alias && cp src/infrastructure/storage/schema.sql dist/src/infrastructure/storage/schema.sql",
     "start": "npm run build && NODE_NO_WARNINGS=1 node dist/timmy.js",
     "dev": "ts-node timmy.ts",
     "test": "jest --coverage",
@@ -19,10 +19,13 @@
     "switch": "ts-node scripts/switch-project.ts",
     "projects": "ts-node scripts/list-projects.ts",
     "current": "ts-node scripts/current-project.ts",
-    "build:context-index": "ts-node scripts/build-context-index.ts"
+    "build:context-index": "ts-node scripts/build-context-index.ts",
+    "migrate:json-to-sqlite": "ts-node scripts/migrate-json-to-sqlite.ts"
   },
   "dependencies": {
+    "@types/better-sqlite3": "^7.6.13",
     "axios": "^1.6.0",
+    "better-sqlite3": "^12.4.1",
     "discord.js": "^14.24.2",
     "dotenv": "^16.3.1",
     "openai": "^6.9.0",

@@ -153,7 +153,8 @@ export function handleCommand(
         break;
       }
 
-      discordService.getStats().then(stats => {
+      try {
+        const stats = discordService.getStats();
         console.log(`  ${timmy.label('Total Messages Processed', stats.totalProcessed.toString())}`);
         console.log(`  ${timmy.label('Processed Today', stats.processedToday.toString())}`);
         console.log(`  ${timmy.label('Matched Today', stats.matchedToday.toString())}`);
@@ -161,10 +162,10 @@ export function handleCommand(
         console.log(`  ${timmy.label('Poll Interval', `${config.discord.pollIntervalMs / 1000}s`)}`);
         console.log(`  ${timmy.label('Keywords', config.discord.keywords.join(', '))}`);
         console.log(timmy.divider() + '\n');
-      }).catch(() => {
+      } catch {
         console.log(timmy.error('Failed to get Discord stats'));
         console.log(timmy.divider() + '\n');
-      });
+      }
       break;
     }
 

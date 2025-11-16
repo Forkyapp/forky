@@ -5,7 +5,7 @@
 
 import config from '@/shared/config';
 import { DiscordClient } from '@/infrastructure/api/discord.client';
-import { DiscordMessageRepository } from '@/core/repositories/discord-message.repository';
+import { DiscordMessageRepository } from '@/infrastructure/storage/repositories/discord.repository';
 import { aiBrainService } from '@/core/ai-services/ai-brain.service';
 import type {
   DiscordMessage,
@@ -26,9 +26,7 @@ export class DiscordService {
   private events: DiscordServiceEvents = {};
 
   constructor() {
-    this.messageRepository = new DiscordMessageRepository(
-      config.files.discordMessagesFile
-    );
+    this.messageRepository = new DiscordMessageRepository();
   }
 
   /**
@@ -50,9 +48,6 @@ export class DiscordService {
       return;
     }
 
-    // Initialize message repository
-    await this.messageRepository.init();
-
     // Initialize Discord client with real-time message handler
     this.client = new DiscordClient({
       token: config.discord.token,
@@ -68,9 +63,45 @@ export class DiscordService {
     // Connect to Discord
     await this.client.connect();
 
+    // Mark all existing messages as processed to avoid responding to old messages
+    await this.markExistingMessagesAsProcessed();
 
     if (this.events.onReady) {
       this.events.onReady();
+    }
+  }
+
+  /**
+   * Mark all existing messages as processed on startup
+   * This prevents the bot from responding to old messages
+   */
+  private async markExistingMessagesAsProcessed(): Promise<void> {
+    if (!this.client) {
+      return;
+    }
+
+    try {
+      const messageMap = await this.client.fetchMessagesFromChannels({
+        channelIds: config.discord.channelIds,
+        limit: 50,
+      });
+
+      let markedCount = 0;
+      for (const [, messages] of messageMap.entries()) {
+        for (const message of messages) {
+          if (!message.author.bot && !this.messageRepository.has(message.id)) {
+            this.markAsProcessed(message, []);
+            markedCount++;
+          }
+        }
+      }
+
+      if (markedCount > 0) {
+        logger.info(`Marked ${markedCount} existing messages as processed on startup`);
+      }
+    } catch (error) {
+      const err = error instanceof Error ? error : new Error(String(error));
+      logger.error('Failed to mark existing messages as processed', err);
     }
   }
 
@@ -135,7 +166,7 @@ export class DiscordService {
       };
 
       // Check if already processed
-      const isProcessed = await this.messageRepository.has(message.id);
+      const isProcessed = this.messageRepository.has(message.id);
       if (isProcessed) {
         return;
       }
@@ -155,7 +186,7 @@ export class DiscordService {
       }
 
       // Mark as processed
-      await this.markAsProcessed(message, [{ keyword: '@mention', position: 0, context: message.content }]);
+      this.markAsProcessed(message, [{ keyword: '@mention', position: 0, context: message.content }]);
     } catch (error) {
       const err = error instanceof Error ? error : new Error(String(error));
       logger.error('Failed to handle real-time mention', err);
@@ -245,7 +276,7 @@ export class DiscordService {
         }
 
         // Check if already processed
-        const isProcessed = await this.messageRepository.has(message.id);
+        const isProcessed = this.messageRepository.has(message.id);
         if (isProcessed) {
           continue;
         }
@@ -266,18 +297,6 @@ export class DiscordService {
         if (isBotMentioned) {
           matchedMessages++;
 
-          logger.info('Bot mentioned in Discord message - using AI brain', {
-            messageId: message.id,
-            channelId: message.channelId,
-            author: message.author.username,
-          });
-
-          console.log(
-            timmy.success(
-              `🔔 Bot mentioned by ${message.author.username} - responding with AI`
-            )
-          );
-
           try {
             // Use AI brain to generate response
             const response = await aiBrainService.chat(
@@ -289,10 +308,6 @@ export class DiscordService {
             // Send response back to Discord
             if (this.client) {
               await this.client.sendMessage(message.channelId, response);
-              logger.info('AI response sent to Discord', {
-                messageId: message.id,
-                responseLength: response.length,
-              });
             }
 
             // Create analyzed message for event
@@ -321,7 +336,7 @@ export class DiscordService {
           }
 
           // Mark as processed
-          await this.markAsProcessed(message, [{ keyword: '@mention', position: 0, context: message.content }]);
+          this.markAsProcessed(message, [{ keyword: '@mention', position: 0, context: message.content }]);
           continue;
         }
 
@@ -351,7 +366,7 @@ export class DiscordService {
           }
 
           // Mark message as processed
-          await this.markAsProcessed(message, analyzed.matches);
+          this.markAsProcessed(message, analyzed.matches);
         }
       }
     }
@@ -364,7 +379,7 @@ export class DiscordService {
     });
 
     // Clean up old processed messages (older than 30 days)
-    await this.messageRepository.cleanup(30);
+    this.messageRepository.cleanup(30);
   }
 
   /**
@@ -442,10 +457,10 @@ export class DiscordService {
   /**
    * Mark message as processed
    */
-  private async markAsProcessed(
+  private markAsProcessed(
     message: DiscordMessage,
     matches: KeywordMatch[]
-  ): Promise<void> {
+  ): void {
     const processed: ProcessedMessage = {
       messageId: message.id,
       channelId: message.channelId,
@@ -453,7 +468,7 @@ export class DiscordService {
       keywords: matches.map((m) => m.keyword),
     };
 
-    await this.messageRepository.add(processed);
+    this.messageRepository.add(processed);
   }
 
   /**
@@ -495,12 +510,12 @@ export class DiscordService {
   /**
    * Get statistics about processed messages
    */
-  async getStats(): Promise<{
+  getStats(): {
     totalProcessed: number;
     processedToday: number;
     matchedToday: number;
-  }> {
-    const all = await this.messageRepository.getAll();
+  } {
+    const all = this.messageRepository.getAll();
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
