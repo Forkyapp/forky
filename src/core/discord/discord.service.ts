@@ -171,6 +171,10 @@ export class DiscordService {
         return;
       }
 
+      // Mark as processed IMMEDIATELY to prevent race conditions with polling
+      // (We'll still process it, but polling won't pick it up)
+      this.markAsProcessed(message, [{ keyword: '@mention', position: 0, context: message.content }]);
+
       // Check for keywords in the message
       const analyzed = this.analyzeMessage(message);
 
@@ -185,9 +189,6 @@ export class DiscordService {
             logger.error('Task creation failed from mention', err);
           }
         }
-
-        // Mark as processed
-        this.markAsProcessed(message, analyzed.matches);
       } else {
         // No keywords - use AI brain for casual conversation
         const response = await aiBrainService.chat(
@@ -200,9 +201,6 @@ export class DiscordService {
         if (this.client) {
           await this.client.sendMessage(message.channelId, response);
         }
-
-        // Mark as processed
-        this.markAsProcessed(message, [{ keyword: '@mention', position: 0, context: message.content }]);
       }
     } catch (error) {
       const err = error instanceof Error ? error : new Error(String(error));
@@ -289,44 +287,39 @@ export class DiscordService {
         const botUserId = this.client?.getBotUserId();
         const isBotMentioned = botUserId && message.mentions.includes(botUserId);
 
-        // If bot is mentioned, use AI brain to chat with the user
+        // If bot is mentioned, analyze for keywords and create task if needed
+        // Note: Real-time handler should have already processed this, but this is a fallback
         if (isBotMentioned) {
+          // Analyze message for keywords
+          const analyzed = this.analyzeMessage(message);
 
-          try {
-            // Use AI brain to generate response
-            const response = await aiBrainService.chat(
-              message.author.id,
-              message.channelId,
-              message.content
-            );
-
-            // Send response back to Discord
-            if (this.client) {
-              await this.client.sendMessage(message.channelId, response);
-            }
-
-            // Create analyzed message for event
-            const analyzed: AnalyzedMessage = {
-              message,
-              matches: [{ keyword: '@mention', position: 0, context: message.content }],
-              priority: MessagePriority.HIGH,
-              extractedContext: message.content,
-            };
-
-            // Emit event
+          // If keywords detected, create task
+          if (analyzed.matches.length > 0) {
+            // Emit event to create task
             if (this.events.onMessageDetected) {
-              await this.events.onMessageDetected(analyzed);
+              try {
+                await this.events.onMessageDetected(analyzed);
+              } catch (eventError) {
+                const err = eventError instanceof Error ? eventError : new Error(String(eventError));
+                logger.error('Task creation failed from polling mention', err);
+              }
             }
-          } catch (error) {
-            const err = error instanceof Error ? error : new Error(String(error));
-            logger.error('Failed to respond with AI brain', err);
-
-            // Try to send error message to user
-            if (this.client) {
-              await this.client.sendMessage(
+          } else {
+            // No keywords - just chat with AI brain
+            try {
+              const response = await aiBrainService.chat(
+                message.author.id,
                 message.channelId,
-                'Sorry, I encountered an error processing your message. Please try again.'
+                message.content
               );
+
+              // Send response back to Discord
+              if (this.client) {
+                await this.client.sendMessage(message.channelId, response);
+              }
+            } catch (error) {
+              const err = error instanceof Error ? error : new Error(String(error));
+              logger.error('Failed to respond with AI brain', err);
             }
           }
 
