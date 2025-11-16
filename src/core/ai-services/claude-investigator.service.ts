@@ -171,14 +171,11 @@ ${taskDescription}
 
     console.log(timmy.info('Running Claude investigation...'));
 
-    // Create a temporary session ID for this investigation
-    const sessionId = `investigation-${taskId}-${Date.now()}`;
-
-    // Call Claude Code CLI in investigation mode
+    // Call Claude Code CLI (same pattern as claude.service.ts)
     const result = await withRetry(
       async (): Promise<string> => {
         const { stdout }: ExecResult = await execAsync(
-          `cd "${repoPath}" && cat "${promptFile}" | ${config.system.claudeCliPath} --dangerously-skip-review --session-id="${sessionId}"`,
+          `cd "${repoPath}" && (echo "y"; sleep 2; cat "${promptFile}") | ${config.system.claudeCliPath} --dangerously-skip-permissions`,
           {
             timeout: 180000, // 3 minute timeout
             maxBuffer: 1024 * 1024 * 10, // 10MB buffer
