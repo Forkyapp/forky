@@ -217,61 +217,40 @@ class InteractiveSetup {
   }
 
   private async configureOptionalServices(): Promise<void> {
-    this.log('\n🔌 Optional Services Configuration', 'bright');
-    this.log('These services enhance Timmy\'s capabilities but are not required.\n', 'cyan');
-
     // OpenAI API
-    const useOpenAI = await this.confirm('Configure OpenAI API? (for RAG-based context loading)', false);
-    if (useOpenAI) {
-      this.log('\n📝 Getting your OpenAI API Key:', 'cyan');
-      this.log('  1. Go to: https://platform.openai.com/api-keys', 'cyan');
-      this.log('  2. Click "Create new secret key"', 'cyan');
-      this.log('  3. Copy the key\n', 'cyan');
+    this.log('\n📝 OpenAI API Key (for RAG-based context loading):', 'cyan');
+    this.log('  Get your key at: https://platform.openai.com/api-keys', 'dim');
+    this.log('  (Press Enter to skip)\n', 'dim');
 
-      const openBrowser = await this.confirm('Open OpenAI API keys page in browser?', true);
-      if (openBrowser) {
-        try {
-          await execAsync('open https://platform.openai.com/api-keys');
-          this.log('✅ Opened OpenAI API keys page in browser\n', 'green');
-        } catch {
-          // Ignore error if browser doesn't open
-        }
-      }
+    const openaiKey = await this.question('OpenAI API Key: ');
+    this.config.openaiApiKey = openaiKey || '';
 
-      this.config.openaiApiKey = await this.question('OpenAI API Key: ');
+    if (openaiKey) {
+      this.log('✓ OpenAI API configured', 'green');
     } else {
-      this.config.openaiApiKey = '';
+      this.log('Skipped OpenAI API (you can add it later in .env)', 'dim');
     }
 
     // Discord Bot
-    const useDiscord = await this.confirm('\nConfigure Discord Bot? (for monitoring Discord channels)', false);
-    if (useDiscord) {
-      this.log('\n📝 Setting up Discord Bot:', 'cyan');
-      this.log('  1. Go to: https://discord.com/developers/applications', 'cyan');
-      this.log('  2. Create a new application', 'cyan');
-      this.log('  3. Go to "Bot" section and create a bot', 'cyan');
-      this.log('  4. Copy the bot token\n', 'cyan');
+    this.log('\n📝 Discord Bot (for monitoring Discord channels):', 'cyan');
+    this.log('  Get started at: https://discord.com/developers/applications', 'dim');
+    this.log('  (Press Enter to skip)\n', 'dim');
 
-      const openDiscord = await this.confirm('Open Discord Developer Portal in browser?', true);
-      if (openDiscord) {
-        try {
-          await execAsync('open https://discord.com/developers/applications');
-          this.log('✅ Opened Discord Developer Portal in browser\n', 'green');
-        } catch {
-          // Ignore error if browser doesn't open
-        }
-      }
+    const discordToken = await this.question('Discord Bot Token: ');
 
+    if (discordToken) {
       this.config.discordEnabled = true;
-      this.config.discordBotToken = await this.question('Discord Bot Token: ');
+      this.config.discordBotToken = discordToken;
       this.config.discordGuildId = await this.question('Discord Guild (Server) ID: ');
-      this.log('\nEnter channel IDs to monitor (comma-separated):', 'cyan');
+      this.log('Enter channel IDs to monitor (comma-separated):', 'cyan');
       this.config.discordChannelIds = await this.question('Channel IDs: ');
+      this.log('✓ Discord Bot configured', 'green');
     } else {
       this.config.discordEnabled = false;
       this.config.discordBotToken = '';
       this.config.discordGuildId = '';
       this.config.discordChannelIds = '';
+      this.log('Skipped Discord Bot (you can add it later in .env)', 'dim');
     }
   }
 
@@ -544,14 +523,14 @@ class InteractiveSetup {
 
       // Step 5: Optional Services Configuration
       this.log('\n' + '='.repeat(60), 'cyan');
-      this.log(`Step 5/${totalSteps}: Optional Services`, 'bright');
+      this.log(`Step 5/${totalSteps}: Optional Services (Optional)`, 'bright');
       this.log('='.repeat(60) + '\n', 'cyan');
 
-      this.log('Optional services enhance Timmy\'s capabilities:', 'cyan');
-      this.log('  • OpenAI API - Enables RAG-based context loading (improves AI accuracy)', 'dim');
-      this.log('  • Discord Bot - Monitors Discord channels for issues\n', 'dim');
+      this.log('These services are optional but enhance Timmy:', 'cyan');
+      this.log('  • OpenAI API - Better context loading (improves AI accuracy)', 'dim');
+      this.log('  • Discord Bot - Monitor Discord channels for issues\n', 'dim');
 
-      const configureOptional = await this.confirm('Configure optional services now?', false);
+      const configureOptional = await this.confirm('Configure these now? (you can skip and add later)', false);
       if (configureOptional) {
         await this.configureOptionalServices();
       } else {
@@ -560,7 +539,7 @@ class InteractiveSetup {
         this.config.discordBotToken = '';
         this.config.discordGuildId = '';
         this.config.discordChannelIds = '';
-        this.log('Skipping optional services (you can add them later via .env)', 'dim');
+        this.log('\n✓ Skipped optional services (add them later in .env if needed)', 'dim');
       }
 
       // Show configuration summary before saving
@@ -616,7 +595,7 @@ CLICKUP_BOT_USER_ID=${this.config.clickupBotUserId}
 GITHUB_TOKEN=${this.config.githubToken}
 
 # OpenAI API Key (Optional - for RAG/embeddings context loading)
-${this.config.openaiApiKey ? `OPENAI_API_KEY=${this.config.openaiApiKey}` : '# OPENAI_API_KEY=sk_your_key_here'}
+${this.config.openaiApiKey && this.config.openaiApiKey.trim() ? `OPENAI_API_KEY=${this.config.openaiApiKey.trim()}` : '# OPENAI_API_KEY=sk_your_key_here'}
 
 # Discord Bot (Optional - for monitoring Discord channels)
 ${this.config.discordEnabled ? `DISCORD_ENABLED=true
