@@ -14,6 +14,7 @@
 import { timmy, colors } from '@/shared/ui';
 import { logger } from '@/shared/utils/logger.util';
 import { resolveRepoConfig } from '@/shared/config';
+import { DEFAULT_CONFIG } from '@/shared/constants';
 import * as storage from '../../../lib/storage';
 import * as clickup from '../../../lib/clickup';
 import type { ClickUpTask } from '../../../lib/clickup';
@@ -273,6 +274,78 @@ export class TaskOrchestrator {
    */
   getActiveTasks(): storage.PipelineData[] {
     return storage.pipeline.getActive();
+  }
+
+  /**
+   * Recover stale pipelines on startup
+   *
+   * Detects tasks that have been stuck in "in_progress" status for longer than
+   * the timeout and marks them as failed with a recovery reason.
+   *
+   * @param timeoutMs Optional timeout in milliseconds (defaults to 30 minutes)
+   * @returns Number of stale tasks recovered
+   */
+  async recoverStalePipelines(timeoutMs: number = DEFAULT_CONFIG.STALE_TASK_TIMEOUT_MS): Promise<number> {
+    console.log(timmy.info('Checking for stale tasks...'));
+    logger.info('Starting stale task recovery', { timeoutMs });
+
+    try {
+      const stalePipelines = await storage.pipeline.findStale(timeoutMs);
+
+      if (stalePipelines.length === 0) {
+        console.log(timmy.success('No stale tasks found'));
+        logger.info('No stale tasks found');
+        return 0;
+      }
+
+      console.log(timmy.warning(`Found ${stalePipelines.length} stale task(s)`));
+      logger.warn('Stale tasks detected', { count: stalePipelines.length });
+
+      for (const pipeline of stalePipelines) {
+        const taskId = pipeline.taskId;
+        const taskName = pipeline.taskName;
+        const currentStage = pipeline.currentStage;
+        const lastUpdated = new Date(pipeline.lastUpdatedAt).toISOString();
+
+        console.log(
+          timmy.warning(
+            `  Task ${colors.bright}${taskId}${colors.reset} - ${taskName} (stuck at ${currentStage} since ${lastUpdated})`
+          )
+        );
+
+        try {
+          // Mark the pipeline as failed with recovery reason
+          await storage.pipeline.fail(
+            taskId,
+            `Task marked as stale (stuck at stage '${currentStage}' for more than ${timeoutMs / 1000 / 60} minutes). System recovered on startup.`
+          );
+
+          // Send notification about recovery
+          await notificationManager.notifyWorkflowFailed({
+            taskId,
+            status: 'failed',
+            error: `Task was stuck at stage '${currentStage}' and marked as stale during system recovery.`,
+          });
+
+          console.log(timmy.success(`  ✓ Marked task ${taskId} as failed (stale)`));
+          logger.info('Stale task marked as failed', { taskId, taskName, currentStage });
+        } catch (error) {
+          const err = error as Error;
+          console.log(timmy.error(`  ✗ Failed to recover task ${taskId}: ${err.message}`));
+          logger.error('Failed to recover stale task', err, { taskId });
+        }
+      }
+
+      console.log(timmy.success(`Recovered ${stalePipelines.length} stale task(s)`));
+      logger.info('Stale task recovery complete', { recovered: stalePipelines.length });
+
+      return stalePipelines.length;
+    } catch (error) {
+      const err = error as Error;
+      console.log(timmy.error(`Stale task recovery failed: ${err.message}`));
+      logger.error('Stale task recovery failed', err);
+      return 0;
+    }
   }
 
   /**

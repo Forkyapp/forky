@@ -40,6 +40,7 @@ export const DEFAULT_CONFIG = {
   MAX_REVIEW_ITERATIONS: 3,
   DEFAULT_BRANCH: 'main',
   AI_TIMEOUT_MS: 30 * 60 * 1000, // 30 minutes
+  STALE_TASK_TIMEOUT_MS: 30 * 60 * 1000, // 30 minutes - tasks stuck longer are considered stale
 } as const;
 
 // File paths (relative to project root)

@@ -73,3 +73,16 @@ export async function rerunCodexReview(taskId: string) {
 export async function rerunClaudeFixes(taskId: string) {
   return taskOrchestrator.rerunClaudeFixes(taskId);
 }
+
+/**
+ * Recover stale pipelines on startup
+ *
+ * Detects tasks that have been stuck in "in_progress" status for longer than
+ * the timeout and marks them as failed with a recovery reason.
+ *
+ * @param timeoutMs Optional timeout in milliseconds (defaults to 30 minutes)
+ * @returns Number of stale tasks recovered
+ */
+export async function recoverStalePipelines(timeoutMs?: number) {
+  return taskOrchestrator.recoverStalePipelines(timeoutMs);
+}

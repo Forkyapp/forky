@@ -61,6 +61,7 @@ export const pipeline = {
   init(taskId: string, taskData: Partial<TaskData> = {}): PipelineData {
     const pipelines = this.load();
 
+    const now = Date.now();
     const pipelineDataEntry: PipelineData = {
       taskId,
       taskName: taskData.name || '',
@@ -68,6 +69,7 @@ export const pipeline = {
       status: STATUS.IN_PROGRESS,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
+      lastUpdatedAt: now,
       stages: [
         {
           name: 'detection',
@@ -131,6 +133,7 @@ export const pipeline = {
 
     pipelineDataEntry.currentStage = stage;
     pipelineDataEntry.updatedAt = new Date().toISOString();
+    pipelineDataEntry.lastUpdatedAt = Date.now();
 
     this.save(pipelines);
     return pipelineDataEntry;
@@ -154,6 +157,7 @@ export const pipeline = {
     }
 
     pipelineDataEntry.updatedAt = new Date().toISOString();
+    pipelineDataEntry.lastUpdatedAt = Date.now();
 
     this.save(pipelines);
     return pipelineDataEntry;
@@ -182,6 +186,7 @@ export const pipeline = {
     });
 
     pipelineDataEntry.updatedAt = new Date().toISOString();
+    pipelineDataEntry.lastUpdatedAt = Date.now();
 
     this.save(pipelines);
     return pipelineDataEntry;
@@ -201,6 +206,7 @@ export const pipeline = {
     };
 
     pipelineDataEntry.updatedAt = new Date().toISOString();
+    pipelineDataEntry.lastUpdatedAt = Date.now();
 
     this.save(pipelines);
     return pipelineDataEntry;
@@ -328,6 +334,7 @@ export const pipeline = {
     };
 
     pipelineDataEntry.updatedAt = new Date().toISOString();
+    pipelineDataEntry.lastUpdatedAt = Date.now();
 
     this.save(pipelines);
     return pipelineDataEntry;
@@ -349,5 +356,17 @@ export const pipeline = {
     }
 
     return pipelineDataEntry.metadata.agentExecution;
+  },
+
+  findStale(timeoutMs: number): PipelineData[] {
+    const pipelines = this.load();
+    const now = Date.now();
+    const cutoffTime = now - timeoutMs;
+
+    return Object.values(pipelines).filter(
+      (pipelineDataEntry) =>
+        pipelineDataEntry.status === STATUS.IN_PROGRESS &&
+        pipelineDataEntry.lastUpdatedAt < cutoffTime
+    );
   }
 };

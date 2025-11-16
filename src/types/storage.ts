@@ -129,6 +129,7 @@ export interface PipelineData {
   status: PipelineStatus;
   readonly createdAt: string;
   updatedAt: string;
+  lastUpdatedAt: number;
   completedAt?: string;
   failedAt?: string;
   totalDuration?: number;

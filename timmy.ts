@@ -235,6 +235,10 @@ if (require.main === module) {
     console.log(timmy.banner());
     console.log('');
 
+    // Recover stale tasks on startup
+    await orchestrator.recoverStalePipelines();
+    console.log('');
+
     // Validate configuration
     if (!config.github.repoPath || !fs.existsSync(config.github.repoPath)) {
       console.log(timmy.error('Repository path not configured in .env'));

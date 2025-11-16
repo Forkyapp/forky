@@ -27,6 +27,7 @@ export interface IPipelineRepository {
   fail(taskId: string, error: Error | string): Promise<PipelineData>;
   getActive(): Promise<PipelineData[]>;
   getSummary(taskId: string): Promise<PipelineSummary | null>;
+  findStale(timeoutMs: number): Promise<PipelineData[]>;
 }
 
 export class PipelineRepository implements IPipelineRepository {
@@ -73,6 +74,7 @@ export class PipelineRepository implements IPipelineRepository {
   async init(taskId: string, taskData: Partial<ClickUpTaskData> = {}): Promise<PipelineData> {
     const pipelines = await this.load();
 
+    const now = Date.now();
     const pipeline: PipelineData = {
       taskId,
       taskName: taskData.name || taskData.title || '',
@@ -80,6 +82,7 @@ export class PipelineRepository implements IPipelineRepository {
       status: PIPELINE_STATUS.IN_PROGRESS,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
+      lastUpdatedAt: now,
       stages: [
         {
           name: 'detection',
@@ -146,6 +149,7 @@ export class PipelineRepository implements IPipelineRepository {
 
     pipeline.currentStage = stage;
     pipeline.updatedAt = new Date().toISOString();
+    pipeline.lastUpdatedAt = Date.now();
 
     await this.save(pipelines);
     return pipeline;
@@ -179,6 +183,7 @@ export class PipelineRepository implements IPipelineRepository {
     }
 
     pipeline.updatedAt = new Date().toISOString();
+    pipeline.lastUpdatedAt = Date.now();
     await this.save(pipelines);
 
     return pipeline;
@@ -214,6 +219,7 @@ export class PipelineRepository implements IPipelineRepository {
     });
 
     pipeline.updatedAt = new Date().toISOString();
+    pipeline.lastUpdatedAt = Date.now();
     await this.save(pipelines);
 
     return pipeline;
@@ -236,6 +242,7 @@ export class PipelineRepository implements IPipelineRepository {
     };
 
     pipeline.updatedAt = new Date().toISOString();
+    pipeline.lastUpdatedAt = Date.now();
     await this.save(pipelines);
 
     return pipeline;
@@ -324,5 +331,23 @@ export class PipelineRepository implements IPipelineRepository {
       reviewIterations: pipeline.metadata.reviewIterations || 0,
       hasErrors: pipeline.errors.length > 0,
     };
+  }
+
+  /**
+   * Find stale pipelines that have been in_progress for longer than the timeout
+   *
+   * @param timeoutMs Timeout in milliseconds (e.g., 30 minutes = 1800000)
+   * @returns Array of stale pipelines
+   */
+  async findStale(timeoutMs: number): Promise<PipelineData[]> {
+    const pipelines = await this.load();
+    const now = Date.now();
+    const cutoffTime = now - timeoutMs;
+
+    return Object.values(pipelines).filter(
+      (pipeline) =>
+        pipeline.status === PIPELINE_STATUS.IN_PROGRESS &&
+        pipeline.lastUpdatedAt < cutoffTime
+    );
   }
 }
