@@ -48,9 +48,9 @@ export class DiscordClient {
       ],
     });
 
-    // Set up ready event (use clientReady to avoid deprecation warning)
+    // Set up ready event
     this.readyPromise = new Promise((resolve) => {
-      this.client.once('ready', () => {
+      this.client.once('clientReady', () => {
         this.isReady = true;
         logger.debug('Discord bot connected', {
           username: this.client.user?.tag,
