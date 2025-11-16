@@ -4,6 +4,7 @@ import { promisify } from 'util';
 import { exec } from 'child_process';
 import config from '../../shared/config';
 import { timmy, colors } from '../../shared/ui';
+import { getProcessManager } from '../../shared/utils/process-manager.util';
 import * as clickup from '../../../lib/clickup';
 import * as storage from '../../../lib/storage';
 import { loadContextForModel } from '../context/context-orchestrator';
@@ -11,6 +12,18 @@ import type { ClickUpTask } from '../../../src/types/clickup';
 import type { LaunchOptions, FixTodoOptions, LaunchResult, FixTodoResult, Settings } from '../../../src/types/ai';
 
 const execAsync = promisify(exec);
+const processManager = getProcessManager();
+
+/**
+ * Extended LaunchOptions with worktree support
+ */
+interface WorktreeLaunchOptions extends LaunchOptions {
+  worktreePath?: string; // Use this path instead of main repo path
+}
+
+interface WorktreeFixTodoOptions extends FixTodoOptions {
+  worktreePath?: string; // Use this path instead of main repo path
+}
 
 function ensureClaudeSettings(repoPath: string | null = null): void {
   const targetRepoPath = repoPath || config.github.repoPath;
@@ -51,23 +64,31 @@ function ensureClaudeSettings(repoPath: string | null = null): void {
   fs.writeFileSync(settingsFile, JSON.stringify(settings, null, 2));
 }
 
-async function launchClaude(task: ClickUpTask, options: LaunchOptions = {}): Promise<LaunchResult> {
+async function launchClaude(task: ClickUpTask, options: WorktreeLaunchOptions = {}): Promise<LaunchResult> {
   const taskId = task.id;
   const taskTitle = task.name;
   const taskDescription = task.description || task.text_content || 'No description provided';
-  const { analysis, repoConfig } = options;
+  const { analysis, repoConfig, worktreePath } = options;
 
   // Use provided repoConfig or fall back to legacy config
-  const repoPath = repoConfig?.path || config.github.repoPath;
+  const mainRepoPath = repoConfig?.path || config.github.repoPath;
   const repoOwner = repoConfig?.owner || config.github.owner;
   const repoName = repoConfig?.repo || config.github.repo;
 
-  if (!repoPath) {
+  if (!mainRepoPath) {
     throw new Error('Repository path is not configured');
   }
 
+  // Use worktree path if provided (for isolation), otherwise use main repo path
+  const workingPath = worktreePath || mainRepoPath;
+  const isWorktree = !!worktreePath;
+
+  if (isWorktree) {
+    console.log(timmy.info(`Using isolated worktree: ${colors.dim}${workingPath}${colors.reset}`));
+  }
+
   console.log(timmy.ai(`Deploying ${colors.bright}Claude${colors.reset} for ${colors.bright}${taskId}${colors.reset}: "${taskTitle}"`));
-  ensureClaudeSettings(repoPath);
+  ensureClaudeSettings(workingPath);
 
   // Load context based on task (uses RAG if available, falls back to Smart Loader)
   console.log(timmy.info('Loading relevant coding guidelines...'));
@@ -108,6 +129,32 @@ Use this analysis to guide your implementation. Follow the suggested approach an
 ${featureDocsPath}`;
   }
 
+  // Adjust instructions based on whether we're using a worktree
+  const setupInstructions = isWorktree
+    ? `1. **Navigate to worktree:**
+   cd ${workingPath}
+
+   Note: You are working in an isolated worktree. The branch 'task-${taskId}' is already checked out.
+   Your changes will not affect the main repository working directory.
+
+2. **Verify you're on the correct branch:**
+   git branch --show-current
+   (Should show: task-${taskId})
+
+3. **Ensure latest changes:**
+   git pull origin main --rebase
+   (Rebase your work on latest main)`
+    : `1. **Navigate to repository:**
+   cd ${workingPath}
+
+2. **Update main branch:**
+   git checkout main
+   git pull origin main
+   (Ensure we have latest changes)
+
+3. **Create new branch from main:**
+   git checkout -b task-${taskId}`;
+
   const prompt = `${smartContext ? smartContext + '\n\n' + '='.repeat(80) + '\n\n' : ''}I need you to implement a ClickUp task and create a GitHub Pull Request.
 
 **ClickUp Task ID:** ${taskId}
@@ -117,9 +164,10 @@ ${taskDescription}
 ${analysisSection}
 
 **Repository Information:**
-- Path: ${repoPath}
+- Working Path: ${workingPath}${isWorktree ? ' (isolated worktree)' : ''}
 - Owner: ${repoOwner}
 - Repo: ${repoName}
+- Branch: task-${taskId}
 
 **Required Steps (MUST COMPLETE ALL):**
 
@@ -127,16 +175,7 @@ ${analysis && analysis.featureDir ? `0. **Read the feature specification:**
    Read the file: ${analysis.featureDir}/feature-spec.md
    This contains detailed requirements, files to modify, and implementation guidance.
 
-` : ''}1. **Navigate to repository:**
-   cd ${repoPath}
-
-2. **Update main branch:**
-   git checkout main
-   git pull origin main
-   (Ensure we have latest changes)
-
-3. **Create new branch from main:**
-   git checkout -b task-${taskId}
+` : ''}${setupInstructions}
 
 4. **Implement the feature:**
    - Read the description carefully
@@ -205,16 +244,55 @@ Begin implementation now and make sure to create the PR when done!`;
     delete cleanEnv.GITHUB_TOKEN;
     delete cleanEnv.GH_TOKEN;
 
-    // Execute Claude SYNCHRONOUSLY - wait for it to complete
-    // Output goes to terminal in real-time (no background process)
-    const claudeCommand = `cd "${repoPath}" && (echo "y"; sleep 2; cat "${promptFile}") | claude --dangerously-skip-permissions`;
+    // Execute Claude with process tracking
+    // Process will be properly killed if Timmy shuts down
+    const claudeCommand = `(echo "y"; sleep 2; cat "${promptFile}") | claude --dangerously-skip-permissions`;
 
     try {
-      await execAsync(claudeCommand, {
-        env: cleanEnv,
-        shell: '/bin/bash',
-        maxBuffer: 1024 * 1024 * 50, // 50MB buffer
-        timeout: 1800000 // 30 minute timeout
+      await new Promise<void>((resolve, reject) => {
+        const processId = `claude-${taskId}`;
+
+        console.log(timmy.info('Starting Claude process (tracked for proper shutdown)...'));
+
+        const child = processManager.spawn(
+          processId,
+          claudeCommand,
+          [],
+          {
+            cwd: workingPath,
+            env: cleanEnv,
+            shell: '/bin/bash',
+            stdio: 'inherit' // Show output in real-time
+          }
+        );
+
+        let hasExited = false;
+        const timeout = setTimeout(() => {
+          if (!hasExited) {
+            console.log(timmy.error('Claude process timed out (30 minutes)'));
+            processManager.kill(processId, 'SIGKILL');
+            reject(new Error('Claude execution timed out after 30 minutes'));
+          }
+        }, 1800000); // 30 minute timeout
+
+        child.on('exit', (code, signal) => {
+          hasExited = true;
+          clearTimeout(timeout);
+          processManager.unregister(processId);
+
+          if (code === 0) {
+            resolve();
+          } else {
+            reject(new Error(`Claude process exited with code ${code}, signal ${signal}`));
+          }
+        });
+
+        child.on('error', (error) => {
+          hasExited = true;
+          clearTimeout(timeout);
+          processManager.unregister(processId);
+          reject(error);
+        });
       });
 
       console.log(timmy.success(`${colors.bright}Claude${colors.reset} completed implementation for ${colors.bright}task-${taskId}${colors.reset}`));
@@ -261,23 +339,44 @@ Begin implementation now and make sure to create the PR when done!`;
   }
 }
 
-async function fixTodoComments(task: ClickUpTask, options: FixTodoOptions = {}): Promise<FixTodoResult> {
+async function fixTodoComments(task: ClickUpTask, options: WorktreeFixTodoOptions = {}): Promise<FixTodoResult> {
   const taskId = task.id;
   const taskTitle = task.name;
   const branch = `task-${taskId}`;
-  const { repoConfig } = options;
+  const { repoConfig, worktreePath } = options;
 
   // Use provided repoConfig or fall back to legacy config
-  const repoPath = repoConfig?.path || config.github.repoPath;
+  const mainRepoPath = repoConfig?.path || config.github.repoPath;
   const repoOwner = repoConfig?.owner || config.github.owner;
   const repoName = repoConfig?.repo || config.github.repo;
 
-  if (!repoPath) {
+  if (!mainRepoPath) {
     throw new Error('Repository path is not configured');
   }
 
+  // Use worktree path if provided (for isolation), otherwise use main repo path
+  const workingPath = worktreePath || mainRepoPath;
+  const isWorktree = !!worktreePath;
+
+  if (isWorktree) {
+    console.log(timmy.info(`Using isolated worktree: ${colors.dim}${workingPath}${colors.reset}`));
+  }
+
   console.log(timmy.ai(`${colors.bright}Claude${colors.reset} addressing TODO/FIXME comments for ${colors.bright}${taskId}${colors.reset}`));
-  ensureClaudeSettings(repoPath);
+  ensureClaudeSettings(workingPath);
+
+  // Adjust instructions based on whether we're using a worktree
+  const checkoutInstructions = isWorktree
+    ? `1. **Navigate to worktree:**
+   cd ${workingPath}
+
+   Note: You are in an isolated worktree with branch '${branch}' already checked out.
+
+   git pull origin ${branch}`
+    : `1. **Checkout the branch:**
+   cd ${workingPath}
+   git checkout ${branch}
+   git pull origin ${branch}`;
 
   const prompt = `You need to address the TODO and FIXME comments that Codex added during code review.
 
@@ -286,16 +385,13 @@ async function fixTodoComments(task: ClickUpTask, options: FixTodoOptions = {}):
 **Branch:** ${branch}
 
 **Repository Information:**
-- Path: ${repoPath}
+- Working Path: ${workingPath}${isWorktree ? ' (isolated worktree)' : ''}
 - Owner: ${repoOwner}
 - Repo: ${repoName}
 
 **Your Task:**
 
-1. **Checkout the branch:**
-   cd ${repoPath}
-   git checkout ${branch}
-   git pull origin ${branch}
+${checkoutInstructions}
 
 2. **Find all TODO and FIXME comments:**
    Search for both comment types in the codebase:
@@ -357,15 +453,54 @@ Begin addressing the comments now - FIXME comments first, then TODO!`;
     delete cleanEnv.GITHUB_TOKEN;
     delete cleanEnv.GH_TOKEN;
 
-    // Execute Claude SYNCHRONOUSLY - wait for it to complete
-    const claudeCommand = `cd "${repoPath}" && (echo "y"; sleep 2; cat "${promptFile}") | claude --dangerously-skip-permissions`;
+    // Execute Claude with process tracking for TODO fixes
+    const claudeCommand = `(echo "y"; sleep 2; cat "${promptFile}") | claude --dangerously-skip-permissions`;
 
     try {
-      await execAsync(claudeCommand, {
-        env: cleanEnv,
-        shell: '/bin/bash',
-        maxBuffer: 1024 * 1024 * 50, // 50MB buffer
-        timeout: 1800000 // 30 minute timeout
+      await new Promise<void>((resolve, reject) => {
+        const processId = `claude-fix-${taskId}`;
+
+        console.log(timmy.info('Starting Claude fix process (tracked for proper shutdown)...'));
+
+        const child = processManager.spawn(
+          processId,
+          claudeCommand,
+          [],
+          {
+            cwd: workingPath,
+            env: cleanEnv,
+            shell: '/bin/bash',
+            stdio: 'inherit' // Show output in real-time
+          }
+        );
+
+        let hasExited = false;
+        const timeout = setTimeout(() => {
+          if (!hasExited) {
+            console.log(timmy.error('Claude fix process timed out (30 minutes)'));
+            processManager.kill(processId, 'SIGKILL');
+            reject(new Error('Claude fix execution timed out after 30 minutes'));
+          }
+        }, 1800000); // 30 minute timeout
+
+        child.on('exit', (code, signal) => {
+          hasExited = true;
+          clearTimeout(timeout);
+          processManager.unregister(processId);
+
+          if (code === 0) {
+            resolve();
+          } else {
+            reject(new Error(`Claude fix process exited with code ${code}, signal ${signal}`));
+          }
+        });
+
+        child.on('error', (error) => {
+          hasExited = true;
+          clearTimeout(timeout);
+          processManager.unregister(processId);
+          reject(error);
+        });
       });
 
       console.log(timmy.success(`${colors.bright}Claude${colors.reset} completed TODO/FIXME fixes for ${colors.bright}${branch}${colors.reset}`));
@@ -377,7 +512,7 @@ Begin addressing the comments now - FIXME comments first, then TODO!`;
       console.log(timmy.info('Checking for uncommitted changes from Claude fixes...'));
 
       try {
-        const { stdout: statusOutput } = await execAsync(`cd "${repoPath}" && git status --porcelain`, {
+        const { stdout: statusOutput } = await execAsync(`cd "${workingPath}" && git status --porcelain`, {
           env: cleanEnv
         });
 
@@ -386,7 +521,7 @@ Begin addressing the comments now - FIXME comments first, then TODO!`;
 
           // Commit and push the changes
           await execAsync(
-            `cd "${repoPath}" && git add . && git commit -m "fix: Address TODO/FIXME comments from code review (#${taskId})" && git push origin ${branch}`,
+            `cd "${workingPath}" && git add . && git commit -m "fix: Address TODO/FIXME comments from code review (#${taskId})" && git push origin ${branch}`,
             {
               env: cleanEnv,
               timeout: 60000 // 1 minute timeout for git operations
@@ -406,7 +541,7 @@ Begin addressing the comments now - FIXME comments first, then TODO!`;
       // Determine if changes were auto-committed
       let commitStatus = 'Changes auto-committed and pushed';
       try {
-        const { stdout: finalStatus } = await execAsync(`cd "${repoPath}" && git status --porcelain`, {
+        const { stdout: finalStatus } = await execAsync(`cd "${workingPath}" && git status --porcelain`, {
           env: cleanEnv
         });
         if (finalStatus.trim()) {

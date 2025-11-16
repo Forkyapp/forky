@@ -36,7 +36,10 @@ export class FixesStage extends BaseStage<FixResult> {
       this.logAI('Fixing TODO/FIXME comments...', 'Claude');
 
       // Execute Claude fixes
-      const fixResult = await claude.fixTodoComments(task, { repoConfig });
+      const fixResult = await claude.fixTodoComments(task, {
+        repoConfig,
+        worktreePath: context.worktreePath, // Pass worktree path for isolation
+      });
 
       // Check if fixes succeeded
       if (!fixResult.success) {

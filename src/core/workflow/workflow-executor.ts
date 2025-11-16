@@ -9,6 +9,7 @@ import { timmy, colors } from '@/shared/ui';
 import { logger } from '@/shared/utils/logger.util';
 import { resolveRepoConfig } from '@/shared/config';
 import { promptStageFailure } from '@/shared/utils/stage-prompt.util';
+import { getWorktreeManager } from '../workspace/worktree-manager.service';
 import type { ClickUpTask } from '@/types/clickup';
 import type { RepositoryConfig } from '@/shared/config';
 import {
@@ -57,11 +58,33 @@ export class WorkflowExecutor {
 
     let repoConfig: RepositoryConfig;
     let analysis: AnalysisResult | null = null;
+    let worktreePath: string | undefined;
+    let worktreeManager: ReturnType<typeof getWorktreeManager> | null = null;
 
     try {
       // Resolve repository configuration
       repoConfig = resolveRepoConfig();
       console.log(timmy.info(`Using repository: ${repoConfig.owner}/${repoConfig.repo}`));
+
+      // Create isolated worktree for this task
+      // This prevents the bot from interfering with the user's working directory
+      try {
+        console.log(timmy.info('Creating isolated worktree for bot execution...'));
+        worktreeManager = getWorktreeManager(repoConfig.path);
+        worktreePath = await worktreeManager.createWorktree({
+          taskId,
+          baseBranch: repoConfig.baseBranch || 'main',
+          repoPath: repoConfig.path,
+        });
+        console.log(timmy.success(`Worktree created: ${colors.dim}${worktreePath}${colors.reset}`));
+        logger.info('Worktree created for task', { taskId, worktreePath });
+      } catch (error) {
+        const err = error as Error;
+        console.log(timmy.warning(`Failed to create worktree: ${err.message}`));
+        console.log(timmy.info('Continuing without worktree (will use main repository)'));
+        logger.warn('Worktree creation failed, using main repo', { taskId, error: err.message });
+        worktreePath = undefined;
+      }
     } catch (error) {
       const err = error as Error;
       logger.error('Failed to resolve repository configuration', err, { taskId });
@@ -71,12 +94,13 @@ export class WorkflowExecutor {
       };
     }
 
-    // Create base stage context
+    // Create base stage context (includes worktree path if available)
     const baseContext: StageContext = {
       task,
       taskId,
       taskName,
       repoConfig,
+      worktreePath, // Pass worktree path to all stages
     };
 
     try {
@@ -151,6 +175,25 @@ export class WorkflowExecutor {
         success: false,
         error: err.message,
       };
+    } finally {
+      // Clean up worktree (success or failure)
+      if (worktreePath && worktreeManager) {
+        try {
+          console.log(timmy.info('Cleaning up worktree...'));
+          await worktreeManager.removeWorktree({
+            taskId,
+            repoPath: repoConfig.path,
+            force: true, // Force removal even if there are uncommitted changes
+          });
+          console.log(timmy.success('Worktree cleaned up'));
+          logger.info('Worktree removed', { taskId, worktreePath });
+        } catch (error) {
+          const err = error as Error;
+          console.log(timmy.warning(`Failed to clean up worktree: ${err.message}`));
+          logger.warn('Worktree cleanup failed', { taskId, error: err.message });
+          // Don't fail the whole workflow if cleanup fails
+        }
+      }
     }
   }
 
