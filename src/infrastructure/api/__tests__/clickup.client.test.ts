@@ -3,21 +3,39 @@
  * Tests for ClickUp API interactions
  */
 
+import axios from 'axios';
 import { ClickUpClient } from '../clickup.client';
 import { ClickUpAPIError } from '../../../shared/errors';
 import type { ClickUpTask, ClickUpComment } from '../../../types/clickup';
 
 // Mock axios
 jest.mock('axios');
+const mockedAxios = axios as jest.Mocked<typeof axios>;
 
 describe('ClickUpClient', () => {
   let client: ClickUpClient;
   let mockGet: jest.Mock;
   let mockPost: jest.Mock;
   let mockPut: jest.Mock;
+  let mockAxiosInstance: any;
 
   beforeEach(() => {
     jest.clearAllMocks();
+
+    // Create mock axios instance
+    mockAxiosInstance = {
+      get: jest.fn(),
+      post: jest.fn(),
+      put: jest.fn(),
+      delete: jest.fn(),
+      interceptors: {
+        request: { use: jest.fn(), eject: jest.fn() },
+        response: { use: jest.fn(), eject: jest.fn() },
+      },
+    };
+
+    // Mock axios.create to return our mock instance
+    mockedAxios.create = jest.fn().mockReturnValue(mockAxiosInstance);
 
     // Create client
     client = new ClickUpClient({
@@ -29,7 +47,7 @@ describe('ClickUpClient', () => {
     mockPost = jest.fn();
     mockPut = jest.fn();
 
-    // Replace the methods on the client
+    // Replace the protected methods on the client
     (client as any).get = mockGet;
     (client as any).post = mockPost;
     (client as any).put = mockPut;
@@ -225,25 +243,35 @@ describe('ClickUpClient', () => {
   });
 
   describe('Client Configuration', () => {
-    it('should set correct base URL', () => {
+    it('should create client with ClickUp API configuration', () => {
       const client = new ClickUpClient({
         apiKey: 'test-api-key',
       });
 
-      // The base URL should be ClickUp API v2
-      expect((client as any).baseURL || (client as any).config?.baseURL).toContain(
-        'api.clickup.com'
+      // Verify axios.create was called with correct config
+      expect(mockedAxios.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          baseURL: expect.stringContaining('api.clickup.com'),
+          headers: expect.objectContaining({
+            Authorization: 'test-api-key',
+            'Content-Type': 'application/json',
+          }),
+        })
       );
     });
 
-    it('should include API key in headers', () => {
+    it('should include API key in authorization header', () => {
       const client = new ClickUpClient({
         apiKey: 'test-api-key-123',
       });
 
-      const headers = (client as any).headers || (client as any).config?.headers;
-      expect(headers?.Authorization).toBe('test-api-key-123');
-      expect(headers?.['Content-Type']).toBe('application/json');
+      expect(mockedAxios.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          headers: expect.objectContaining({
+            Authorization: 'test-api-key-123',
+          }),
+        })
+      );
     });
 
     it('should accept custom timeout', () => {
@@ -252,8 +280,11 @@ describe('ClickUpClient', () => {
         timeout: 5000,
       });
 
-      const timeout = (client as any).timeout || (client as any).config?.timeout;
-      expect(timeout).toBe(5000);
+      expect(mockedAxios.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          timeout: 5000,
+        })
+      );
     });
   });
 

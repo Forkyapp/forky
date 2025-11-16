@@ -3,20 +3,38 @@
  * Tests for GitHub API interactions
  */
 
+import axios from 'axios';
 import { GitHubClient } from '../github.client';
 import { GitHubAPIError } from '../../../shared/errors';
 
 // Mock axios
 jest.mock('axios');
+const mockedAxios = axios as jest.Mocked<typeof axios>;
 
 describe('GitHubClient', () => {
   let client: GitHubClient;
   let mockGet: jest.Mock;
   let mockPost: jest.Mock;
   let mockDelete: jest.Mock;
+  let mockAxiosInstance: any;
 
   beforeEach(() => {
     jest.clearAllMocks();
+
+    // Create mock axios instance
+    mockAxiosInstance = {
+      get: jest.fn(),
+      post: jest.fn(),
+      put: jest.fn(),
+      delete: jest.fn(),
+      interceptors: {
+        request: { use: jest.fn(), eject: jest.fn() },
+        response: { use: jest.fn(), eject: jest.fn() },
+      },
+    };
+
+    // Mock axios.create to return our mock instance
+    mockedAxios.create = jest.fn().mockReturnValue(mockAxiosInstance);
 
     // Create client
     client = new GitHubClient({
@@ -25,7 +43,7 @@ describe('GitHubClient', () => {
       repo: 'test-repo',
     });
 
-    // Mock methods
+    // Mock protected methods
     mockGet = jest.fn();
     mockPost = jest.fn();
     mockDelete = jest.fn();
@@ -293,28 +311,35 @@ describe('GitHubClient', () => {
   });
 
   describe('Client Configuration', () => {
-    it('should set correct base URL', () => {
+    it('should create client with GitHub API configuration', () => {
       const client = new GitHubClient({
         token: 'test-token',
         owner: 'test-owner',
         repo: 'test-repo',
       });
 
-      expect((client as any).baseURL || (client as any).config?.baseURL).toContain(
-        'api.github.com'
+      expect(mockedAxios.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          baseURL: expect.stringContaining('api.github.com'),
+        })
       );
     });
 
-    it('should include authorization header', () => {
+    it('should include authorization and API headers', () => {
       const client = new GitHubClient({
         token: 'test-token-123',
         owner: 'test-owner',
         repo: 'test-repo',
       });
 
-      const headers = (client as any).headers || (client as any).config?.headers;
-      expect(headers?.Authorization).toBe('Bearer test-token-123');
-      expect(headers?.Accept).toContain('application/vnd.github');
+      expect(mockedAxios.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          headers: expect.objectContaining({
+            Authorization: 'Bearer test-token-123',
+            Accept: expect.stringContaining('application/vnd.github'),
+          }),
+        })
+      );
     });
 
     it('should include GitHub API version header', () => {
@@ -324,8 +349,13 @@ describe('GitHubClient', () => {
         repo: 'test-repo',
       });
 
-      const headers = (client as any).headers || (client as any).config?.headers;
-      expect(headers?.['X-GitHub-Api-Version']).toBeDefined();
+      expect(mockedAxios.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          headers: expect.objectContaining({
+            'X-GitHub-Api-Version': expect.any(String),
+          }),
+        })
+      );
     });
 
     it('should accept custom timeout', () => {
@@ -336,8 +366,11 @@ describe('GitHubClient', () => {
         timeout: 10000,
       });
 
-      const timeout = (client as any).timeout || (client as any).config?.timeout;
-      expect(timeout).toBe(10000);
+      expect(mockedAxios.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          timeout: 10000,
+        })
+      );
     });
   });
 
