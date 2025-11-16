@@ -8,6 +8,7 @@
 import { timmy, colors } from '@/shared/ui';
 import { logger } from '@/shared/utils/logger.util';
 import { resolveRepoConfig } from '@/shared/config';
+import { promptStageFailure } from '@/shared/utils/stage-prompt.util';
 import type { ClickUpTask } from '@/types/clickup';
 import type { RepositoryConfig } from '@/shared/config';
 import {
@@ -81,52 +82,55 @@ export class WorkflowExecutor {
     try {
       // Stage 1: Gemini Analysis
       if (!this.shouldSkipStage('analysis', options)) {
-        console.log(timmy.info('Stage 1: Gemini Analysis'));
-        analysis = await this.analysisStage.run(baseContext);
-
-        // Analysis failure is not critical - continue without it
-        if (!analysis.success) {
-          logger.warn('Analysis stage failed, continuing without analysis', { taskId });
-        }
+        analysis = await this.runStageWithRetry(
+          'analysis',
+          async () => {
+            console.log(timmy.info('Stage 1: Gemini Analysis'));
+            return await this.analysisStage.run(baseContext);
+          }
+        );
       }
 
-      // Stage 2: Claude Implementation
+      // Stage 2: Claude Implementation (CRITICAL)
       if (!this.shouldSkipStage('implementation', options)) {
-        console.log(timmy.info('Stage 2: Claude Implementation'));
+        const implResult = await this.runStageWithRetry(
+          'implementation',
+          async () => {
+            console.log(timmy.info('Stage 2: Claude Implementation'));
+            const implContext: ImplementationStageContext = {
+              ...baseContext,
+              analysis,
+            };
+            return await this.implementationStage.run(implContext);
+          }
+        );
 
-        const implContext: ImplementationStageContext = {
-          ...baseContext,
-          analysis,
-        };
-
-        const implResult = await this.implementationStage.run(implContext);
-
-        // Implementation failure is critical - stop workflow
-        if (!implResult.success) {
-          throw new Error(implResult.error || 'Implementation failed');
+        // Implementation must succeed - if we get here it succeeded
+        if (!implResult || !implResult.success) {
+          throw new Error('Implementation failed critically');
         }
       }
 
       // Stage 3: Codex Review
       if (!this.shouldSkipStage('review', options)) {
-        console.log(timmy.info('Stage 3: Codex Code Review'));
-        const reviewResult = await this.reviewStage.run(baseContext);
-
-        // Review failure is not critical - log and continue
-        if (!reviewResult.success) {
-          logger.warn('Review stage failed, continuing workflow', { taskId });
-        }
+        await this.runStageWithRetry(
+          'review',
+          async () => {
+            console.log(timmy.info('Stage 3: Codex Code Review'));
+            return await this.reviewStage.run(baseContext);
+          }
+        );
       }
 
       // Stage 4: Claude Fixes
       if (!this.shouldSkipStage('fixes', options)) {
-        console.log(timmy.info('Stage 4: Claude Fixes'));
-        const fixResult = await this.fixesStage.run(baseContext);
-
-        // Fixes failure is not critical - log and continue
-        if (!fixResult.success) {
-          logger.warn('Fixes stage failed, continuing workflow', { taskId });
-        }
+        await this.runStageWithRetry(
+          'fixes',
+          async () => {
+            console.log(timmy.info('Stage 4: Claude Fixes'));
+            return await this.fixesStage.run(baseContext);
+          }
+        );
       }
 
       console.log(
@@ -155,5 +159,72 @@ export class WorkflowExecutor {
    */
   private shouldSkipStage(stageName: string, options: WorkflowOptions): boolean {
     return options.skipStages?.includes(stageName) || false;
+  }
+
+  /**
+   * Run a stage with automatic retry/skip/abort prompts on failure
+   *
+   * @param stageName - Name of the stage (e.g., 'analysis', 'implementation')
+   * @param stageRunner - Function that executes the stage
+   * @returns Stage result or null if skipped
+   */
+  private async runStageWithRetry<T extends { success: boolean; error?: string }>(
+    stageName: string,
+    stageRunner: () => Promise<T>
+  ): Promise<T | null> {
+    let attempts = 0;
+    const maxAttempts = 5; // Prevent infinite retry loops
+
+    while (attempts < maxAttempts) {
+      attempts++;
+
+      try {
+        const result = await stageRunner();
+
+        if (result.success) {
+          return result; // Success - return result
+        }
+
+        // Stage failed - prompt user
+        const errorMsg = result.error || 'Stage failed with unknown error';
+        const { action } = await promptStageFailure(stageName, errorMsg);
+
+        if (action === 'retry') {
+          logger.info(`User chose to retry ${stageName}`, { attempt: attempts });
+          continue; // Retry the stage
+        } else if (action === 'skip') {
+          logger.warn(`User chose to skip ${stageName}`, { attempt: attempts });
+          return null; // Skipped
+        } else if (action === 'abort') {
+          logger.error(`User chose to abort at ${stageName}`, undefined, { attempt: attempts });
+          throw new Error(`Workflow aborted by user at stage: ${stageName}`);
+        }
+      } catch (error) {
+        // Caught an exception during execution
+        const err = error as Error;
+
+        // If this is an abort, re-throw immediately
+        if (err.message.includes('aborted by user')) {
+          throw err;
+        }
+
+        // Otherwise, prompt user
+        const { action } = await promptStageFailure(stageName, err.message);
+
+        if (action === 'retry') {
+          logger.info(`User chose to retry ${stageName} after exception`, { attempt: attempts });
+          continue;
+        } else if (action === 'skip') {
+          logger.warn(`User chose to skip ${stageName} after exception`, { attempt: attempts });
+          return null;
+        } else if (action === 'abort') {
+          logger.error(`User chose to abort at ${stageName} after exception`, err, { attempt: attempts });
+          throw new Error(`Workflow aborted by user at stage: ${stageName}`);
+        }
+      }
+    }
+
+    // Max attempts reached
+    throw new Error(`Stage ${stageName} failed after ${maxAttempts} attempts`);
   }
 }

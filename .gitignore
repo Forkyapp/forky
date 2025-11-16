@@ -30,6 +30,9 @@ coverage/
 *~
 .history/
 
+# Claude Code settings (user-specific)
+.claude/settings.json
+
 # Logs
 *.log
 logs/
