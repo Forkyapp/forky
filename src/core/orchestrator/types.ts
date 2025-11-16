@@ -1,6 +1,6 @@
-import type { ClickUpTask } from '../../../lib/clickup';
-import type { PipelineData } from '../../../lib/storage';
-import { RepositoryConfig } from '../../shared/config';
+import type { ClickUpTask } from '@/types';
+import type { PipelineData } from '@/types/storage';
+import { RepositoryConfig } from '@/shared/config';
 
 // ============================================
 // RESULT TYPES

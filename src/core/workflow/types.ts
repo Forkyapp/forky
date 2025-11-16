@@ -2,7 +2,7 @@
  * Workflow Types - Type definitions for workflow orchestration
  */
 
-import type { PipelineData } from '../../../lib/storage';
+import type { PipelineData } from '@/types/storage';
 import type { AnalysisResult } from '../stages/types';
 
 /**

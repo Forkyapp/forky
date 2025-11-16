@@ -99,15 +99,33 @@ export class ClickUpClient extends BaseAPIClient {
   /**
    * Get tasks assigned to user
    */
-  async getAssignedTasks(userId: number, workspaceId: string): Promise<ClickUpTask[]> {
+  async getAssignedTasks(
+    userId: number,
+    workspaceId: string,
+    options?: {
+      statuses?: string[];
+      subtasks?: boolean;
+      includeClosed?: boolean;
+    }
+  ): Promise<ClickUpTask[]> {
     try {
+      const params: Record<string, unknown> = {
+        assignees: [userId],
+      };
+
+      if (options?.statuses) {
+        params.statuses = options.statuses;
+      }
+      if (options?.subtasks !== undefined) {
+        params.subtasks = options.subtasks;
+      }
+      if (options?.includeClosed !== undefined) {
+        params.include_closed = options.includeClosed;
+      }
+
       const response = await this.get<{ tasks: ClickUpTask[] }>(
         `/team/${workspaceId}/task`,
-        {
-          params: {
-            assignees: [userId],
-          },
-        }
+        { params }
       );
       return response.tasks || [];
     } catch (error) {

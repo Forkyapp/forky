@@ -10,7 +10,7 @@ import { logger } from '@/shared/utils/logger.util';
 import { resolveRepoConfig } from '@/shared/config';
 import { promptStageFailure } from '@/shared/utils/stage-prompt.util';
 import { getWorktreeManager } from '../workspace/worktree-manager.service';
-import type { ClickUpTask } from '@/types/clickup';
+import type { ClickUpTask } from '@/types';
 import type { RepositoryConfig } from '@/shared/config';
 import {
   InvestigationStage,

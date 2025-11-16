@@ -4,7 +4,7 @@
  */
 
 import type { AnalyzedMessage } from '@/types/discord';
-import type { ClickUpTask } from '@/types/clickup';
+import type { ClickUpTask } from '@/types';
 import { ClickUpClient } from '@/infrastructure/api/clickup.client';
 import config from '@/shared/config';
 import { CLICKUP_STATUS } from '@/shared/constants';

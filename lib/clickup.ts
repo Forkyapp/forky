@@ -1,8 +1,23 @@
-import axios, { AxiosError } from 'axios';
+/**
+ * Legacy ClickUp API adapter
+ * This file provides backward compatibility by wrapping the new src/ implementation
+ *
+ * Migration status: LEGACY - Use src/infrastructure/api/clickup.client.ts for new code
+ */
+
+import { ClickUpClient } from '../src/infrastructure/api/clickup.client';
 import config from '../src/shared/config';
 import { timmy } from '../src/shared/ui';
 import type { ClickUpTask, CommentResponse, Command, Comment } from '../src/types';
 
+// Initialize the new ClickUp client
+const clickupClient = new ClickUpClient({
+  apiKey: config.clickup.apiKey || '',
+});
+
+/**
+ * Get assigned tasks - delegates to new implementation
+ */
 async function getAssignedTasks(): Promise<ClickUpTask[]> {
   try {
     if (!config.clickup.workspaceId) {
@@ -10,65 +25,45 @@ async function getAssignedTasks(): Promise<ClickUpTask[]> {
       return [];
     }
 
-    // Fetch tasks from the workspace with status "bot in progress"
-    const response = await axios.get<{ tasks: ClickUpTask[] }>(
-      `https://api.clickup.com/api/v2/team/${config.clickup.workspaceId}/task`,
+    if (!config.clickup.botUserId) {
+      console.log(timmy.error('No bot user ID configured'));
+      return [];
+    }
+
+    const tasks = await clickupClient.getAssignedTasks(
+      config.clickup.botUserId,
+      config.clickup.workspaceId,
       {
-        params: {
-          assignees: [config.clickup.botUserId],
-          statuses: ['bot in progress'],
-          subtasks: true,
-          include_closed: false
-        },
-        headers: {
-          'Authorization': config.clickup.apiKey,
-          'Content-Type': 'application/json'
-        }
+        statuses: ['bot in progress'],
+        subtasks: true,
+        includeClosed: false,
       }
     );
 
-    const tasks = response.data.tasks || [];
     return tasks;
   } catch (error) {
-    const axiosError = error as AxiosError;
-    console.log(timmy.error(`Failed to fetch tasks: ${axiosError.message}`));
-    if (axiosError.response) {
-      console.log(timmy.error(`Status code: ${axiosError.response.status}`));
-      console.log(timmy.error(`Response data: ${JSON.stringify(axiosError.response.data, null, 2)}`));
-    }
+    console.log(timmy.error(`Failed to fetch tasks: ${(error as Error).message}`));
     return [];
   }
 }
 
+/**
+ * Update task status - delegates to new implementation
+ */
 async function updateStatus(taskId: string, statusId: string): Promise<void> {
   try {
-    await axios.put(
-      `https://api.clickup.com/api/v2/task/${taskId}`,
-      { status: statusId },
-      {
-        headers: {
-          'Authorization': config.clickup.apiKey,
-          'Content-Type': 'application/json'
-        }
-      }
-    );
+    await clickupClient.updateTaskStatus(taskId, statusId);
   } catch (error) {
     console.log(timmy.error(`Status update failed: ${(error as Error).message}`));
   }
 }
 
+/**
+ * Update task description - delegates to new implementation
+ */
 async function updateTaskDescription(taskId: string, description: string): Promise<void> {
   try {
-    await axios.put(
-      `https://api.clickup.com/api/v2/task/${taskId}`,
-      { description },
-      {
-        headers: {
-          'Authorization': config.clickup.apiKey,
-          'Content-Type': 'application/json'
-        }
-      }
-    );
+    await clickupClient.updateTaskDescription(taskId, description);
     console.log(timmy.success(`Task description updated for ${taskId}`));
   } catch (error) {
     console.log(timmy.error(`Description update failed: ${(error as Error).message}`));
@@ -76,6 +71,9 @@ async function updateTaskDescription(taskId: string, description: string): Promi
   }
 }
 
+/**
+ * Add comment to task - delegates to new implementation with comment disable check
+ */
 async function addComment(taskId: string, commentText: string): Promise<CommentResponse> {
   // Check if comments are disabled
   if (process.env.DISABLE_COMMENTS === 'true') {
@@ -84,46 +82,23 @@ async function addComment(taskId: string, commentText: string): Promise<CommentR
   }
 
   try {
-    const response = await axios.post(
-      `https://api.clickup.com/api/v2/task/${taskId}/comment`,
-      { comment_text: commentText },
-      {
-        headers: {
-          'Authorization': config.clickup.apiKey,
-          'Content-Type': 'application/json'
-        }
-      }
-    );
-    console.log(timmy.success(`Comment posted to task ${taskId}`));
-    return { success: true, data: response.data };
-  } catch (error) {
-    const axiosError = error as AxiosError;
-    console.log(timmy.error(`Comment failed for task ${taskId}: ${axiosError.message}`));
-    if (axiosError.response) {
-      console.log(timmy.error(`Status: ${axiosError.response.status}`));
-      console.log(timmy.error(`Details: ${JSON.stringify(axiosError.response.data)}`));
+    const result = await clickupClient.addComment(taskId, commentText);
+    if (result.success) {
+      console.log(timmy.success(`Comment posted to task ${taskId}`));
     }
-    return { success: false, error: axiosError.message };
+    return result;
+  } catch (error) {
+    console.log(timmy.error(`Comment failed for task ${taskId}: ${(error as Error).message}`));
+    return { success: false, error: (error as Error).message };
   }
 }
 
 /**
- * Get comments for a task
- * @param taskId - ClickUp task ID
- * @returns Array of comments
+ * Get comments for a task - delegates to new implementation
  */
 async function getTaskComments(taskId: string): Promise<Comment[]> {
   try {
-    const response = await axios.get<{ comments: Comment[] }>(
-      `https://api.clickup.com/api/v2/task/${taskId}/comment`,
-      {
-        headers: {
-          'Authorization': config.clickup.apiKey,
-          'Content-Type': 'application/json'
-        }
-      }
-    );
-    return response.data.comments || [];
+    return await clickupClient.getTaskComments(taskId);
   } catch (error) {
     console.log(timmy.error(`Failed to fetch comments for task ${taskId}: ${(error as Error).message}`));
     return [];

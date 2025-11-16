@@ -5,7 +5,7 @@
  * Each stage should implement StageResult and use StageContext for execution.
  */
 
-import type { ClickUpTask } from '@/types/clickup';
+import type { ClickUpTask } from '@/types';
 import type { RepositoryConfig } from '@/shared/config';
 
 // ============================================
