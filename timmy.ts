@@ -170,7 +170,7 @@ async function pollAndProcess(): Promise<void> {
   }
 }
 
-function gracefulShutdown(): void {
+async function gracefulShutdown(): Promise<void> {
   appState.isRunning = false;
 
   if (appState.pollInterval) {
@@ -181,9 +181,30 @@ function gracefulShutdown(): void {
   console.log(timmy.warning('Shutting down gracefully...'));
   console.log(timmy.divider());
 
-  // Stop Discord polling
+  // Stop Discord polling and disconnect client
   if (config.discord.enabled) {
-    discordService.stopPolling();
+    try {
+      await discordService.shutdown();
+      console.log(timmy.success('Discord client disconnected'));
+    } catch (error) {
+      const err = error as Error;
+      console.log(timmy.warning(`Failed to disconnect Discord: ${err.message}`));
+    }
+  }
+
+  // Clean up all active worktrees
+  if (config.github.repoPath) {
+    try {
+      const { getWorktreeManager } = await import('./src/core/workspace/worktree-manager.service');
+      const worktreeManager = getWorktreeManager(config.github.repoPath);
+
+      console.log(timmy.info('Cleaning up active worktrees...'));
+      await worktreeManager.cleanupStaleWorktrees(config.github.repoPath, 0); // Clean all worktrees
+      console.log(timmy.success('Worktrees cleaned up'));
+    } catch (error) {
+      const err = error as Error;
+      console.log(timmy.warning(`Failed to cleanup worktrees: ${err.message}`));
+    }
   }
 
   storage.cache.save();
@@ -325,6 +346,7 @@ if (require.main === module) {
   // Set up shutdown handlers
   process.on('SIGINT', gracefulShutdown);
   process.on('SIGTERM', gracefulShutdown);
+  process.on('SIGQUIT', gracefulShutdown);
   })().catch((error) => {
     console.error('Fatal error:', error);
     process.exit(1);
