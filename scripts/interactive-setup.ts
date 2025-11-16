@@ -31,6 +31,7 @@ interface SetupConfig {
   clickupSecret: string;
   clickupBotUserId: string;
   clickupWorkspaceId: string;
+  clickupListId: string;
 
   // GitHub
   githubToken: string;
@@ -339,6 +340,23 @@ class InteractiveSetup {
         this.config.clickupWorkspaceId = await this.question('Workspace ID: ');
       }
     }
+
+    // Optional: ClickUp List ID for Discord integration
+    this.log('\n📝 ClickUp List ID (optional - for Discord bot integration):', 'cyan');
+    this.log('  This is where Discord-reported bugs will be created as tasks.', 'dim');
+    this.log('  Find it in the URL when viewing a List:', 'dim');
+    this.log('  https://app.clickup.com/12345678/v/li/901234567', 'dim');
+    this.log('                                       ↑ This is your List ID', 'dim');
+    this.log('  (Press Enter to skip - you can add it later in .env)\n', 'dim');
+
+    const listId = await this.question('ClickUp List ID (optional): ');
+    this.config.clickupListId = listId || '';
+
+    if (listId) {
+      this.log(`✓ List ID configured: ${listId}`, 'green');
+    } else {
+      this.log('Skipped List ID (Discord task creation will be disabled)', 'dim');
+    }
   }
 
   private showConfigurationSummary(): void {
@@ -353,6 +371,7 @@ class InteractiveSetup {
     this.log(`\n${colors.bright}ClickUp${colors.reset}`);
     this.log(`  Workspace ID: ${colors.cyan}${this.config.clickupWorkspaceId}${colors.reset}`);
     this.log(`  Bot User ID: ${colors.cyan}${this.config.clickupBotUserId}${colors.reset}`);
+    this.log(`  List ID: ${this.config.clickupListId ? colors.cyan + this.config.clickupListId : colors.dim + 'Not configured'}${colors.reset}`);
 
     this.log(`\n${colors.bright}Project${colors.reset}`);
     this.log(`  Name: ${colors.cyan}${this.config.projectName}${colors.reset}`);
@@ -590,6 +609,7 @@ class InteractiveSetup {
 CLICKUP_API_KEY=${this.config.clickupApiKey}
 CLICKUP_SECRET=${this.config.clickupSecret || ''}
 CLICKUP_BOT_USER_ID=${this.config.clickupBotUserId}
+${this.config.clickupListId ? `CLICKUP_LIST_ID=${this.config.clickupListId}` : '# CLICKUP_LIST_ID=                             # List ID where Discord tasks will be created (optional)'}
 
 # GitHub Token (single token works for all repos you have access to)
 GITHUB_TOKEN=${this.config.githubToken}
