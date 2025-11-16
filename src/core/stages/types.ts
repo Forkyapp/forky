@@ -24,6 +24,8 @@ export interface StageContext {
   taskName: string;
   /** Repository configuration */
   repoConfig: RepositoryConfig;
+  /** Path to isolated worktree (if using worktrees) */
+  worktreePath?: string;
 }
 
 /**

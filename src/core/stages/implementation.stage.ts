@@ -52,6 +52,7 @@ export class ImplementationStage extends BaseStage<ImplementationResult> {
               }
             : undefined,
         repoConfig,
+        worktreePath: context.worktreePath, // Pass worktree path for isolation
       });
 
       // Check if implementation succeeded
