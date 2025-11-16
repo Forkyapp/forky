@@ -283,7 +283,7 @@ Begin implementation now and make sure to create the PR when done!`;
             console.log(timmy.error('Claude process timed out (30 minutes)'));
             try {
               fs.closeSync(logFd);
-            } catch (e) {
+            } catch (_e) {
               // Ignore close errors
             }
             processManager.kill(processId, 'SIGKILL');
@@ -299,7 +299,7 @@ Begin implementation now and make sure to create the PR when done!`;
           // Close log file descriptor
           try {
             fs.closeSync(logFd);
-          } catch (e) {
+          } catch (_e) {
             // Ignore close errors
           }
 
@@ -318,7 +318,7 @@ Begin implementation now and make sure to create the PR when done!`;
           // Close log file descriptor
           try {
             fs.closeSync(logFd);
-          } catch (e) {
+          } catch (_e) {
             // Ignore close errors
           }
 
@@ -524,7 +524,7 @@ Begin addressing the comments now - FIXME comments first, then TODO!`;
             console.log(timmy.error('Claude fix process timed out (30 minutes)'));
             try {
               fs.closeSync(logFd);
-            } catch (e) {
+            } catch (_e) {
               // Ignore close errors
             }
             processManager.kill(processId, 'SIGKILL');
@@ -540,7 +540,7 @@ Begin addressing the comments now - FIXME comments first, then TODO!`;
           // Close log file descriptor
           try {
             fs.closeSync(logFd);
-          } catch (e) {
+          } catch (_e) {
             // Ignore close errors
           }
 
@@ -559,7 +559,7 @@ Begin addressing the comments now - FIXME comments first, then TODO!`;
           // Close log file descriptor
           try {
             fs.closeSync(logFd);
-          } catch (e) {
+          } catch (_e) {
             // Ignore close errors
           }
 
