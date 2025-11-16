@@ -14,7 +14,8 @@ export class ProcessManager {
   private shutdownHandlersRegistered = false;
 
   private constructor() {
-    this.registerShutdownHandlers();
+    // Don't register shutdown handlers - let the main app handle shutdown
+    // this.registerShutdownHandlers();
   }
 
   static getInstance(): ProcessManager {
@@ -59,9 +60,28 @@ export class ProcessManager {
    */
   kill(id: string, signal: NodeJS.Signals = 'SIGTERM'): boolean {
     const process = this.processes.get(id);
-    if (process && !process.killed) {
+    if (process && !process.killed && process.pid) {
       logger.info('Killing process', { id, pid: process.pid, signal });
-      process.kill(signal);
+
+      try {
+        // Kill the child process
+        process.kill(signal);
+
+        // Also try to kill the process group explicitly (works on Unix-like systems)
+        if (process.pid) {
+          try {
+            // Kill process group using negative PID
+            // This ensures all subprocesses spawned by the shell are also terminated
+            global.process.kill(-process.pid, signal);
+          } catch (err) {
+            // Ignore errors - process may already be dead or not a process group leader
+            logger.info('Could not kill process group', { id, pid: process.pid, error: err });
+          }
+        }
+      } catch (err) {
+        logger.error('Error killing process', err instanceof Error ? err : new Error(String(err)));
+      }
+
       this.processes.delete(id);
       return true;
     }
@@ -74,12 +94,27 @@ export class ProcessManager {
    * @param signal - Signal to send (default: SIGTERM)
    */
   killAll(signal: NodeJS.Signals = 'SIGTERM'): void {
-    console.log(timmy.warning(`Terminating ${this.processes.size} active process(es)...`));
-
     for (const [id, process] of this.processes.entries()) {
-      if (!process.killed) {
+      if (!process.killed && process.pid) {
         logger.info('Killing process', { id, pid: process.pid, signal });
-        process.kill(signal);
+
+        try {
+          // Kill the child process
+          process.kill(signal);
+
+          // Also try to kill the process group to catch subprocesses
+          if (process.pid) {
+            try {
+              // Kill process group using negative PID
+              global.process.kill(-process.pid, signal);
+            } catch (err) {
+              // Ignore errors - process may already be dead or not a process group leader
+              logger.info('Could not kill process group', { id, pid: process.pid, error: err });
+            }
+          }
+        } catch (err) {
+          logger.error('Error killing process', err instanceof Error ? err : new Error(String(err)));
+        }
       }
     }
 
@@ -170,9 +205,11 @@ export class ProcessManager {
     args: string[] = [],
     options: SpawnOptions = {}
   ): ChildProcess {
+    // Create process in its own process group to ensure we can kill all subprocesses
     const child = spawn(command, args, {
       ...options,
-      shell: true
+      shell: true,
+      detached: false // Keep attached to parent but ensure we kill process groups
     });
 
     this.register(id, child);

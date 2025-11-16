@@ -28,6 +28,7 @@ import * as clickup from './lib/clickup';
 import * as claude from './src/core/ai-services/claude.service';
 import * as orchestrator from './src/core/orchestrator/orchestrator.service';
 import { discordService } from './src/core/discord/discord.service';
+import { getProcessManager } from './src/shared/utils/process-manager.util';
 
 // ============================================
 // INTERFACES
@@ -180,6 +181,26 @@ async function gracefulShutdown(): Promise<void> {
   console.log('\n' + timmy.doubleDivider());
   console.log(timmy.warning('Shutting down gracefully...'));
   console.log(timmy.divider());
+
+  // Kill all tracked child processes (Claude, etc.)
+  const processManager = getProcessManager();
+  const activeProcessCount = processManager.getActiveCount();
+
+  if (activeProcessCount > 0) {
+    console.log(timmy.warning(`Terminating ${activeProcessCount} active process(es)...`));
+    processManager.killAll('SIGTERM');
+
+    // Wait 2 seconds for processes to terminate gracefully
+    await new Promise(resolve => setTimeout(resolve, 2000));
+
+    // Force kill any remaining processes
+    if (processManager.getActiveCount() > 0) {
+      console.log(timmy.warning('Force killing remaining processes...'));
+      processManager.killAll('SIGKILL');
+    }
+
+    console.log(timmy.success('All child processes terminated'));
+  }
 
   // Stop Discord polling and disconnect client
   if (config.discord.enabled) {
