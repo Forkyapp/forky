@@ -85,6 +85,7 @@ export const CLICKUP_COMMANDS = {
 
 // ClickUp status values
 export const CLICKUP_STATUS = {
+  TO_DO: 'to do',
   BOT_IN_PROGRESS: 'bot in progress',
   CAN_BE_CHECKED: 'can be checked',
   IN_REVIEW: 'in review',

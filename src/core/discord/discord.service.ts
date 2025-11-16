@@ -179,8 +179,6 @@ export class DiscordService {
 
       // Check for keywords in the message
       const analyzed = this.analyzeMessage(message);
-      let taskCreated = false;
-      let taskUrl = '';
 
       logger.info('🔍 Analyzing mention for keywords', {
         content: message.content,
@@ -199,7 +197,6 @@ export class DiscordService {
         if (this.events.onMessageDetected) {
           try {
             await this.events.onMessageDetected(analyzed);
-            taskCreated = true;
             logger.info('✅ Task creation triggered from mention');
           } catch (eventError) {
             const err = eventError instanceof Error ? eventError : new Error(String(eventError));

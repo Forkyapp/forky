@@ -7,6 +7,7 @@ import type { AnalyzedMessage } from '@/types/discord';
 import type { ClickUpTask } from '@/types/clickup';
 import { ClickUpClient } from '@/infrastructure/api/clickup.client';
 import config from '@/shared/config';
+import { CLICKUP_STATUS } from '@/shared/constants';
 import { logger } from '@/shared/utils/logger.util';
 import { timmy } from '@/shared/ui';
 
@@ -83,6 +84,37 @@ function getPriorityValue(priority: string): number {
 }
 
 /**
+ * Determine task status based on message content
+ * Returns 'bot in progress' if action keywords detected, otherwise 'to do'
+ */
+function determineTaskStatus(message: string): string {
+  const content = message.toLowerCase();
+
+  // Action keywords that indicate immediate work should start
+  const actionKeywords = [
+    'start working',
+    'start work',
+    'begin working',
+    'begin work',
+    'get started',
+    'work on this',
+    'work on it',
+    'start this',
+    'start it',
+    'do this now',
+    'do it now',
+    'implement now',
+    'fix now',
+  ];
+
+  // Check if any action keyword is present
+  const hasActionKeyword = actionKeywords.some(keyword => content.includes(keyword));
+
+  // Return appropriate status
+  return hasActionKeyword ? CLICKUP_STATUS.BOT_IN_PROGRESS : CLICKUP_STATUS.TO_DO;
+}
+
+/**
  * Create ClickUp task from Discord message
  */
 export async function createTaskFromDiscordMessage(
@@ -132,14 +164,19 @@ export async function createTaskFromDiscordMessage(
     const priority = getPriorityValue(analyzedMessage.priority);
     const tags = ['discord', ...analyzedMessage.matches.map(m => m.keyword)];
 
+    // Determine status based on message content
+    const status = determineTaskStatus(analyzedMessage.message.content);
+
     logger.info('📝 Task details extracted', {
       title,
       descriptionLength: description.length,
       priority,
       tags,
+      status,
     });
 
     console.log(timmy.info(`📝 Creating task: "${title.substring(0, 50)}${title.length > 50 ? '...' : ''}"`));
+    console.log(timmy.info(`   Status: ${status}`));
 
     // Create ClickUp client
     logger.debug('Initializing ClickUp client');
@@ -152,7 +189,7 @@ export async function createTaskFromDiscordMessage(
       name: title,
       description,
       assignees: [config.clickup.botUserId],
-      status: 'bot in progress',
+      status,
       priority,
       tags,
     };
