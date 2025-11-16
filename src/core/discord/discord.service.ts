@@ -182,6 +182,12 @@ export class DiscordService {
       let taskCreated = false;
       let taskUrl = '';
 
+      logger.info('🔍 Analyzing mention for keywords', {
+        content: message.content,
+        configuredKeywords: config.discord.keywords,
+        matchesFound: analyzed.matches.length,
+      });
+
       // If keywords detected, create ClickUp task
       if (analyzed.matches.length > 0) {
         logger.info('🎯 Keywords detected in mention', {

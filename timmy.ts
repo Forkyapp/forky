@@ -255,8 +255,9 @@ if (require.main === module) {
                   // Silently ignore Discord message send errors
                   logger.error('Failed to send Discord confirmation', err instanceof Error ? err : new Error(String(err)));
                 }
-              } else if (result.error && !result.error.includes('CLICKUP_LIST_ID not configured')) {
+              } else if (result.error) {
                 console.log(timmy.error(`✗ Failed to create task: ${result.error}`));
+                logger.error('Discord task creation failed', new Error(result.error));
               }
             },
 
